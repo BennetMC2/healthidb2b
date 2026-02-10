@@ -50,8 +50,8 @@ export default function ActionHint({ targetSelector, text }: ActionHintProps) {
       className="fixed z-[9200] -translate-x-1/2 animate-hint-pulse"
       style={{ top: position.top, left: position.left, pointerEvents: 'none' }}
     >
-      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-accent/30 bg-accent-dim text-accent text-xs font-medium whitespace-nowrap">
-        <MousePointerClick size={12} />
+      <div className="flex items-center gap-2 px-4 py-2.5 rounded border border-accent/30 bg-accent-dim text-accent text-base font-medium whitespace-nowrap">
+        <MousePointerClick size={16} />
         {text}
       </div>
       {/* Arrow pointing up */}
