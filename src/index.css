@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0a0b0d;
+    color: #e2e4e9;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  #root {
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1e2230;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2f3e;
+  }
+
+  /* Selection */
+  ::selection {
+    background: rgba(76, 165, 255, 0.2);
+    color: #e2e4e9;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-border rounded p-3;
+  }
+
+  .card-elevated {
+    @apply bg-elevated border border-border rounded p-3;
+  }
+
+  .metric-value {
+    @apply font-mono text-2xl font-semibold text-primary tracking-tight;
+  }
+
+  .metric-label {
+    @apply text-2xs font-medium text-tertiary uppercase tracking-wider;
+  }
+
+  .data-cell {
+    @apply font-mono text-sm text-secondary px-2 py-1;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs font-medium rounded-sm border;
+  }
+
+  .badge-accent {
+    @apply badge bg-accent-dim border-accent/20 text-accent;
+  }
+
+  .badge-success {
+    @apply badge bg-success-muted border-success/20 text-success;
+  }
+
+  .badge-warning {
+    @apply badge bg-warning-muted border-warning/20 text-warning;
+  }
+
+  .badge-error {
+    @apply badge bg-error-muted border-error/20 text-error;
+  }
+
+  .input-field {
+    @apply bg-base border border-border rounded px-2 py-1.5 text-sm text-primary
+           placeholder:text-tertiary focus:outline-none focus:border-accent/40
+           transition-colors duration-150;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm font-medium
+           rounded transition-all duration-150 cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent border border-transparent text-secondary hover:text-primary hover:bg-hover;
+  }
+
+  .btn-destructive {
+    @apply btn bg-error-muted border border-error/20 text-error hover:bg-error/20;
+  }
+
+  /* Table styles */
+  .table-header {
+    @apply text-2xs font-medium text-tertiary uppercase tracking-wider px-2 py-1.5 text-left border-b border-border;
+  }
+
+  .table-row {
+    @apply border-b border-border/50 hover:bg-hover/50 transition-colors duration-100;
+  }
+
+  .table-cell {
+    @apply px-2 py-1.5 text-sm text-secondary;
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply bg-border/50 rounded animate-pulse;
+  }
+}
+
+/* Walkthrough Animations */
+@keyframes slideUpBar {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes hintPulse {
+  0%, 100% { border-color: rgba(76, 165, 255, 0.3); transform: translateX(-50%) scale(1); }
+  50% { border-color: rgba(76, 165, 255, 0.7); transform: translateX(-50%) scale(1.03); }
+}
+
+.animate-slide-up-bar {
+  animation: slideUpBar 300ms ease forwards;
+}
+
+.animate-hint-pulse {
+  animation: hintPulse 2s ease-in-out infinite;
+}
+
+@layer utilities {
+  .text-mono {
+    font-family: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #1e2230 transparent;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .truncate-hash {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
