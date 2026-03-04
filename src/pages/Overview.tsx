@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import {
   Shield,
   ShieldOff,
@@ -13,9 +15,12 @@ import {
   Vault,
   ArrowRight,
   ChevronRight,
+  TrendingDown,
 } from 'lucide-react';
 import { identities, verifications, complianceRecords } from '@/data';
 import { formatCompact } from '@/utils/format';
+import { usePartnerStore } from '@/stores/usePartnerStore';
+import { industryContexts } from '@/data/partnerContext';
 import DemoButton from '@/components/walkthrough/DemoButton';
 
 // ── Animated Flow Node ─────────────────────────────────────────────
@@ -84,6 +89,14 @@ function FlowArrow({ delay, variant }: { delay: number; variant: 'danger' | 'suc
 
 export default function Overview() {
   const navigate = useNavigate();
+  const { currentPartner } = usePartnerStore();
+  const ctx = industryContexts[currentPartner.industry];
+
+  const loading = useSimulatedLoading(400);
+
+  // Force animation replay on mount/navigation
+  const [animKey, setAnimKey] = useState(0);
+  useEffect(() => { setAnimKey((k) => k + 1); }, []);
 
   const poolSize = identities.length;
   const proofsGenerated = verifications.filter(
@@ -91,9 +104,46 @@ export default function Overview() {
   ).length;
   const piiEvents = complianceRecords.filter((r) => r.piiAccessed).length;
 
+  if (loading) {
+    return (
+      <div className="h-full overflow-auto scrollbar-thin">
+        <div className="max-w-[860px] mx-auto py-10 px-6 space-y-12 animate-pulse">
+          <div className="skeleton h-16 rounded" />
+          <div className="flex flex-col items-center gap-4">
+            <div className="skeleton h-12 w-12 rounded-lg" />
+            <div className="skeleton h-8 w-96" />
+            <div className="skeleton h-5 w-80" />
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="skeleton h-40 rounded" />
+            <div className="skeleton h-40 rounded" />
+          </div>
+          <div className="skeleton h-48 rounded" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full overflow-auto scrollbar-thin" data-tour="overview-hero">
       <div className="max-w-[860px] mx-auto py-10 px-6 space-y-12">
+        {/* ── Cost of Inaction Banner ─────────────────────────── */}
+        <div className="relative overflow-hidden rounded border border-error/15 bg-error-muted/30 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded bg-error/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <TrendingDown size={16} className="text-error/70" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-error/90">
+                {ctx.costOfInaction}
+              </p>
+              <p className="text-xs text-error/50 mt-0.5">
+                {ctx.costSource}. {ctx.painPoint}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* ── Hero ──────────────────────────────────────────────── */}
         <section className="text-center space-y-4">
           <div className="flex justify-center mb-4">
@@ -102,12 +152,10 @@ export default function Overview() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-primary tracking-tight">
-            Health Infrastructure Protocol
+            {ctx.headline}
           </h1>
           <p className="text-lg text-secondary max-w-[520px] mx-auto leading-relaxed">
-            Transition from custodial data liability to zero-knowledge
-            verification. Partners receive cryptographic proof receipts — never
-            raw health data.
+            {ctx.subheadline}
           </p>
 
           {/* Key stats */}
@@ -186,7 +234,7 @@ export default function Overview() {
         </section>
 
         {/* ── Animated Flow Comparison ──────────────────────────── */}
-        <section className="space-y-6">
+        <section className="space-y-6" data-tour="overview-flows" key={animKey}>
           {/* Old Flow */}
           <div className="card border-error/5 bg-error-muted/20">
             <div className="text-2xs text-error/60 uppercase tracking-wider font-medium mb-4">
@@ -263,6 +311,57 @@ export default function Overview() {
                 delay={2500}
                 variant="success"
               />
+            </div>
+          </div>
+        </section>
+
+        {/* ── At a Glance: Traditional vs HealthID ────────────── */}
+        <section>
+          <h2 className="text-sm font-semibold text-primary mb-3 text-center">
+            Traditional vs HealthID
+          </h2>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="card text-center">
+              <span className="text-2xs text-tertiary uppercase tracking-wider">Cost / Verification</span>
+              <div className="mt-2 flex items-center justify-center gap-3">
+                <div>
+                  <span className="text-sm font-mono text-error/70 line-through">{ctx.costPerVerification.traditional}</span>
+                  <div className="text-2xs text-tertiary">Traditional</div>
+                </div>
+                <ArrowRight size={12} className="text-tertiary" />
+                <div>
+                  <span className="text-sm font-mono text-accent font-semibold">{ctx.costPerVerification.healthid}</span>
+                  <div className="text-2xs text-tertiary">HealthID</div>
+                </div>
+              </div>
+            </div>
+            <div className="card text-center">
+              <span className="text-2xs text-tertiary uppercase tracking-wider">Time to Verify</span>
+              <div className="mt-2 flex items-center justify-center gap-3">
+                <div>
+                  <span className="text-sm font-mono text-error/70 line-through">{ctx.timeToVerify.traditional}</span>
+                  <div className="text-2xs text-tertiary">Traditional</div>
+                </div>
+                <ArrowRight size={12} className="text-tertiary" />
+                <div>
+                  <span className="text-sm font-mono text-accent font-semibold">{ctx.timeToVerify.healthid}</span>
+                  <div className="text-2xs text-tertiary">HealthID</div>
+                </div>
+              </div>
+            </div>
+            <div className="card text-center">
+              <span className="text-2xs text-tertiary uppercase tracking-wider">PII Exposure Events</span>
+              <div className="mt-2 flex items-center justify-center gap-3">
+                <div>
+                  <span className="text-sm font-mono text-error/70 line-through">{ctx.piiExposure.traditional}</span>
+                  <div className="text-2xs text-tertiary">Traditional</div>
+                </div>
+                <ArrowRight size={12} className="text-tertiary" />
+                <div>
+                  <span className="text-sm font-mono text-accent font-semibold">{ctx.piiExposure.healthid}</span>
+                  <div className="text-2xs text-tertiary">HealthID</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

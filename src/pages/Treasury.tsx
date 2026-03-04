@@ -1,3 +1,4 @@
+import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import { Vault, TrendingUp, Coins, ArrowUpRight } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
@@ -76,6 +77,22 @@ const columns: ColumnDef<TreasuryTransaction, unknown>[] = [
 
 export default function Treasury() {
   const ts = treasuryState;
+  const loading = useSimulatedLoading(500);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 h-full animate-pulse">
+        <div className="skeleton h-8 w-56" />
+        <div className="grid grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-40 rounded" />)}
+        </div>
+        <div className="flex-1 skeleton rounded" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full">

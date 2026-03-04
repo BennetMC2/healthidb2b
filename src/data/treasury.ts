@@ -20,19 +20,6 @@ const SEED = 9001;
 const TRANSACTION_COUNT = 100;
 const SNAPSHOT_DAYS = 180;
 
-// ── Treasury State ──────────────────────────────────────────────────
-
-export const treasuryState: TreasuryState = {
-  totalBudget: 250_000,
-  availableBalance: 148_320,
-  yieldRate: 0.045,
-  yieldGenerated: 8_412.75,
-  valueMultiplier: 1.47,
-  pointsDistributed: 87_450,
-  pointsReserved: 42_000,
-  pointsExpired: 3_820,
-};
-
 // ── Treasury Transactions ───────────────────────────────────────────
 
 const TRANSACTION_TYPES: TransactionType[] = [
@@ -113,24 +100,23 @@ function generateTransactions(): TreasuryTransaction[] {
         runningBalance += amount;
         break;
       case 'distribution':
-        amount = -randomInt(rng, 100, 5000);
-        runningBalance += amount;
+        amount = Math.min(randomInt(rng, 100, 5000), runningBalance - 1000);
+        if (amount <= 0) { amount = 50; }
+        runningBalance -= amount;
+        amount = -amount;
         break;
       case 'expiration':
-        amount = -randomInt(rng, 50, 1500);
-        runningBalance += amount;
+        amount = Math.min(randomInt(rng, 50, 1500), runningBalance - 1000);
+        if (amount <= 0) { amount = 25; }
+        runningBalance -= amount;
+        amount = -amount;
         break;
       case 'withdrawal':
-        amount = -randomInt(rng, 1000, 15000);
-        runningBalance += amount;
+        amount = Math.min(randomInt(rng, 1000, 15000), runningBalance - 1000);
+        if (amount <= 0) { amount = 100; }
+        runningBalance -= amount;
+        amount = -amount;
         break;
-    }
-
-    // Keep balance from going negative
-    if (runningBalance < 0) {
-      runningBalance -= amount;
-      amount = Math.abs(amount);
-      runningBalance += amount;
     }
 
     result.push({
@@ -149,6 +135,64 @@ function generateTransactions(): TreasuryTransaction[] {
 
 export const treasuryTransactions: TreasuryTransaction[] = generateTransactions();
 
+// ── Derive treasury state from transaction ledger ───────────────────
+
+function computeTreasuryState(transactions: TreasuryTransaction[]): TreasuryState {
+  let totalDeposits = 0;
+  let totalYield = 0;
+  let totalDistributed = 0;
+  let totalExpired = 0;
+  let totalWithdrawn = 0;
+
+  for (const tx of transactions) {
+    switch (tx.type) {
+      case 'deposit':
+        totalDeposits += tx.amount;
+        break;
+      case 'yield_credit':
+        totalYield += tx.amount;
+        break;
+      case 'distribution':
+        totalDistributed += Math.abs(tx.amount);
+        break;
+      case 'expiration':
+        totalExpired += Math.abs(tx.amount);
+        break;
+      case 'withdrawal':
+        totalWithdrawn += Math.abs(tx.amount);
+        break;
+    }
+  }
+
+  const startingBalance = 50_000;
+  const totalBudget = startingBalance + totalDeposits;
+  const availableBalance = transactions.length > 0
+    ? transactions[transactions.length - 1].balance
+    : startingBalance;
+
+  // Points approximate: $0.012 per HP → distributed amount / 0.012
+  const pointsDistributed = Math.round(totalDistributed / 0.012);
+  const pointsReserved = Math.round(pointsDistributed * 0.48);
+  const pointsExpired = Math.round(totalExpired / 0.012);
+
+  const yieldGenerated = Math.round(totalYield * 100) / 100;
+  const yieldRate = 0.045;
+  const valueMultiplier = Math.round((1 + (yieldGenerated / totalBudget) + 0.20) * 100) / 100;
+
+  return {
+    totalBudget: Math.round(totalBudget),
+    availableBalance: Math.round(availableBalance * 100) / 100,
+    yieldRate,
+    yieldGenerated,
+    valueMultiplier,
+    pointsDistributed,
+    pointsReserved,
+    pointsExpired,
+  };
+}
+
+export const treasuryState: TreasuryState = computeTreasuryState(treasuryTransactions);
+
 // ── Treasury Snapshots (daily for 180 days) ─────────────────────────
 
 function generateSnapshots(): TreasurySnapshot[] {
@@ -156,8 +200,9 @@ function generateSnapshots(): TreasurySnapshot[] {
   const now = new Date();
   const result: TreasurySnapshot[] = [];
 
+  // Start snapshot budget aligned with the transaction starting balance
   let cumulativeYield = 0;
-  let totalBudget = 150_000;
+  let totalBudget = 50_000;
   let pointsDistributed = 15_000;
 
   for (let day = SNAPSHOT_DAYS; day >= 0; day--) {

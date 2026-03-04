@@ -1,11 +1,14 @@
 import type { Partner } from '@/types';
+import { seededRandom, generateId } from './seed';
 
 // ── Partners ────────────────────────────────────────────────────────
 // Three partners representing the enterprise, professional, and starter tiers.
 
+const rng = seededRandom(2024);
+
 export const partners: Partner[] = [
   {
-    id: 'partner_a1',
+    id: generateId(rng, 'prt'),
     label: 'Meridian Health Insurance',
     tier: 'enterprise',
     industry: 'insurance',
@@ -27,7 +30,7 @@ export const partners: Partner[] = [
     createdAt: '2024-06-15T10:30:00.000Z',
   },
   {
-    id: 'partner_b2',
+    id: generateId(rng, 'prt'),
     label: 'NovaGenix Pharmaceuticals',
     tier: 'professional',
     industry: 'pharma',
@@ -49,7 +52,7 @@ export const partners: Partner[] = [
     createdAt: '2024-09-03T14:15:00.000Z',
   },
   {
-    id: 'partner_c3',
+    id: generateId(rng, 'prt'),
     label: 'BrightWell Corporate Wellness',
     tier: 'starter',
     industry: 'employer',

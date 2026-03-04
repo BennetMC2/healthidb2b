@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Zap, Radio } from 'lucide-react';
 import { HEALTH_METRIC_LABELS, HEALTH_METRIC_UNITS, DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, REPUTATION_TIER_ORDER, AGE_RANGES } from '@/utils/constants';
-import type { CampaignType, HealthMetric, DataSource, ReputationTier } from '@/types';
+import { useToastStore } from '@/stores/useToastStore';
+import LaunchSuccess from '@/components/campaigns/LaunchSuccess';
+import type { CampaignType, CampaignTemplate, HealthMetric, DataSource, ReputationTier } from '@/types';
 
 const steps = [
   { id: 'type', label: 'Type' },
@@ -14,7 +16,10 @@ const steps = [
 
 export default function CampaignCreate() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const addToast = useToastStore((s) => s.addToast);
   const [step, setStep] = useState(0);
+  const [launching, setLaunching] = useState(false);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -34,6 +39,29 @@ export default function CampaignCreate() {
     maxParticipants: '1000',
   });
 
+  // Template pre-fill from router state
+  useEffect(() => {
+    const template = (location.state as { template?: CampaignTemplate })?.template;
+    if (template) {
+      setForm((f) => ({
+        ...f,
+        name: template.name,
+        description: template.description,
+        type: template.type,
+        metric: template.challenge.metric,
+        operator: template.challenge.operator,
+        target: String(template.challenge.target),
+        budgetCeiling: String(template.suggestedBudget),
+        pointsPerVerification: String(template.suggestedPoints),
+        healthScoreMin: String(template.targeting.healthScoreMin ?? 0),
+        reputationTiers: template.targeting.reputationTiers ?? [],
+        dataSources: template.targeting.dataSources ?? [],
+      }));
+      setStep(1); // Auto-advance past type selection
+      addToast({ message: `Template loaded: ${template.name}`, variant: 'success' });
+    }
+  }, [location.state, addToast]);
+
   const canNext = () => {
     switch (step) {
       case 0: return form.type !== '' && form.name.length > 0;
@@ -44,6 +72,15 @@ export default function CampaignCreate() {
       default: return false;
     }
   };
+
+  const handleLaunch = useCallback(() => {
+    setLaunching(true);
+  }, []);
+
+  const handleLaunchComplete = useCallback(() => {
+    navigate('/campaigns');
+    addToast({ message: 'Campaign launched successfully', variant: 'success' });
+  }, [navigate, addToast]);
 
   return (
     <div className="flex flex-col gap-4 h-full max-w-[800px]">
@@ -362,13 +399,16 @@ export default function CampaignCreate() {
           </button>
         ) : (
           <button
-            onClick={() => navigate('/campaigns')}
+            onClick={handleLaunch}
             className="btn-primary text-xs"
           >
             <Check size={13} /> Launch Campaign
           </button>
         )}
       </div>
+
+      {/* Launch Animation */}
+      {launching && <LaunchSuccess onComplete={handleLaunchComplete} />}
     </div>
   );
 }

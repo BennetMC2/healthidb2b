@@ -15,7 +15,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0">
         <Header onTourStart={onTourStart} />
-        <main className={`flex-1 overflow-auto scrollbar-thin p-4 ${demoActive ? 'pb-[96px]' : ''}`}>
+        <main className={`flex-1 overflow-auto scrollbar-thin p-4 ${demoActive ? 'pb-[148px]' : ''}`}>
           <Outlet />
         </main>
       </div>

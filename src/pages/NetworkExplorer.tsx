@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Globe, Users, Activity, Database } from 'lucide-react';
+import { Globe, Users, Activity, Database, SearchX } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 import { ReputationBadge } from '@/components/ui/Badge';
 import { identities } from '@/data';
-import { formatNumber, formatCompact } from '@/utils/format';
+import { formatNumber, formatCompact, formatRelativeTime } from '@/utils/format';
+import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import {
   DATA_SOURCE_LABELS,
   REPUTATION_TIER_ORDER,
@@ -37,6 +38,7 @@ export default function NetworkExplorer() {
   const [showFilters, setShowFilters] = useState(true);
   const demoActive = useDemoStore((s) => s.isActive);
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
+  const loading = useSimulatedLoading(600);
 
   const filtered = useMemo(() => {
     return identities.filter((id) => {
@@ -92,8 +94,26 @@ export default function NetworkExplorer() {
     { accessorKey: 'reputationTier', header: 'Reputation', cell: ({ getValue }) => <ReputationBadge tier={getValue<ReputationTier>()} /> },
     { accessorKey: 'connectedSources', header: 'Sources', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<DataSource[]>().length}</span> },
     { accessorKey: 'verificationCount', header: 'Verifications', cell: ({ getValue }) => <span className="font-mono text-xs text-secondary">{getValue<number>()}</span> },
+    { accessorKey: 'lastVerified', header: 'Last Verified', cell: ({ getValue }) => {
+      const v = getValue<string | null>();
+      return v ? <span className="text-2xs text-tertiary">{formatRelativeTime(v)}</span> : <span className="text-2xs text-tertiary">—</span>;
+    }},
+    { accessorKey: 'enrolledCampaigns', header: 'Enrolled', cell: ({ getValue }) => <span className="font-mono text-xs text-secondary">{getValue<number>()}</span> },
     { accessorKey: 'demographics', header: 'Age', cell: ({ getValue }) => <span className="text-xs text-tertiary">{getValue<HealthIdentity['demographics']>().ageRange}</span> },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 h-full animate-pulse">
+        <div className="skeleton h-8 w-48" />
+        <div className="skeleton h-4 w-80" />
+        <div className="grid grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
+        </div>
+        <div className="flex-1 skeleton rounded" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -347,7 +367,25 @@ export default function NetworkExplorer() {
 
           {/* Identity Table */}
           <div className="card flex-1 min-h-0 p-0 overflow-hidden">
-            <DataTable data={filtered} columns={columns} pageSize={20} />
+            {filtered.length > 0 ? (
+              <DataTable data={filtered} columns={columns} pageSize={20} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
+                <div className="w-12 h-12 rounded-lg bg-elevated border border-border flex items-center justify-center">
+                  <SearchX size={20} className="text-tertiary" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-secondary">No identities match</p>
+                  <p className="text-xs text-tertiary mt-1">Try adjusting your filter criteria to broaden the search.</p>
+                </div>
+                <button
+                  onClick={() => setFilters(defaultFilters)}
+                  className="btn-primary text-xs mt-1"
+                >
+                  Reset Filters
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

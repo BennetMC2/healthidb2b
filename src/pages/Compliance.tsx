@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ShieldCheck, ShieldOff, FileText, Clock } from 'lucide-react';
+import { ShieldCheck, ShieldOff, FileText, Clock, Download } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -8,6 +8,9 @@ import Tabs from '@/components/ui/Tabs';
 import { complianceRecords, dataProcessingSummaries } from '@/data';
 import { formatCompact, formatTimestamp, formatDuration, formatHash } from '@/utils/format';
 import { DATA_SOURCE_LABELS } from '@/utils/constants';
+import { exportToCSV, exportToJSON } from '@/utils/export';
+import { useToastStore } from '@/stores/useToastStore';
+import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import type { ComplianceRecord, ComplianceEventType } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -72,6 +75,26 @@ const auditColumns: ColumnDef<ComplianceRecord, unknown>[] = [
 
 export default function Compliance() {
   const [tab, setTab] = useState<'audit' | 'processing'>('audit');
+  const addToast = useToastStore((s) => s.addToast);
+  const loading = useSimulatedLoading(500);
+
+  const handleExport = (format: 'csv' | 'json') => {
+    const data = complianceRecords.map((r) => ({
+      timestamp: r.timestamp,
+      eventType: r.eventType,
+      partnerId: r.partnerId,
+      campaignId: r.campaignId ?? '',
+      proofHash: r.proofHash ?? '',
+      piiAccessed: 'false',
+      details: r.details,
+    }));
+    if (format === 'csv') {
+      exportToCSV(data, `audit-log-${new Date().toISOString().split('T')[0]}.csv`);
+    } else {
+      exportToJSON(data, `audit-log-${new Date().toISOString().split('T')[0]}.json`);
+    }
+    addToast({ message: `Audit log exported as ${format.toUpperCase()}`, variant: 'success' });
+  };
 
   const stats = useMemo(() => {
     const totalProofs = complianceRecords.filter((r) =>
@@ -90,6 +113,19 @@ export default function Compliance() {
     { id: 'audit', label: 'Audit Log', count: complianceRecords.length },
     { id: 'processing', label: 'Data Processing', count: dataProcessingSummaries.length },
   ];
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 h-full animate-pulse">
+        <div className="skeleton h-8 w-52" />
+        <div className="grid grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
+        </div>
+        <div className="skeleton h-12 rounded" />
+        <div className="flex-1 skeleton rounded" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -134,8 +170,18 @@ export default function Compliance() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs tabs={tabs} activeTab={tab} onChange={(id) => setTab(id as 'audit' | 'processing')} />
+      {/* Tabs + Export */}
+      <div className="flex items-center justify-between">
+        <Tabs tabs={tabs} activeTab={tab} onChange={(id) => setTab(id as 'audit' | 'processing')} />
+        <div className="flex items-center gap-1">
+          <button onClick={() => handleExport('csv')} className="btn-ghost text-xs">
+            <Download size={12} /> CSV
+          </button>
+          <button onClick={() => handleExport('json')} className="btn-ghost text-xs">
+            <Download size={12} /> JSON
+          </button>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="flex-1 min-h-0">

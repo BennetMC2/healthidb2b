@@ -19,18 +19,51 @@ const rng = seededRandom(SEED);
 
 // ── Helper: build funnel with realistic drop-off ────────────────────
 
+// Funnel profiles vary by campaign type and status to avoid suspicious uniformity
+const FUNNEL_PROFILES = {
+  snapshot: {
+    // Lower friction: higher invite→enroll, moderate verify
+    inviteRate: [0.70, 0.20],   // 70-90%
+    enrollRate: [0.50, 0.25],   // 50-75%
+    verifyRate: [0.35, 0.30],   // 35-65%
+    rewardRate: [0.85, 0.13],   // 85-98%
+  },
+  stream: {
+    // Higher commitment: lower enroll, but higher verify (ongoing engagement)
+    inviteRate: [0.55, 0.25],   // 55-80%
+    enrollRate: [0.25, 0.25],   // 25-50%
+    verifyRate: [0.55, 0.35],   // 55-90%
+    rewardRate: [0.82, 0.16],   // 82-98%
+  },
+} as const;
+
 function buildFunnel(
   rng: () => number,
   eligible: number,
   status: CampaignStatus,
+  type: CampaignType,
 ): CampaignFunnelData {
   if (status === 'draft') {
     return { eligible, invited: 0, enrolled: 0, verified: 0, rewarded: 0 };
   }
-  const invited = Math.round(eligible * (0.6 + rng() * 0.25));       // 60-85%
-  const enrolled = Math.round(invited * (0.35 + rng() * 0.30));      // 35-65%
-  const verified = Math.round(enrolled * (0.40 + rng() * 0.35));     // 40-75%
-  const rewarded = Math.round(verified * (0.80 + rng() * 0.18));     // 80-98%
+
+  const profile = FUNNEL_PROFILES[type];
+  // Per-campaign noise from rng
+  const noise = () => 0.97 + rng() * 0.06; // ±3% jitter
+
+  let invited = Math.round(eligible * (profile.inviteRate[0] + rng() * profile.inviteRate[1]) * noise());
+  let enrolled = Math.round(invited * (profile.enrollRate[0] + rng() * profile.enrollRate[1]) * noise());
+  let verified = Math.round(enrolled * (profile.verifyRate[0] + rng() * profile.verifyRate[1]) * noise());
+  let rewarded = Math.round(verified * (profile.rewardRate[0] + rng() * profile.rewardRate[1]) * noise());
+
+  // Completed campaigns get tighter, more realistic final numbers
+  if (status === 'completed') {
+    invited = Math.round(eligible * (0.78 + rng() * 0.12));
+    enrolled = Math.round(invited * (0.55 + rng() * 0.20));
+    verified = Math.round(enrolled * (0.65 + rng() * 0.20));
+    rewarded = Math.round(verified * (0.92 + rng() * 0.07));
+  }
+
   return { eligible, invited, enrolled, verified, rewarded };
 }
 
@@ -64,7 +97,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 0,
     challenge: { metric: 'body_composition', operator: 'between', target: 18.5, targetMax: 24.9, unit: '%' },
     targeting: { healthScoreMin: 50, ageRanges: ['25-34', '35-44'], regions: ['North America'] },
-    budgetCeiling: 15000,
+    budgetCeiling: 14750,
     pointsPerVerification: 75,
     maxParticipants: 2000,
     eligible: 1200,
@@ -77,7 +110,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 1,
     challenge: { metric: 'heart_rate_resting', operator: 'lte', target: 75, unit: 'bpm' },
     targeting: { healthScoreMin: 40, dataSources: ['apple_health', 'garmin', 'whoop'] },
-    budgetCeiling: 20000,
+    budgetCeiling: 21300,
     pointsPerVerification: 50,
     maxParticipants: 3000,
     eligible: 2100,
@@ -95,7 +128,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 2,
     challenge: { metric: 'steps', operator: 'gte', target: 8000, unit: 'steps' },
     targeting: { healthScoreMin: 45, reputationTiers: ['bronze', 'silver', 'gold', 'platinum', 'diamond'], regions: ['North America'] },
-    budgetCeiling: 25000,
+    budgetCeiling: 24800,
     pointsPerVerification: 100,
     maxParticipants: 5000,
     eligible: 3400,
@@ -108,7 +141,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 1,
     challenge: { metric: 'sleep_quality', operator: 'gte', target: 70, unit: 'score' },
     targeting: { healthScoreMin: 50, dataSources: ['oura', 'whoop', 'apple_health', 'fitbit'], ageRanges: ['25-34', '35-44', '45-54'] },
-    budgetCeiling: 35000,
+    budgetCeiling: 33500,
     pointsPerVerification: 60,
     maxParticipants: 4000,
     eligible: 2800,
@@ -124,7 +157,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 0,
     challenge: { metric: 'active_minutes', operator: 'gte', target: 30, unit: 'min' },
     targeting: { reputationTiers: ['silver', 'gold', 'platinum', 'diamond'], healthScoreMin: 55 },
-    budgetCeiling: 30000,
+    budgetCeiling: 28400,
     pointsPerVerification: 120,
     maxParticipants: 3500,
     eligible: 2600,
@@ -137,7 +170,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 2,
     challenge: { metric: 'hrv', operator: 'gte', target: 40, unit: 'ms' },
     targeting: { dataSources: ['apple_health', 'garmin', 'oura', 'whoop'], regions: ['North America'] },
-    budgetCeiling: 18000,
+    budgetCeiling: 17650,
     pointsPerVerification: 45,
     maxParticipants: 2500,
     eligible: 1900,
@@ -155,7 +188,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 0,
     challenge: { metric: 'blood_glucose', operator: 'lte', target: 100, unit: 'mg/dL' },
     targeting: { dataSources: ['lab_results'], ageRanges: ['35-44', '45-54', '55-64', '65+'], regions: ['North America', 'Europe'] },
-    budgetCeiling: 40000,
+    budgetCeiling: 41200,
     pointsPerVerification: 150,
     maxParticipants: 6000,
     eligible: 4200,
@@ -168,7 +201,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 1,
     challenge: { metric: 'hydration', operator: 'gte', target: 2500, unit: 'ml' },
     targeting: { healthScoreMin: 40, genders: ['male', 'female'], ageRanges: ['18-24', '25-34', '35-44'] },
-    budgetCeiling: 22000,
+    budgetCeiling: 22750,
     pointsPerVerification: 55,
     maxParticipants: 3000,
     eligible: 2200,
@@ -184,7 +217,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 2,
     challenge: { metric: 'steps', operator: 'gte', target: 10000, unit: 'steps' },
     targeting: { regions: ['North America'] },
-    budgetCeiling: 12000,
+    budgetCeiling: 11850,
     pointsPerVerification: 80,
     maxParticipants: 1500,
     eligible: 1100,
@@ -199,7 +232,7 @@ const seeds: CampaignSeed[] = [
     partnerIndex: 0,
     challenge: { metric: 'stress_score', operator: 'lte', target: 60, unit: 'score' },
     targeting: { healthScoreMin: 35, dataSources: ['oura', 'whoop', 'fitbit'], ageRanges: ['25-34', '35-44', '45-54'] },
-    budgetCeiling: 16000,
+    budgetCeiling: 15900,
     pointsPerVerification: 40,
     maxParticipants: 2000,
     eligible: 1500,
@@ -216,7 +249,7 @@ function buildCampaigns(): Campaign[] {
   return seeds.map((s) => {
     const id = generateId(rng, 'cmp');
     const partnerId = partners[s.partnerIndex].id;
-    const funnel = buildFunnel(rng, s.eligible, s.status);
+    const funnel = buildFunnel(rng, s.eligible, s.status, s.type);
 
     // Date logic based on status
     let startDate: string;

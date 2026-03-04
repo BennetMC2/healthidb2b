@@ -33,7 +33,7 @@ const DATA_SOURCE_WEIGHTS = [0.30, 0.18, 0.16, 0.12, 0.09, 0.07, 0.05, 0.03];
 
 /** Gender distribution: male ~48%, female ~48%, other ~4% */
 const GENDERS: ('male' | 'female' | 'other')[] = ['male', 'female', 'other'];
-const GENDER_WEIGHTS = [0.48, 0.48, 0.04];
+const GENDER_WEIGHTS = [0.51, 0.45, 0.04];
 
 /** Age range weights — roughly realistic working-age bell curve */
 const AGE_RANGE_WEIGHTS = [0.12, 0.26, 0.24, 0.20, 0.12, 0.06]; // 18-24 through 65+

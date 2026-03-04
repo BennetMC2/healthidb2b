@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 import { Calculator } from 'lucide-react';
@@ -42,7 +42,7 @@ export default function ROICalculator() {
   // Mini growth chart
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
+  const drawChart = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -110,6 +110,19 @@ export default function ROICalculator() {
     ctx.stroke();
     ctx.setLineDash([]);
   }, [budget, months, yieldRate, results.buyingPowerBonus]);
+
+  useEffect(() => {
+    drawChart();
+  }, [drawChart]);
+
+  // Redraw on resize
+  useEffect(() => {
+    const container = canvasRef.current?.parentElement;
+    if (!container) return;
+    const observer = new ResizeObserver(() => drawChart());
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [drawChart]);
 
   return (
     <div className="card" data-walkthrough="roi-calculator">

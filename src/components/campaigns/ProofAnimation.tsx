@@ -5,6 +5,8 @@ import {
   Cpu,
   Lock,
   CheckCircle,
+  ShieldOff,
+  ShieldCheck,
 } from 'lucide-react';
 import { ProofBadge } from '@/components/ui/Badge';
 import { formatDuration, formatHash } from '@/utils/format';
@@ -73,7 +75,7 @@ export default function ProofAnimation({ receipt, onClose }: ProofAnimationProps
 
       {/* Modal */}
       <div
-        className="relative card w-[680px] border-border bg-surface animate-fade-in"
+        className="relative card w-[720px] border-border bg-surface animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -142,7 +144,7 @@ export default function ProofAnimation({ receipt, onClose }: ProofAnimationProps
         </div>
 
         {/* Status Description */}
-        <div className="card-elevated min-h-[60px] flex flex-col justify-center">
+        <div className="card-elevated min-h-[60px] flex flex-col justify-center mb-4">
           {activeStep >= 0 ? (
             <div className="animate-slide-in">
               <p className="text-xs text-secondary">
@@ -176,6 +178,76 @@ export default function ProofAnimation({ receipt, onClose }: ProofAnimationProps
             </p>
           )}
         </div>
+
+        {/* Data Exposure Comparison — the "aha" moment */}
+        {activeStep >= 3 && (
+          <div className="grid grid-cols-2 gap-3 animate-fade-in">
+            {/* Traditional */}
+            <div className="rounded border border-error/15 bg-error-muted/20 p-3">
+              <div className="flex items-center gap-1.5 mb-2">
+                <ShieldOff size={12} className="text-error/60" />
+                <span className="text-2xs font-medium text-error/70 uppercase tracking-wider">Traditional Approach</span>
+              </div>
+              <div className="space-y-1.5 font-mono text-2xs">
+                <div className="flex justify-between">
+                  <span className="text-error/50">Raw data transmitted:</span>
+                  <span className="text-error/70">YES</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-error/50">PII fields exposed:</span>
+                  <span className="text-error/70">12–18 fields</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-error/50">New liability records:</span>
+                  <span className="text-error/70">+1</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-error/50">Breach surface:</span>
+                  <span className="text-error/70">Expanded</span>
+                </div>
+              </div>
+            </div>
+
+            {/* HealthID */}
+            <div className="rounded border border-accent/15 bg-accent-dim/20 p-3">
+              <div className="flex items-center gap-1.5 mb-2">
+                <ShieldCheck size={12} className="text-accent/60" />
+                <span className="text-2xs font-medium text-accent/70 uppercase tracking-wider">HealthID ZK Proof</span>
+              </div>
+              <div className="space-y-1.5 font-mono text-2xs">
+                <div className="flex justify-between">
+                  <span className="text-accent/50">Raw data transmitted:</span>
+                  <span className="text-accent font-semibold">NONE</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-accent/50">Proof receipt:</span>
+                  <span className="text-accent/70">{formatHash(receipt.proofHash, 6)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-accent/50">Condition met:</span>
+                  <span className="text-success font-semibold">YES</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-accent/50">Breach surface:</span>
+                  <span className="text-accent font-semibold">Zero</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Proof Metadata */}
+        {activeStep >= 3 && (
+          <div className="mt-3 flex items-center gap-4 text-2xs text-tertiary animate-fade-in">
+            <span>Aggregation: <span className="text-secondary capitalize">{receipt.metadata.aggregationType}</span></span>
+            <span className="w-px h-3 bg-border" />
+            <span>Window: <span className="text-secondary">{receipt.metadata.timeWindowHours}h</span></span>
+            <span className="w-px h-3 bg-border" />
+            <span>Data Points: <span className="text-secondary">{receipt.metadata.dataPointCount.toLocaleString()}</span></span>
+            <span className="w-px h-3 bg-border" />
+            <span>Sources: <span className="text-secondary">{receipt.dataSources.map(s => DATA_SOURCE_LABELS[s]).join(', ')}</span></span>
+          </div>
+        )}
       </div>
     </div>
   );

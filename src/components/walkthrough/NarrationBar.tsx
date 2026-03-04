@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import type { WalkthroughStep } from '@/walkthrough/types';
 
@@ -27,8 +28,22 @@ export default function NarrationBar({
     step.actionType === 'click-any-in' ||
     step.actionType === 'interact';
 
+  const prevIndex = useRef(stepIndex);
+  const direction = stepIndex >= prevIndex.current ? 'forward' : 'backward';
+  useEffect(() => { prevIndex.current = stepIndex; }, [stepIndex]);
+
+  const progressPct = ((stepIndex + 1) / totalSteps) * 100;
+
   return (
     <div className="fixed bottom-0 left-0 right-0 h-[140px] z-[9500] bg-surface border-t border-border animate-slide-up-bar">
+      {/* Progress bar */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-border/30">
+        <div
+          className="h-full bg-accent transition-all duration-500 ease-out"
+          style={{ width: `${progressPct}%` }}
+        />
+      </div>
+
       <div className="h-full max-w-[1200px] mx-auto px-6 flex items-center gap-6">
         {/* Back */}
         <button
@@ -59,8 +74,8 @@ export default function NarrationBar({
         </div>
 
         {/* Narration Content */}
-        <div className="flex-1 min-w-0" key={stepIndex}>
-          <div className="animate-fade-in">
+        <div className="flex-1 min-w-0 overflow-hidden" key={stepIndex}>
+          <div className={direction === 'forward' ? 'animate-slide-in-left' : 'animate-slide-in-right'}>
             <div className="text-xl font-bold text-primary truncate">
               {step.title}
             </div>

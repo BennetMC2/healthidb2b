@@ -1,104 +1,135 @@
 import type { WalkthroughStep } from './types';
 
 export const walkthroughSteps: WalkthroughStep[] = [
+  // ── HOOK: Start with the cost ──────────────────────────────────────
   {
     id: 'overview-story',
     route: '/overview',
-    title: 'The Problem We Solve',
+    title: 'The Cost of Custodial Data',
     narration:
-      'Health insurers hold raw medical data, creating massive regulatory liability. HealthID replaces data custody with zero-knowledge verification — partners receive cryptographic proof receipts, never raw data.',
+      'Every health record your organization stores is an open liability — regulatory fines, breach costs, compliance overhead. HealthID eliminates the liability entirely. Watch how.',
     targetSelector: '[data-tour="overview-hero"]',
     actionType: 'auto',
   },
+
+  // ── PAIN: Let the red flow sink in ─────────────────────────────────
+  {
+    id: 'overview-pain',
+    route: '/overview',
+    title: 'This Is How It Works Today',
+    narration:
+      'Raw health data leaves the user\'s device, gets stored in your database, and becomes your liability. Every transfer is a breach surface. Every record is a compliance event. Now look at the alternative below it.',
+    targetSelector: '[data-tour="overview-flows"]',
+    actionType: 'auto',
+    delayMs: 500,
+  },
+
+  // ── SOLUTION: The pool ─────────────────────────────────────────────
   {
     id: 'explore-pool',
     route: '/explorer',
-    title: 'The Open Pool',
+    title: '5,000 Identities — Zero Liability',
     narration:
-      'This is the Open Pool — thousands of anonymized health identities reachable through the protocol. Each identity is a composite of connected wearable and clinical sources. No personal data is ever exposed.',
+      'These are real, verifiable health identities — reachable right now, without ingesting a single byte of their data. In a traditional system, every one of these would be a liability row in your database. Here, they\'re just proof endpoints.',
     targetSelector: '[data-tour="explorer-metrics"]',
     actionType: 'auto',
     delayMs: 400,
   },
+
+  // ── PROVE IT: Targeting works without data access ──────────────────
   {
     id: 'filter-cohort',
     route: '/explorer',
-    title: 'Segment a Cohort',
+    title: 'Target a Cohort in Seconds',
     narration:
-      'Use the filter panel to narrow the pool. Click the "High-Value Cohort" preset to select identities with health scores 75+ and top-tier reputation — the ideal target for a verification campaign.',
+      'You can segment by health score, reputation, data sources, and demographics — all without accessing personal data. Click "High-Value Cohort" to see identities with health scores 75+ and top-tier reputation.',
     targetSelector: '[data-tour="explorer-filters"]',
     actionType: 'click-target',
     actionHint: 'Click "High-Value Cohort" preset',
   },
+
+  // ── ACTIVATE: Campaigns ────────────────────────────────────────────
   {
     id: 'view-campaigns',
     route: '/campaigns',
-    title: 'Campaigns Dashboard',
+    title: 'Turn Cohorts into Campaigns',
     narration:
-      'Campaigns are how you engage the pool. Each campaign defines a health metric challenge, targets a cohort, and collects zero-knowledge proof receipts. Click into any active campaign to explore.',
+      'Each campaign defines a health metric challenge and collects zero-knowledge proof receipts — not data files. Click into any active campaign to see the conversion funnel.',
     targetSelector: null,
     actionType: 'click-any-in',
     actionHint: 'Click any campaign card',
     delayMs: 300,
   },
+
+  // ── FUNNEL: Show conversion ────────────────────────────────────────
   {
     id: 'campaign-detail',
     route: null,
-    title: 'Campaign Funnel',
+    title: 'From Pool to Proof',
     narration:
-      'The funnel shows conversion from eligible pool through to verified and rewarded identities. Each "verified" entry is a ZK proof — the raw health data never left the user\'s device.',
+      'The funnel shows conversion from eligible pool through to verified proofs. Every "verified" entry is a cryptographic receipt — the underlying health data never left the user\'s device. No new liability was created.',
     targetSelector: null,
     actionType: 'auto',
     delayMs: 400,
   },
+
+  // ── MAGIC MOMENT: The proof ────────────────────────────────────────
   {
     id: 'proof-animation',
     route: null,
-    title: 'Watch a Proof in Action',
+    title: 'Watch the Impossible',
     narration:
-      'Click any row in the Verification Feed below to watch the zero-knowledge proof process — from on-device data access through circuit compilation to verified receipt.',
+      'In a traditional system, this verification would require ingesting the patient\'s data, storing it, and running a compliance check — creating a new liability record. Click any verification row and watch what happens instead.',
     targetSelector: '[data-walkthrough="verification-feed"]',
     actionType: 'click-any-in',
     actionHint: 'Click a verification row',
     autoScrollTo: '[data-walkthrough="verification-feed"]',
   },
+
+  // ── ECONOMICS: Treasury ────────────────────────────────────────────
   {
     id: 'treasury-economics',
     route: '/treasury',
-    title: 'Treasury Economics',
+    title: 'Your Budget Works While You Wait',
     narration:
-      'Your budget works while it waits. Idle funds earn yield from T-Bills at 4–5% APY, and enterprise buying power turns every $1.00 of budget into $1.50+ of user value.',
+      'Idle funds earn yield from T-Bills at 4–5% APY. Combined with enterprise buying power, every $1.00 of budget creates $1.50+ of user value. Compare that to traditional claims processing where every dollar is a sunk cost.',
     targetSelector: null,
     actionType: 'auto',
     delayMs: 400,
   },
+
+  // ── ROI: Make it tangible ──────────────────────────────────────────
   {
     id: 'roi-calculator',
     route: '/treasury',
     title: 'Model Your ROI',
     narration:
-      'Drag the budget slider to model returns. The projection includes T-Bill yield, enterprise buying power, and estimated cost per verification. Try adjusting to see how value scales.',
+      'Drag the budget slider to see the projection. At $100K over 12 months, you\'ll generate yield, amplify buying power, and bring cost-per-verification down to a fraction of traditional processing. Try it.',
     targetSelector: '[data-walkthrough="roi-calculator"]',
     actionType: 'interact',
     actionHint: 'Try adjusting the budget slider',
     autoScrollTo: '[data-walkthrough="roi-calculator"]',
   },
+
+  // ── TRUST: Compliance ──────────────────────────────────────────────
   {
     id: 'compliance-audit',
     route: '/compliance',
-    title: 'Compliance & Audit Trail',
+    title: 'Your Audit Trail — Zero PII',
     narration:
-      'Every operation is logged as a cryptographic receipt. Zero PII events — the protocol never touches raw health data. This audit trail is your proof of compliance for regulators.',
+      'Every operation is logged as a cryptographic receipt. Zero PII access events — the protocol never touches raw health data. This is what you show your regulator: a complete audit trail proving you never handled the data at all.',
     targetSelector: null,
     actionType: 'auto',
     delayMs: 400,
   },
+
+  // ── CLOSE: CTA ─────────────────────────────────────────────────────
   {
     id: 'summary',
     route: '/overview',
-    title: 'Ready to Build',
+    title: 'Ready to Run a Pilot?',
     narration:
-      'You\'ve seen the full protocol: pool exploration, cohort filtering, campaign creation, zero-knowledge proof verification, treasury yield, and compliance audit. HealthID replaces data liability with cryptographic certainty.',
+      'You\'ve seen the full loop: pool exploration, cohort targeting, zero-knowledge verification, treasury yield, and compliance proof. Every step replaced data liability with cryptographic certainty. Let\'s talk about a pilot deployment.',
     targetSelector: null,
     actionType: 'auto',
   },

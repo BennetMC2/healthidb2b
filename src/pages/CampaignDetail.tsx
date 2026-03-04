@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield } from 'lucide-react';
+import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import { campaigns, verifications } from '@/data';
 import { StatusBadge, TypeBadge, ProofBadge } from '@/components/ui/Badge';
 import MetricCard from '@/components/ui/MetricCard';
@@ -26,12 +27,28 @@ export default function CampaignDetail() {
   const [selectedReceipt, setSelectedReceipt] = useState<VerificationReceipt | null>(null);
   const demoActive = useDemoStore((s) => s.isActive);
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
+  const loading = useSimulatedLoading(400);
   const campaign = campaigns.find((c) => c.id === id);
 
   if (!campaign) {
     return (
       <div className="flex items-center justify-center h-full text-secondary">
         Campaign not found
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 h-full animate-pulse">
+        <div className="flex items-center gap-3">
+          <div className="skeleton w-8 h-8 rounded" />
+          <div className="skeleton h-6 w-64" />
+        </div>
+        <div className="grid grid-cols-5 gap-3">
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
+        </div>
+        <div className="flex-1 skeleton rounded" />
       </div>
     );
   }

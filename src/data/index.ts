@@ -32,3 +32,5 @@ export {
   complianceRecords,
   dataProcessingSummaries,
 } from './compliance';
+
+export { industryContexts } from './partnerContext';

@@ -11,6 +11,7 @@ import Compliance from '@/pages/Compliance';
 import Settings from '@/pages/Settings';
 import Overview from '@/pages/Overview';
 import DemoWalkthrough from '@/components/walkthrough/DemoWalkthrough';
+import ToastContainer from '@/components/ui/Toast';
 import { useDemoStore } from '@/stores/useDemoStore';
 import { tourSteps } from '@/utils/tourSteps';
 
@@ -31,6 +32,7 @@ export default function App() {
   return (
     <>
       <DemoWalkthrough />
+      <ToastContainer />
       <Joyride
         steps={tourSteps}
         run={runTour && !demoActive}

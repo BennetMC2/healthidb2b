@@ -22,7 +22,7 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const location = useLocation();
 
   return (

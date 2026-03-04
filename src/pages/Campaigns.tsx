@@ -145,7 +145,7 @@ export default function Campaigns() {
           {campaignTemplates.map((template) => (
             <button
               key={template.id}
-              onClick={() => navigate('/campaigns/new')}
+              onClick={() => navigate('/campaigns/new', { state: { template } })}
               className="card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
             >
               <div className="flex items-center gap-2 mb-1">
