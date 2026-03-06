@@ -98,6 +98,7 @@ export default {
         'count-up': 'countUp 300ms ease-out',
         'hash-reveal': 'hashReveal 600ms steps(20) forwards',
         'proof-step': 'proofStep 500ms ease-out forwards',
+        'slide-up': 'slideUp 200ms ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -131,6 +132,10 @@ export default {
         proofStep: {
           '0%': { opacity: '0', transform: 'translateX(-8px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
     },

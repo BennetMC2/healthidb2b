@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import CopilotPanel from '@/components/copilot/CopilotPanel';
 import { useDemoStore } from '@/stores/useDemoStore';
 
 interface LayoutProps {
@@ -19,6 +20,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
           <Outlet />
         </main>
       </div>
+      <CopilotPanel />
     </div>
   );
 }
