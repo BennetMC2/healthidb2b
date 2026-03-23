@@ -14,6 +14,7 @@ import DemoWalkthrough from '@/components/walkthrough/DemoWalkthrough';
 import ToastContainer from '@/components/ui/Toast';
 import { useDemoStore } from '@/stores/useDemoStore';
 import { tourSteps } from '@/utils/tourSteps';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
 export default function App() {
   const [runTour, setRunTour] = useState(false);
@@ -42,15 +43,15 @@ export default function App() {
         callback={handleTourCallback}
         styles={{
           options: {
-            arrowColor: '#161920',
-            backgroundColor: '#161920',
-            overlayColor: 'rgba(0, 0, 0, 0.6)',
-            primaryColor: '#4ca5ff',
-            textColor: '#e2e4e9',
+            arrowColor: '#FFFFFF',
+            backgroundColor: '#FFFFFF',
+            overlayColor: 'rgba(27, 42, 74, 0.4)',
+            primaryColor: '#E07A5F',
+            textColor: '#1B2A4A',
             zIndex: 10000,
           },
           tooltip: {
-            borderRadius: '4px',
+            borderRadius: '12px',
             fontSize: '12px',
             padding: '12px 16px',
           },
@@ -62,41 +63,43 @@ export default function App() {
           tooltipContent: {
             fontSize: '12px',
             lineHeight: '1.4',
-            color: '#8b8fa3',
+            color: '#4A5568',
             padding: '8px 0',
           },
           buttonNext: {
-            backgroundColor: '#4ca5ff',
-            borderRadius: '4px',
+            backgroundColor: '#E07A5F',
+            borderRadius: '8px',
             fontSize: '11px',
             padding: '4px 12px',
           },
           buttonBack: {
-            color: '#8b8fa3',
+            color: '#4A5568',
             fontSize: '11px',
           },
           buttonSkip: {
-            color: '#5c6070',
+            color: '#8896AB',
             fontSize: '11px',
           },
           spotlight: {
-            borderRadius: '4px',
+            borderRadius: '12px',
           },
         }}
       />
-      <Routes>
-        <Route element={<Layout onTourStart={handleTourStart} />}>
-          <Route path="/overview" element={<Overview />} />
-          <Route path="/explorer" element={<NetworkExplorer />} />
-          <Route path="/campaigns" element={<Campaigns />} />
-          <Route path="/campaigns/new" element={<CampaignCreate />} />
-          <Route path="/campaigns/:id" element={<CampaignDetail />} />
-          <Route path="/treasury" element={<Treasury />} />
-          <Route path="/compliance" element={<Compliance />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<Navigate to="/overview" replace />} />
-        </Route>
-      </Routes>
+      <ErrorBoundary fallbackTitle="Page failed to load">
+        <Routes>
+          <Route element={<Layout onTourStart={handleTourStart} />}>
+            <Route path="/overview" element={<Overview />} />
+            <Route path="/explorer" element={<NetworkExplorer />} />
+            <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/campaigns/new" element={<CampaignCreate />} />
+            <Route path="/campaigns/:id" element={<CampaignDetail />} />
+            <Route path="/treasury" element={<Treasury />} />
+            <Route path="/compliance" element={<Compliance />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<Navigate to="/overview" replace />} />
+          </Route>
+        </Routes>
+      </ErrorBoundary>
     </>
   );
 }

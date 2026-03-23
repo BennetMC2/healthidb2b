@@ -1,14 +1,15 @@
-import type { Partner } from '@/types';
+import type { Campaign, Partner } from '@/types';
 import type { DataContext } from './types';
-import { campaigns } from '@/data/campaigns';
 import { identities } from '@/data/identities';
 import { verifications } from '@/data/verifications';
 import { treasuryState } from '@/data/treasury';
 import { complianceRecords } from '@/data/compliance';
+import { useCampaignStore } from '@/stores/useCampaignStore';
 
-export function buildDataContext(partner: Partner): DataContext {
+export function buildDataContext(partner: Partner, currentPage?: string): DataContext {
   // ── Campaigns scoped to partner ──
-  const partnerCampaigns = campaigns.filter((c) => c.partnerId === partner.id);
+  const allCampaigns: Campaign[] = useCampaignStore.getState().campaigns;
+  const partnerCampaigns = allCampaigns.filter((c) => c.partnerId === partner.id);
   const activeCampaigns = partnerCampaigns.filter((c) => c.status === 'active');
   const completedCampaigns = partnerCampaigns.filter((c) => c.status === 'completed');
   const draftCampaigns = partnerCampaigns.filter((c) => c.status === 'draft');
@@ -74,6 +75,7 @@ export function buildDataContext(partner: Partner): DataContext {
   }
 
   return {
+    currentPage,
     partner: {
       name: partner.label,
       tier: partner.tier,

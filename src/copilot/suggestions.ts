@@ -35,6 +35,37 @@ const industrySpecific: Record<PartnerIndustry, Suggestion[]> = {
   ],
 };
 
+const pageSuggestions: Record<string, Suggestion[]> = {
+  '/overview': [
+    { label: 'Platform summary', prompt: 'Give me a high-level summary of the platform' },
+    { label: 'Key metrics', prompt: 'What are the key metrics across the platform?' },
+  ],
+  '/explorer': [
+    { label: 'Identity breakdown', prompt: 'How are identities distributed across trust tiers?' },
+    { label: 'Source penetration', prompt: 'Which data sources have the highest penetration?' },
+  ],
+  '/campaigns': [
+    { label: 'Active campaigns', prompt: 'How are my active campaigns performing?' },
+    { label: 'Campaign ROI', prompt: 'Which campaign has the best verification rate?' },
+  ],
+  '/treasury': [
+    { label: 'Yield update', prompt: 'How much yield has been generated?' },
+    { label: 'Value multiplier', prompt: 'Explain the value multiplier mechanism' },
+  ],
+  '/compliance': [
+    { label: 'Audit summary', prompt: 'Show me my compliance audit summary' },
+    { label: 'Proof failures', prompt: 'Are there any recent proof failures?' },
+  ],
+};
+
+export function getPageSuggestions(route: string, industry: PartnerIndustry): Suggestion[] {
+  // Match page route (strip hash, params)
+  const basePath = '/' + (route.split('/')[1] || 'overview');
+  const pageSpecific = pageSuggestions[basePath] || [];
+  return [...pageSpecific, ...industrySpecific[industry], ...shared].slice(0, 6);
+}
+
+/** @deprecated Use getPageSuggestions instead */
 export function getSuggestions(industry: PartnerIndustry): Suggestion[] {
   return [...industrySpecific[industry], ...shared];
 }

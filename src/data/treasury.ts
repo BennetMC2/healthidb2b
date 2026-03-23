@@ -137,7 +137,7 @@ export const treasuryTransactions: TreasuryTransaction[] = generateTransactions(
 
 // ── Derive treasury state from transaction ledger ───────────────────
 
-function computeTreasuryState(transactions: TreasuryTransaction[]): TreasuryState {
+export function computeTreasuryState(transactions: TreasuryTransaction[]): TreasuryState {
   let totalDeposits = 0;
   let totalYield = 0;
   let totalDistributed = 0;

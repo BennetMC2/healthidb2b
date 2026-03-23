@@ -17,6 +17,7 @@ interface DataTableProps<T> {
   pageSize?: number;
   globalFilter?: string;
   className?: string;
+  onRowClick?: (row: T) => void;
 }
 
 export default function DataTable<T>({
@@ -25,6 +26,7 @@ export default function DataTable<T>({
   pageSize = 25,
   globalFilter,
   className = '',
+  onRowClick,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -72,7 +74,11 @@ export default function DataTable<T>({
           </thead>
           <tbody>
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="table-row">
+              <tr
+                key={row.id}
+                className={`table-row ${onRowClick ? 'cursor-pointer hover:bg-hover/50' : ''}`}
+                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="table-cell">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

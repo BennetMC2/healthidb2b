@@ -20,7 +20,7 @@ import { identities } from './identities';
 
 // ── Configuration ───────────────────────────────────────────────────
 
-const VERIFICATION_COUNT = 500;
+const VERIFICATION_COUNT = 4500;
 const SEED = 7331;
 
 /** Proof type weights: zk_snark most common, bulletproof least */
@@ -50,10 +50,13 @@ function generateVerifications(): VerificationReceipt[] {
   // Only reference campaigns that are not drafts (active, completed, paused have verifications)
   const activeCampaigns = campaigns.filter((c) => c.status !== 'draft');
 
+  // Weight distribution by campaign's verified funnel count
+  const campaignWeights = activeCampaigns.map((c) => Math.max(c.funnel.verified, 1));
+
   const result: VerificationReceipt[] = [];
 
   for (let i = 0; i < VERIFICATION_COUNT; i++) {
-    const campaign = randomItem(rng, activeCampaigns);
+    const campaign = activeCampaigns[weightedIndex(rng, campaignWeights)];
     const identity = randomItem(rng, identities);
 
     const proofType = PROOF_TYPES[weightedIndex(rng, PROOF_TYPE_WEIGHTS)];

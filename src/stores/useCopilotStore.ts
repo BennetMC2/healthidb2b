@@ -47,9 +47,9 @@ export const useCopilotStore = create<CopilotStore>((set, get) => ({
     const userMsg = createMessage('user', content);
     set((s) => ({ messages: [...s.messages, userMsg], isStreaming: true }));
 
-    // Build context from current partner
+    // Build context from current partner + current page
     const partner = usePartnerStore.getState().currentPartner;
-    const context: DataContext = buildDataContext(partner);
+    const context: DataContext = buildDataContext(partner, window.location.pathname);
 
     // Create assistant message placeholder
     const assistantMsg = createMessage('assistant', '');

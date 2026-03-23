@@ -3,8 +3,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Zap, Radio } from 'lucide-react';
 import { HEALTH_METRIC_LABELS, HEALTH_METRIC_UNITS, DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, REPUTATION_TIER_ORDER, AGE_RANGES } from '@/utils/constants';
 import { useToastStore } from '@/stores/useToastStore';
+import { useCampaignStore } from '@/stores/useCampaignStore';
+import { usePartnerStore } from '@/stores/usePartnerStore';
 import LaunchSuccess from '@/components/campaigns/LaunchSuccess';
-import type { CampaignType, CampaignTemplate, HealthMetric, DataSource, ReputationTier } from '@/types';
+import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
+import type { Campaign, CampaignType, CampaignTemplate, HealthMetric, DataSource, ReputationTier, ChallengeOperator } from '@/types';
 
 const steps = [
   { id: 'type', label: 'Type' },
@@ -18,8 +21,11 @@ export default function CampaignCreate() {
   const navigate = useNavigate();
   const location = useLocation();
   const addToast = useToastStore((s) => s.addToast);
+  const addCampaign = useCampaignStore((s) => s.addCampaign);
+  const currentPartner = usePartnerStore((s) => s.currentPartner);
   const [step, setStep] = useState(0);
   const [launching, setLaunching] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -74,8 +80,66 @@ export default function CampaignCreate() {
   };
 
   const handleLaunch = useCallback(() => {
+    // Validate
+    const errs: Record<string, string> = {};
+    if (!form.name.trim()) errs.name = 'Campaign name is required';
+    if (Number(form.budgetCeiling) < 100) errs.budget = 'Budget must be at least $100';
+    if (!form.metric) errs.metric = 'Health metric is required';
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
+    setErrors({});
+
+    // Build campaign object
+    const now = new Date().toISOString();
+    const id = `cmp_${Date.now().toString(16)}`;
+    const maxParticipants = Number(form.maxParticipants) || 1000;
+    const budgetCeiling = Number(form.budgetCeiling) || 25000;
+
+    const newCampaign: Campaign = {
+      id,
+      name: form.name,
+      description: form.description,
+      purpose: '',
+      useCase: 'underwriting',
+      type: form.type as CampaignType,
+      status: 'active',
+      partnerId: currentPartner.id,
+      challenge: {
+        metric: form.metric as HealthMetric,
+        operator: form.operator as ChallengeOperator,
+        target: Number(form.target) || 0,
+        unit: form.metric ? HEALTH_METRIC_UNITS[form.metric as HealthMetric] : '',
+      },
+      targeting: {
+        healthScoreMin: Number(form.healthScoreMin) || 0,
+        healthScoreMax: Number(form.healthScoreMax) || 100,
+        reputationTiers: form.reputationTiers.length > 0 ? form.reputationTiers : undefined,
+        dataSources: form.dataSources.length > 0 ? form.dataSources : undefined,
+        ageRanges: form.ageRanges.length > 0 ? form.ageRanges : undefined,
+      },
+      rewards: {
+        pointsPerVerification: Number(form.pointsPerVerification) || 100,
+        budgetCeiling,
+        budgetSpent: 0,
+        maxParticipants,
+      },
+      funnel: {
+        eligible: maxParticipants,
+        invited: 0,
+        enrolled: 0,
+        verified: 0,
+        rewarded: 0,
+      },
+      startDate: now,
+      endDate: null,
+      createdAt: now,
+    };
+
+    addCampaign(newCampaign);
     setLaunching(true);
-  }, []);
+  }, [form, addCampaign, currentPartner.id]);
 
   const handleLaunchComplete = useCallback(() => {
     navigate('/campaigns');
@@ -151,10 +215,11 @@ export default function CampaignCreate() {
               <label className="metric-label block mb-1.5">Campaign Name</label>
               <input
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="e.g., Physical Screening Verification"
-                className="input-field w-full"
+                onChange={(e) => { setForm({ ...form, name: e.target.value }); setErrors((prev) => { const { name: _, ...rest } = prev; return rest; }); }}
+                placeholder="e.g., Pre-Policy BMI Verification"
+                className={`input-field w-full ${errors.name ? 'border-error' : ''}`}
               />
+              {errors.name && <span className="text-2xs text-error mt-0.5 block">{errors.name}</span>}
             </div>
             <div>
               <label className="metric-label block mb-1.5">Description</label>
@@ -379,6 +444,9 @@ export default function CampaignCreate() {
           </div>
         )}
       </div>
+
+      {/* Actuarial ROI Calculator */}
+      <ActuarialROICalculator audienceSize={Number(form.maxParticipants) || 0} />
 
       {/* Navigation */}
       <div className="flex items-center justify-between">

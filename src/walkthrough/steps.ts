@@ -16,10 +16,10 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'overview-pain',
     route: '/overview',
-    title: 'This Is How It Works Today',
+    title: 'Choose Your Perspective',
     narration:
-      'Raw health data leaves the user\'s device, gets stored in your database, and becomes your liability. Every transfer is a breach surface. Every record is a compliance event. Now look at the alternative below it.',
-    targetSelector: '[data-tour="overview-flows"]',
+      'HealthID solves different problems for different stakeholders. Whether you\'re focused on compliance risk, actuarial savings, or user engagement — click a persona to see the value proposition tailored to your role.',
+    targetSelector: '[data-tour="overview-personas"]',
     actionType: 'auto',
     delayMs: 500,
   },

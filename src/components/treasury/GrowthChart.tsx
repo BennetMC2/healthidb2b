@@ -44,8 +44,8 @@ export default function GrowthChart({ data }: GrowthChartProps) {
 
     // Draw gradient fill
     const gradient = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-    gradient.addColorStop(0, 'rgba(76, 165, 255, 0.15)');
-    gradient.addColorStop(1, 'rgba(76, 165, 255, 0.0)');
+    gradient.addColorStop(0, 'rgba(224, 122, 95, 0.15)');
+    gradient.addColorStop(1, 'rgba(224, 122, 95, 0.0)');
 
     ctx.beginPath();
     ctx.moveTo(xScale(0), h - padding.bottom);
@@ -65,7 +65,7 @@ export default function GrowthChart({ data }: GrowthChartProps) {
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = '#4ca5ff';
+    ctx.strokeStyle = '#E07A5F';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -78,14 +78,14 @@ export default function GrowthChart({ data }: GrowthChartProps) {
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = 'rgba(139, 143, 163, 0.3)';
+    ctx.strokeStyle = 'rgba(74, 85, 104, 0.2)';
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.setLineDash([]);
 
     // X-axis labels (first, middle, last)
     ctx.font = '9px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#5c6070';
+    ctx.fillStyle = '#8896AB';
     ctx.textAlign = 'center';
 
     const labelIndices = [0, Math.floor(data.length / 2), data.length - 1];

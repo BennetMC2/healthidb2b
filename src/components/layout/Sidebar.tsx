@@ -17,7 +17,7 @@ const navItems = [
   { path: '/explorer', label: 'Network Explorer', icon: Globe, tourId: 'explorer-nav' },
   { path: '/campaigns', label: 'Campaigns', icon: Target, tourId: 'campaigns-nav' },
   { path: '/treasury', label: 'Treasury', icon: Vault, tourId: 'treasury-nav' },
-  { path: '/compliance', label: 'Compliance', icon: ShieldCheck, tourId: 'compliance-nav' },
+  { path: '/compliance', label: 'Audit & Risk', icon: ShieldCheck, tourId: 'compliance-nav' },
   { path: '/settings', label: 'Settings', icon: Settings, tourId: undefined },
 ];
 
@@ -87,7 +87,7 @@ export default function Sidebar() {
           <Lock size={12} className="text-accent flex-shrink-0" />
           {expanded && (
             <span className="text-2xs text-accent font-medium">
-              Zero-Knowledge Mode
+              ZK Verification Active
             </span>
           )}
         </div>

@@ -1,5 +1,5 @@
 import type { HealthIdentity, ReputationTier, DataSource } from '@/types';
-import { AGE_RANGES, REGIONS } from '@/utils/constants';
+import { AGE_RANGES, REGIONS, RISK_COHORTS } from '@/utils/constants';
 import {
   seededRandom,
   randomInt,
@@ -14,9 +14,9 @@ import {
 const IDENTITY_COUNT = 5000;
 const SEED = 42;
 
-/** Power-law-ish weights: bronze 40%, silver 30%, gold 18%, platinum 9%, diamond 3% */
-const REPUTATION_TIERS: ReputationTier[] = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
-const REPUTATION_WEIGHTS = [0.40, 0.30, 0.18, 0.09, 0.03];
+/** Trust tier weights: low 40%, medium 40%, high 20% */
+const REPUTATION_TIERS: ReputationTier[] = ['low', 'medium', 'high'];
+const REPUTATION_WEIGHTS = [0.40, 0.40, 0.20];
 
 /** Data sources ordered by popularity (Apple Health most common, lab_results least). */
 const DATA_SOURCES: DataSource[] = [
@@ -38,17 +38,19 @@ const GENDER_WEIGHTS = [0.51, 0.45, 0.04];
 /** Age range weights — roughly realistic working-age bell curve */
 const AGE_RANGE_WEIGHTS = [0.12, 0.26, 0.24, 0.20, 0.12, 0.06]; // 18-24 through 65+
 
-/** Region weights — weighted to North America / Europe */
-const REGION_WEIGHTS = [0.38, 0.28, 0.18, 0.10, 0.06];
+/** Region weights — ~80% APAC / 12% NA / 8% EU */
+// Order: SG, HK, JP, KR, TH, MY, ID, IN, AU, NA, EU
+const REGION_WEIGHTS = [0.16, 0.12, 0.10, 0.08, 0.09, 0.08, 0.07, 0.05, 0.05, 0.12, 0.08];
 
-/** Verification count ranges by reputation tier (bronze -> diamond) */
+/** Verification count ranges by trust tier (low -> high) */
 const VERIFICATION_RANGES: [number, number][] = [
-  [0, 8],     // bronze
-  [3, 20],    // silver
-  [10, 50],   // gold
-  [25, 120],  // platinum
-  [60, 300],  // diamond
+  [0, 12],    // low
+  [5, 60],    // medium
+  [25, 300],  // high
 ];
+
+/** Risk cohort weights (roughly even distribution with slight variation) */
+const RISK_COHORT_WEIGHTS = [0.15, 0.18, 0.12, 0.16, 0.10, 0.10, 0.10, 0.09];
 
 // ── Generator ───────────────────────────────────────────────────────
 
@@ -96,6 +98,9 @@ function generateIdentities(): HealthIdentity[] {
     const [vMin, vMax] = VERIFICATION_RANGES[tierIndex];
     const verificationCount = randomInt(rng, vMin, vMax);
 
+    // Risk cohort
+    const riskCohort = RISK_COHORTS[weightedIndex(rng, RISK_COHORT_WEIGHTS)];
+
     // Enrolled campaigns: 0-5
     const enrolledCampaigns = randomInt(rng, 0, 5);
 
@@ -117,6 +122,7 @@ function generateIdentities(): HealthIdentity[] {
         gender,
         region,
       },
+      riskCohort,
       verificationCount,
       lastVerified,
       enrolledCampaigns,

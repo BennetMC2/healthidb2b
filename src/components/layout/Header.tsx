@@ -30,7 +30,7 @@ export default function Header({ onTourStart }: HeaderProps) {
         {/* Breadcrumb area */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-2xs text-tertiary font-medium uppercase tracking-wider">
-            Infrastructure
+            Universal Infrastructure
           </span>
           <span className="text-tertiary">/</span>
           <span className="text-2xs text-secondary font-medium">

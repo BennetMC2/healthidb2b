@@ -23,6 +23,7 @@ export { campaigns, campaignTemplates } from './campaigns';
 export { verifications } from './verifications';
 
 export {
+  computeTreasuryState,
   treasuryState,
   treasuryTransactions,
   treasurySnapshots,
@@ -34,3 +35,5 @@ export {
 } from './compliance';
 
 export { industryContexts } from './partnerContext';
+
+export { campaignTimeSeries } from './campaignTimeSeries';

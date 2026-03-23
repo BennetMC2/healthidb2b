@@ -42,7 +42,7 @@ export const tourSteps: Step[] = [
   {
     target: '[data-tour="compliance-nav"]',
     content: 'Full audit trail proving zero PII exposure. Every verification is a cryptographic receipt — the dashboard never touches raw health data.',
-    title: 'Compliance & Audit',
+    title: 'Audit & Risk',
     placement: 'right',
   },
   {

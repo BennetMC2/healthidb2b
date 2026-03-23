@@ -2,17 +2,17 @@ import type { Partner } from '@/types';
 import { seededRandom, generateId } from './seed';
 
 // ── Partners ────────────────────────────────────────────────────────
-// Three partners representing the enterprise, professional, and starter tiers.
+// Three APAC life & health insurer personas: enterprise, professional, starter.
 
 const rng = seededRandom(2024);
 
 export const partners: Partner[] = [
   {
     id: generateId(rng, 'prt'),
-    label: 'Meridian Health Insurance',
+    label: 'Pacific Assurance Group',
     tier: 'enterprise',
     industry: 'insurance',
-    apiKeyPrefix: 'mhi_live_',
+    apiKeyPrefix: 'pag_live_',
     settings: {
       notifications: {
         verificationAlerts: true,
@@ -24,17 +24,17 @@ export const partners: Partner[] = [
         proofRetentionDays: 365,
         auditLogRetentionDays: 730,
       },
-      allowedRegions: ['North America', 'Europe', 'Asia Pacific'],
+      allowedRegions: ['Singapore', 'Hong Kong', 'Thailand', 'Malaysia', 'Indonesia'],
       maxConcurrentCampaigns: 25,
     },
     createdAt: '2024-06-15T10:30:00.000Z',
   },
   {
     id: generateId(rng, 'prt'),
-    label: 'NovaGenix Pharmaceuticals',
+    label: 'Harbour Life Insurance',
     tier: 'professional',
-    industry: 'pharma',
-    apiKeyPrefix: 'ngp_live_',
+    industry: 'insurance',
+    apiKeyPrefix: 'hli_live_',
     settings: {
       notifications: {
         verificationAlerts: true,
@@ -46,17 +46,17 @@ export const partners: Partner[] = [
         proofRetentionDays: 180,
         auditLogRetentionDays: 365,
       },
-      allowedRegions: ['North America', 'Europe'],
+      allowedRegions: ['Singapore', 'Malaysia', 'Thailand'],
       maxConcurrentCampaigns: 10,
     },
     createdAt: '2024-09-03T14:15:00.000Z',
   },
   {
     id: generateId(rng, 'prt'),
-    label: 'BrightWell Corporate Wellness',
+    label: 'NovaBridge Digital',
     tier: 'starter',
-    industry: 'employer',
-    apiKeyPrefix: 'bcw_live_',
+    industry: 'insurance',
+    apiKeyPrefix: 'nbd_live_',
     settings: {
       notifications: {
         verificationAlerts: false,
@@ -68,8 +68,8 @@ export const partners: Partner[] = [
         proofRetentionDays: 90,
         auditLogRetentionDays: 180,
       },
-      allowedRegions: ['North America'],
-      maxConcurrentCampaigns: 3,
+      allowedRegions: ['Hong Kong', 'Singapore'],
+      maxConcurrentCampaigns: 5,
     },
     createdAt: '2025-01-20T09:00:00.000Z',
   },

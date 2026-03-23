@@ -1,4 +1,5 @@
-import type { CampaignStatus, CampaignType, ProofType, ReputationTier } from '@/types';
+import type { CampaignStatus, CampaignType, CampaignUseCase, ProofType, ReputationTier } from '@/types';
+import { USE_CASE_LABELS } from '@/utils/constants';
 
 type BadgeVariant = 'default' | 'accent' | 'success' | 'warning' | 'error' | 'muted';
 
@@ -62,24 +63,25 @@ export function ProofBadge({ type }: { type: ProofType }) {
   return <Badge variant="accent">{labels[type]}</Badge>;
 }
 
+export function UseCaseBadge({ useCase }: { useCase: CampaignUseCase }) {
+  return <Badge variant="default">{USE_CASE_LABELS[useCase]}</Badge>;
+}
+
 export function ReputationBadge({ tier }: { tier: ReputationTier }) {
-  const colors: Record<ReputationTier, string> = {
-    diamond: 'bg-reputation-diamond/10 border-reputation-diamond/20 text-reputation-diamond',
-    platinum: 'bg-reputation-platinum/10 border-reputation-platinum/20 text-reputation-platinum',
-    gold: 'bg-reputation-gold/10 border-reputation-gold/20 text-reputation-gold',
-    silver: 'bg-reputation-silver/10 border-reputation-silver/20 text-reputation-silver',
-    bronze: 'bg-reputation-bronze/10 border-reputation-bronze/20 text-reputation-bronze',
+  const styles: Record<ReputationTier, { bg: string; border: string; text: string }> = {
+    high: { bg: 'bg-trust-high/10', border: 'border-trust-high/20', text: 'text-trust-high' },
+    medium: { bg: 'bg-trust-medium/10', border: 'border-trust-medium/20', text: 'text-trust-medium' },
+    low: { bg: 'bg-trust-low/10', border: 'border-trust-low/20', text: 'text-trust-low' },
   };
   const labels: Record<ReputationTier, string> = {
-    diamond: 'Diamond',
-    platinum: 'Platinum',
-    gold: 'Gold',
-    silver: 'Silver',
-    bronze: 'Bronze',
+    high: 'High Trust',
+    medium: 'Medium Trust',
+    low: 'Low Trust',
   };
+  const s = styles[tier];
   return (
     <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs font-medium rounded-sm border ${colors[tier]}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs font-medium rounded border ${s.bg} ${s.border} ${s.text}`}
     >
       {labels[tier]}
     </span>

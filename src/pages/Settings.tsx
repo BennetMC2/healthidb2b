@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Copy, Check, Eye, EyeOff, Save, Loader2, Globe, Webhook, Shield, Download } from 'lucide-react';
+import SettingsOnboarding from '@/components/onboarding/SettingsOnboarding';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useToastStore } from '@/stores/useToastStore';
@@ -11,6 +12,9 @@ export default function Settings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !localStorage.getItem('healthid_settings_onboarded')
+  );
 
   // Controlled form state
   const [label, setLabel] = useState(currentPartner.label);
@@ -63,8 +67,22 @@ export default function Settings() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const { updatePartnerLabel, updatePartnerSettings } = usePartnerStore();
+
   const handleSave = () => {
     setSaving(true);
+    // Persist changes to the store
+    updatePartnerLabel(label);
+    updatePartnerSettings({
+      industry,
+      notifications,
+      maxConcurrentCampaigns: Number(maxCampaigns) || 5,
+      dataRetention: {
+        proofRetentionDays: Number(proofRetention) || 365,
+        auditLogRetentionDays: Number(auditRetention) || 730,
+      },
+      allowedRegions: regions,
+    });
     setTimeout(() => {
       setSaving(false);
       addToast({ message: 'Settings saved successfully', variant: 'success' });
@@ -81,6 +99,7 @@ export default function Settings() {
 
   return (
     <div className="flex flex-col gap-6 max-w-[720px]">
+      {showOnboarding && <SettingsOnboarding onDismiss={() => setShowOnboarding(false)} />}
       <div className="flex items-center justify-between">
         <SectionHeader title="Settings" description="Partner configuration and API access management." />
         {isDirty && (

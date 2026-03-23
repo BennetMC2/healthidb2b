@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useCopilotKeyboard, COPILOT_INPUT_ID } from '@/hooks/useCopilotKeyboard';
-import { getSuggestions } from '@/copilot/suggestions';
+import { getPageSuggestions } from '@/copilot/suggestions';
 import CopilotMessage from './CopilotMessage';
 
 export default function CopilotPanel() {
@@ -10,11 +11,12 @@ export default function CopilotPanel() {
 
   const { messages, isStreaming, sendMessage, clearMessages } = useCopilotStore();
   const partner = usePartnerStore((s) => s.currentPartner);
+  const location = useLocation();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const suggestions = getSuggestions(partner.industry);
+  const suggestions = getPageSuggestions(location.pathname, partner.industry);
 
   // Auto-scroll on new messages
   useEffect(() => {

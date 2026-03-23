@@ -1,6 +1,6 @@
 // ── Reputation & Health ──────────────────────────────────────────────
 
-export type ReputationTier = 'diamond' | 'platinum' | 'gold' | 'silver' | 'bronze';
+export type ReputationTier = 'high' | 'medium' | 'low';
 
 export type DataSource =
   | 'apple_health'
@@ -22,7 +22,15 @@ export type HealthMetric =
   | 'stress_score'
   | 'hydration'
   | 'body_composition'
-  | 'blood_glucose';
+  | 'blood_glucose'
+  | 'bmi'
+  | 'blood_pressure'
+  | 'cholesterol'
+  | 'hba1c'
+  | 'vo2_max'
+  | 'spo2'
+  | 'respiratory_rate'
+  | 'body_temp_deviation';
 
 // ── Health Identity ─────────────────────────────────────────────────
 
@@ -37,6 +45,7 @@ export interface HealthIdentity {
     gender: 'male' | 'female' | 'other';
     region: string;
   };
+  riskCohort: string;
   verificationCount: number;
   lastVerified: string | null;
   enrolledCampaigns: number;
@@ -47,6 +56,7 @@ export interface HealthIdentity {
 
 export type CampaignType = 'snapshot' | 'stream';
 export type CampaignStatus = 'draft' | 'active' | 'completed' | 'paused';
+export type CampaignUseCase = 'underwriting' | 'dynamic_premium' | 'claims_reduction' | 'renewal' | 'acquisition';
 
 export type ChallengeOperator = 'gte' | 'lte' | 'eq' | 'between';
 
@@ -87,10 +97,13 @@ export interface Campaign {
   id: string;
   name: string;
   description: string;
+  purpose: string;
+  useCase: CampaignUseCase;
   type: CampaignType;
   status: CampaignStatus;
   partnerId: string;
   challenge: ChallengeCriteria;
+  additionalChallenges?: ChallengeCriteria[];
   targeting: CohortTargeting;
   rewards: CampaignRewards;
   funnel: CampaignFunnelData;
@@ -255,6 +268,18 @@ export interface PartnerSettings {
   };
   allowedRegions: string[];
   maxConcurrentCampaigns: number;
+}
+
+// ── Campaign Time Series ────────────────────────────────────────────
+
+export interface CampaignDailySnapshot {
+  date: string;
+  campaignId: string;
+  enrolled: number;
+  verified: number;
+  newEnrollments: number;
+  newVerifications: number;
+  budgetSpent: number;
 }
 
 // ── UI State ────────────────────────────────────────────────────────

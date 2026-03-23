@@ -14,6 +14,7 @@ export interface Message {
 // ── Data Context ────────────────────────────────────────────────────
 
 export interface DataContext {
+  currentPage?: string;
   partner: {
     name: string;
     tier: string;

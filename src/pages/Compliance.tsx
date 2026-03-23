@@ -1,10 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import ComplianceOnboarding from '@/components/onboarding/ComplianceOnboarding';
 import { ShieldCheck, ShieldOff, FileText, Clock, Download } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Badge from '@/components/ui/Badge';
 import Tabs from '@/components/ui/Tabs';
+import { usePartnerStore } from '@/stores/usePartnerStore';
 import { complianceRecords, dataProcessingSummaries } from '@/data';
 import { formatCompact, formatTimestamp, formatDuration, formatHash } from '@/utils/format';
 import { DATA_SOURCE_LABELS } from '@/utils/constants';
@@ -75,11 +78,50 @@ const auditColumns: ColumnDef<ComplianceRecord, unknown>[] = [
 
 export default function Compliance() {
   const [tab, setTab] = useState<'audit' | 'processing'>('audit');
+  const [eventFilter, setEventFilter] = useState<ComplianceEventType | 'all'>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const addToast = useToastStore((s) => s.addToast);
+  const currentPartner = usePartnerStore((s) => s.currentPartner);
   const loading = useSimulatedLoading(500);
+  const location = useLocation();
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !localStorage.getItem('healthid_compliance_onboarded')
+  );
+
+  // ── Partner-scoped compliance data ────────────────────────────────
+  const partnerRecords = useMemo(
+    () => complianceRecords.filter((r) => r.partnerId === currentPartner.id),
+    [currentPartner.id],
+  );
+
+  // Scale data processing summaries proportionally by partner's share
+  const partnerProcessingSummaries = useMemo(() => {
+    const ratio = complianceRecords.length > 0
+      ? partnerRecords.length / complianceRecords.length
+      : 0;
+    return dataProcessingSummaries.map((s) => ({
+      ...s,
+      recordsProcessed: Math.round(s.recordsProcessed * ratio),
+      proofsGenerated: Math.round(s.proofsGenerated * ratio),
+      proofsVerified: Math.round(s.proofsVerified * ratio),
+    }));
+  }, [partnerRecords.length]);
+
+  // Scroll to section via hash
+  useEffect(() => {
+    if (loading) return;
+    const hash = location.hash.replace('#', '');
+    if (hash) {
+      const el = document.getElementById(hash);
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+      }
+    }
+  }, [loading, location.hash]);
 
   const handleExport = (format: 'csv' | 'json') => {
-    const data = complianceRecords.map((r) => ({
+    const data = partnerRecords.map((r) => ({
       timestamp: r.timestamp,
       eventType: r.eventType,
       partnerId: r.partnerId,
@@ -97,21 +139,30 @@ export default function Compliance() {
   };
 
   const stats = useMemo(() => {
-    const totalProofs = complianceRecords.filter((r) =>
+    const totalProofs = partnerRecords.filter((r) =>
       ['proof_generated', 'proof_verified'].includes(r.eventType)
     ).length;
-    const totalFailed = complianceRecords.filter((r) => r.eventType === 'proof_failed').length;
+    const totalFailed = partnerRecords.filter((r) => r.eventType === 'proof_failed').length;
     return {
-      totalRecords: complianceRecords.length,
+      totalRecords: partnerRecords.length,
       totalProofs,
       totalFailed,
       piiEvents: 0,
     };
-  }, []);
+  }, [partnerRecords]);
+
+  const filteredRecords = useMemo(() => {
+    return partnerRecords.filter((r) => {
+      if (eventFilter !== 'all' && r.eventType !== eventFilter) return false;
+      if (dateFrom && new Date(r.timestamp) < new Date(dateFrom)) return false;
+      if (dateTo && new Date(r.timestamp) > new Date(dateTo + 'T23:59:59')) return false;
+      return true;
+    });
+  }, [partnerRecords, eventFilter, dateFrom, dateTo]);
 
   const tabs = [
-    { id: 'audit', label: 'Audit Log', count: complianceRecords.length },
-    { id: 'processing', label: 'Data Processing', count: dataProcessingSummaries.length },
+    { id: 'audit', label: 'Audit Log', count: filteredRecords.length },
+    { id: 'processing', label: 'Data Processing', count: partnerProcessingSummaries.length },
   ];
 
   if (loading) {
@@ -129,11 +180,12 @@ export default function Compliance() {
 
   return (
     <div className="flex flex-col gap-4 h-full">
+      {showOnboarding && <ComplianceOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader title="Compliance & Audit" description="Complete audit trail proving zero PII exposure across all protocol operations." icon={<ShieldCheck size={16} />} />
+      <SectionHeader title="Audit & Risk Dashboard" description="Executive risk overview with estimated liability avoidance. Complete audit trail proving zero PII exposure across all protocol operations." icon={<ShieldCheck size={16} />} />
 
       {/* Metrics */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-5 gap-3">
         <MetricCard
           label="Audit Records"
           value={formatCompact(stats.totalRecords)}
@@ -150,6 +202,14 @@ export default function Compliance() {
           subValue="Zero-knowledge architecture"
           icon={<ShieldOff size={14} />}
         />
+        <div id="liability-avoided">
+          <MetricCard
+            label="Estimated Liability Avoided"
+            value={`$${((9.77 * stats.totalProofs) / 1000).toFixed(1)}M`}
+            subValue="Based on $9.77M avg breach cost"
+            icon={<ShieldCheck size={14} />}
+          />
+        </div>
         <MetricCard
           label="Failed Proofs"
           value={formatCompact(stats.totalFailed)}
@@ -158,16 +218,56 @@ export default function Compliance() {
       </div>
 
       {/* Zero PII Banner */}
-      <div className="card-elevated flex items-center gap-3 border-accent/10">
+      <div id="zero-pii" className="card-elevated flex items-center gap-3 border-accent/10">
         <div className="w-8 h-8 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
           <ShieldCheck size={16} className="text-accent" />
         </div>
-        <div>
+        <div className="flex-1">
           <span className="text-sm font-medium text-primary">Zero PII Exposure Verified</span>
           <p className="text-xs text-tertiary">
-            All verifications processed through zero-knowledge proofs. No personally identifiable information has been accessed, stored, or transmitted.
+            All verifications processed through zero-knowledge proofs. No personally identifiable information has been accessed, stored, or transmitted. 296-day average breach containment window completely bypassed.
           </p>
         </div>
+        <div className="flex-shrink-0 text-right">
+          <div className="font-mono text-2xl font-bold text-accent">0</div>
+          <div className="text-2xs text-tertiary">PII Access Events</div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-2">
+        <select
+          value={eventFilter}
+          onChange={(e) => setEventFilter(e.target.value as ComplianceEventType | 'all')}
+          className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
+        >
+          <option value="all">All Events</option>
+          {Object.entries(eventTypeLabels).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
+          placeholder="From"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
+          placeholder="To"
+        />
+        {(eventFilter !== 'all' || dateFrom || dateTo) && (
+          <button
+            onClick={() => { setEventFilter('all'); setDateFrom(''); setDateTo(''); }}
+            className="btn-ghost text-2xs text-tertiary"
+          >
+            Clear
+          </button>
+        )}
       </div>
 
       {/* Tabs + Export */}
@@ -187,13 +287,13 @@ export default function Compliance() {
       <div className="flex-1 min-h-0">
         {tab === 'audit' && (
           <div className="card p-0 h-full overflow-hidden">
-            <DataTable data={complianceRecords} columns={auditColumns} pageSize={20} />
+            <DataTable data={filteredRecords} columns={auditColumns} pageSize={20} />
           </div>
         )}
 
         {tab === 'processing' && (
           <div className="space-y-3 overflow-auto scrollbar-thin h-full">
-            {dataProcessingSummaries.map((summary) => (
+            {partnerProcessingSummaries.map((summary) => (
               <div key={summary.period} className="card">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium text-primary">{summary.period}</span>

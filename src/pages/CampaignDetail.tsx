@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Shield } from 'lucide-react';
+import { ArrowLeft, Shield, Pause, Play } from 'lucide-react';
 import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
-import { campaigns, verifications } from '@/data';
-import { StatusBadge, TypeBadge, ProofBadge } from '@/components/ui/Badge';
+import { verifications } from '@/data';
+import { useCampaignStore } from '@/stores/useCampaignStore';
+import { useToastStore } from '@/stores/useToastStore';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { StatusBadge, TypeBadge, ProofBadge, UseCaseBadge } from '@/components/ui/Badge';
 import MetricCard from '@/components/ui/MetricCard';
 import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 import ProofAnimation from '@/components/campaigns/ProofAnimation';
+import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesChart';
+import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
 import { formatNumber, formatCurrency, formatPercent, formatDate, formatHash, formatTimestamp, formatDuration } from '@/utils/format';
-import { HEALTH_METRIC_LABELS } from '@/utils/constants';
+import { HEALTH_METRIC_LABELS, USE_CASE_LABELS, DATA_SOURCE_LABELS } from '@/utils/constants';
 import { useDemoStore } from '@/stores/useDemoStore';
-import type { VerificationReceipt, VerificationStatus } from '@/types';
+import type { VerificationReceipt, VerificationStatus, StreamCampaign } from '@/types';
 
 const funnelTooltips: Record<string, string> = {
   Eligible: 'Identities matching targeting criteria in the Open Pool.',
@@ -25,10 +30,13 @@ export default function CampaignDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedReceipt, setSelectedReceipt] = useState<VerificationReceipt | null>(null);
+  const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const demoActive = useDemoStore((s) => s.isActive);
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
+  const addToast = useToastStore((s) => s.addToast);
+  const updateStatus = useCampaignStore((s) => s.updateStatus);
   const loading = useSimulatedLoading(400);
-  const campaign = campaigns.find((c) => c.id === id);
+  const campaign = useCampaignStore((s) => s.campaigns.find((c) => c.id === id));
 
   if (!campaign) {
     return (
@@ -95,6 +103,87 @@ export default function CampaignDetail() {
             {campaign.endDate && ` — ${formatDate(campaign.endDate)}`}
           </p>
         </div>
+        {/* Operational Controls */}
+        {(campaign.status === 'active' || campaign.status === 'paused') && (
+          <button
+            onClick={() => setShowPauseConfirm(true)}
+            className={`btn-ghost text-xs flex items-center gap-1 ${campaign.status === 'active' ? 'text-warning' : 'text-success'}`}
+          >
+            {campaign.status === 'active' ? <><Pause size={12} /> Pause</> : <><Play size={12} /> Resume</>}
+          </button>
+        )}
+      </div>
+
+      {/* Pause/Resume Confirm Dialog */}
+      {showPauseConfirm && (
+        <ConfirmDialog
+          title={campaign.status === 'active' ? 'Pause Campaign' : 'Resume Campaign'}
+          description={campaign.status === 'active'
+            ? `Are you sure you want to pause "${campaign.name}"? No new verifications will be processed.`
+            : `Resume "${campaign.name}"? Verification processing will restart.`
+          }
+          confirmLabel={campaign.status === 'active' ? 'Pause' : 'Resume'}
+          onConfirm={() => {
+            const newStatus = campaign.status === 'active' ? 'paused' as const : 'active' as const;
+            updateStatus(campaign.id, newStatus);
+            addToast({ message: `Campaign ${newStatus === 'paused' ? 'paused' : 'resumed'}`, variant: 'success' });
+            setShowPauseConfirm(false);
+          }}
+          onCancel={() => setShowPauseConfirm(false)}
+        />
+      )}
+
+      {/* Purpose & Characteristics */}
+      <div className="card">
+        <div className="flex items-center gap-2 mb-2">
+          <UseCaseBadge useCase={campaign.useCase} />
+          <span className="text-xs text-secondary">{USE_CASE_LABELS[campaign.useCase]}</span>
+        </div>
+        <p className="text-xs text-secondary leading-relaxed mb-3">
+          {campaign.purpose}
+        </p>
+        <div className="grid grid-cols-3 gap-3 text-2xs">
+          <div>
+            <span className="text-tertiary block mb-0.5">Challenge</span>
+            <span className="text-secondary font-medium">
+              {HEALTH_METRIC_LABELS[campaign.challenge.metric]}{' '}
+              {campaign.challenge.operator === 'between'
+                ? `${campaign.challenge.target}–${campaign.challenge.targetMax ?? ''} ${campaign.challenge.unit}`
+                : `${campaign.challenge.operator === 'gte' ? '≥' : campaign.challenge.operator === 'lte' ? '≤' : '='} ${campaign.challenge.target} ${campaign.challenge.unit}`}
+            </span>
+            {campaign.additionalChallenges?.map((ac, i) => (
+              <span key={i} className="text-secondary font-medium block mt-0.5">
+                + {HEALTH_METRIC_LABELS[ac.metric]}{' '}
+                {ac.operator === 'between'
+                  ? `${ac.target}–${ac.targetMax ?? ''} ${ac.unit}`
+                  : `${ac.operator === 'gte' ? '≥' : ac.operator === 'lte' ? '≤' : '='} ${ac.target} ${ac.unit}`}
+              </span>
+            ))}
+          </div>
+          <div>
+            <span className="text-tertiary block mb-0.5">Duration</span>
+            <span className="text-secondary font-medium">
+              {campaign.type === 'stream'
+                ? `${(campaign as StreamCampaign).streamDuration} days · ${(campaign as StreamCampaign).frequency}`
+                : campaign.endDate
+                  ? `${formatDate(campaign.startDate)} — ${formatDate(campaign.endDate)}`
+                  : `From ${formatDate(campaign.startDate)}`}
+            </span>
+          </div>
+          <div>
+            <span className="text-tertiary block mb-0.5">Targeting</span>
+            <span className="text-secondary font-medium">
+              {[
+                campaign.targeting.regions?.length ? `${campaign.targeting.regions.length} region${campaign.targeting.regions.length > 1 ? 's' : ''}` : null,
+                campaign.targeting.ageRanges?.length ? campaign.targeting.ageRanges.join(', ') : null,
+                campaign.targeting.dataSources?.length
+                  ? campaign.targeting.dataSources.slice(0, 2).map((s) => DATA_SOURCE_LABELS[s]).join(', ') + (campaign.targeting.dataSources.length > 2 ? ` +${campaign.targeting.dataSources.length - 2}` : '')
+                  : null,
+                campaign.targeting.reputationTiers?.length ? campaign.targeting.reputationTiers.join('/') + ' trust' : null,
+              ].filter(Boolean).join(' · ') || 'Open pool'}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -116,6 +205,9 @@ export default function CampaignDetail() {
           subValue={`${campaign.challenge.operator} ${campaign.challenge.target}${campaign.challenge.unit ? ' ' + campaign.challenge.unit : ''}`}
         />
       </div>
+
+      {/* Time-Series Chart */}
+      <CampaignTimeSeriesChart campaignId={campaign.id} />
 
       <div className="flex gap-4 flex-1 min-h-0">
         {/* Funnel */}
@@ -201,6 +293,9 @@ export default function CampaignDetail() {
             )}
           </div>
         </div>
+
+        {/* B2C Preview */}
+        <B2CPreviewPane />
       </div>
 
       {/* Proof Animation Modal */}

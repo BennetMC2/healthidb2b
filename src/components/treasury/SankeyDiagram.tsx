@@ -36,7 +36,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
 
     const nodes: SankeyNode[] = [
       { name: 'Budget' },
-      { name: 'T-Bill Yield' },
+      { name: 'Secure Vault (T-Bills)' },
       { name: 'Buying Power' },
       { name: 'User Value' },
     ];
@@ -70,7 +70,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .join('path')
       .attr('d', sankeyLinkHorizontal())
       .attr('fill', 'none')
-      .attr('stroke', '#4ca5ff')
+      .attr('stroke', '#E07A5F')
       .attr('stroke-opacity', 0.15)
       .attr('stroke-width', (d) => Math.max(1, (d as { width?: number }).width || 1));
 
@@ -84,7 +84,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .attr('y', (d) => (d as { y0?: number }).y0 || 0)
       .attr('width', (d) => ((d as { x1?: number }).x1 || 0) - ((d as { x0?: number }).x0 || 0))
       .attr('height', (d) => Math.max(1, ((d as { y1?: number }).y1 || 0) - ((d as { y0?: number }).y0 || 0)))
-      .attr('fill', '#4ca5ff')
+      .attr('fill', '#E07A5F')
       .attr('fill-opacity', 0.3)
       .attr('rx', 2);
 
@@ -102,7 +102,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .attr('y', (d) => (((d as { y0?: number }).y0 || 0) + ((d as { y1?: number }).y1 || 0)) / 2)
       .attr('text-anchor', (d) => ((d as { x0?: number }).x0 || 0) < width / 2 ? 'end' : 'start')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#8b8fa3')
+      .attr('fill', '#4A5568')
       .attr('font-size', '10px')
       .attr('font-family', 'Inter, system-ui, sans-serif')
       .text((d) => d.name || '');
@@ -121,7 +121,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .attr('y', (d) => (((d as { y0?: number }).y0 || 0) + ((d as { y1?: number }).y1 || 0)) / 2 + 12)
       .attr('text-anchor', (d) => ((d as { x0?: number }).x0 || 0) < width / 2 ? 'end' : 'start')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#5c6070')
+      .attr('fill', '#8896AB')
       .attr('font-size', '9px')
       .attr('font-family', 'JetBrains Mono, monospace')
       .text((_d, i) => {

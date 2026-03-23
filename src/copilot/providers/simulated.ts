@@ -27,7 +27,7 @@ const INTENT_PATTERNS: [RegExp, Intent][] = [
 
   // Identities
   [/(identit|network|user|participant).*(overview|summary|how many|total|count)/i, 'identities_overview'],
-  [/(tier|reputation|diamond|platinum|gold|silver|bronze)/i, 'identities_tiers'],
+  [/(tier|reputation|trust|high trust|medium trust|low trust)/i, 'identities_tiers'],
   [/(demograph|age|gender|region)/i, 'identities_demographics'],
 
   // Verifications
@@ -56,10 +56,33 @@ const INTENT_PATTERNS: [RegExp, Intent][] = [
   [/(help|what can you|how do i|capabilities)/i, 'help'],
 ];
 
-function classifyIntent(text: string): Intent {
+// Page route → intent boosting: prefer intents relevant to current page
+const PAGE_INTENT_BOOST: Record<string, Intent[]> = {
+  '/overview': ['campaigns_overview', 'treasury_balance', 'compliance_overview'],
+  '/explorer': ['identities_overview', 'identities_tiers', 'identities_demographics'],
+  '/campaigns': ['campaigns_overview', 'campaigns_performance'],
+  '/treasury': ['treasury_balance', 'treasury_yield'],
+  '/compliance': ['compliance_overview', 'compliance_failures'],
+};
+
+function classifyIntent(text: string, currentPage?: string): Intent {
+  // Check exact pattern matches first
   for (const [pattern, intent] of INTENT_PATTERNS) {
     if (pattern.test(text)) return intent;
   }
+
+  // If no match, try page-aware boosting for short/ambiguous queries
+  if (currentPage) {
+    const basePath = '/' + (currentPage.split('/')[1] || 'overview');
+    const boosted = PAGE_INTENT_BOOST[basePath];
+    if (boosted && boosted.length > 0) {
+      // For short messages that didn't match patterns, return the primary page intent
+      if (text.split(/\s+/).length <= 5) {
+        return boosted[0];
+      }
+    }
+  }
+
   return 'unknown';
 }
 
@@ -133,12 +156,12 @@ const RESPONSE_BUILDERS: Record<Intent, ResponseBuilder> = {
   identities_tiers: (ctx) => {
     const i = ctx.identities;
     return [
-      `**Reputation Tier Breakdown**\n`,
+      `**Trust Tier Breakdown**\n`,
       ...Object.entries(i.byTier)
         .sort(([, a], [, b]) => b - a)
-        .map(([tier, count]) => `- **${tier.charAt(0).toUpperCase() + tier.slice(1)}**: ${fmt(count)} identities (${Math.round((count / i.total) * 100)}%)`),
+        .map(([tier, count]) => `- **${tier.charAt(0).toUpperCase() + tier.slice(1)} Trust**: ${fmt(count)} identities (${Math.round((count / i.total) * 100)}%)`),
       '',
-      `The network follows a power-law distribution — most identities are Bronze/Silver, with Diamond representing the most engaged and verified participants.`,
+      `The network uses a 3-tier trust model: High Trust (clinical proofs), Medium Trust (verified hardware data), and Low Trust (self-reported logs).`,
     ].join('\n');
   },
 
@@ -291,14 +314,13 @@ const RESPONSE_BUILDERS: Record<Intent, ResponseBuilder> = {
 
   unknown: (ctx) => {
     return [
-      `I'm not sure I understand that question. I can help you explore data for **${ctx.partner.name}** across these domains:\n`,
-      `- **Campaigns** — "Give me a campaign overview"`,
-      `- **Verifications** — "What's my success rate?"`,
-      `- **Treasury** — "What's my treasury balance?"`,
-      `- **Compliance** — "Show my compliance status"`,
-      `- **Identities** — "How many identities are in the network?"`,
+      `I'm not sure I understand that question, but here's a quick snapshot for **${ctx.partner.name}**:\n`,
+      `- **${ctx.campaigns.active}** active campaigns with **${ctx.verifications.successRate}%** verification success`,
+      `- **${fmt(ctx.identities.total)}** identities in the open pool`,
+      `- Treasury balance: **${usd(ctx.treasury.availableBalance)}** at **${(ctx.treasury.yieldRate * 100).toFixed(1)}%** APY`,
+      `- **${ctx.compliance.piiAccessEvents}** PII access events (zero by design)`,
       '',
-      `Could you rephrase your question?`,
+      `Try asking about **campaigns**, **verifications**, **treasury**, **compliance**, or **identities** for more detail.`,
     ].join('\n');
   },
 };
@@ -315,14 +337,28 @@ function delay(ms: number): Promise<void> {
 // ── Provider implementation ─────────────────────────────────────────
 
 export class SimulatedProvider implements CopilotProvider {
+  private lastIntent: Intent | null = null;
+
   async *generateResponse(
     messages: Message[],
     context: DataContext,
   ): AsyncGenerator<string, void, undefined> {
-    const lastMessage = messages[messages.length - 1];
-    if (!lastMessage || lastMessage.role !== 'user') return;
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+    if (!lastUserMessage) return;
 
-    const intent = classifyIntent(lastMessage.content);
+    let intent = classifyIntent(lastUserMessage.content, context.currentPage);
+
+    // Follow-up detection: if the user sends a short message after an assistant response,
+    // and intent is unknown, reuse the previous intent for contextual continuation
+    if (intent === 'unknown' && this.lastIntent && this.lastIntent !== 'unknown') {
+      const wordCount = lastUserMessage.content.trim().split(/\s+/).length;
+      const hasAssistantBefore = messages.length >= 2 && messages[messages.length - 2]?.role === 'assistant';
+      if (wordCount <= 6 && hasAssistantBefore) {
+        intent = this.lastIntent;
+      }
+    }
+
+    this.lastIntent = intent;
     const fullText = RESPONSE_BUILDERS[intent](context);
 
     // Yield characters with typewriter effect

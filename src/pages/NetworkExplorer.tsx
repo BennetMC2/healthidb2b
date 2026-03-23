@@ -1,5 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Globe, Users, Activity, Database, SearchX } from 'lucide-react';
+import ExplorerOnboarding from '@/components/onboarding/ExplorerOnboarding';
+import { Globe, Users, Activity, Database, SearchX, Download } from 'lucide-react';
+import IdentityDetailDrawer from '@/components/explorer/IdentityDetailDrawer';
+import { exportToCSV } from '@/utils/export';
+import { useToastStore } from '@/stores/useToastStore';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -13,6 +17,7 @@ import {
   REPUTATION_TIER_ORDER,
   REPUTATION_TIER_LABELS,
   REPUTATION_TIER_COLORS,
+  TRUST_TIER_DESCRIPTIONS,
   AGE_RANGES,
 } from '@/utils/constants';
 import { useDemoStore } from '@/stores/useDemoStore';
@@ -28,7 +33,7 @@ const defaultFilters: FilterState = {
 };
 
 const presets = [
-  { label: 'High-Value Cohort', filters: { healthScoreRange: [75, 100] as [number, number], reputationTiers: ['diamond', 'platinum', 'gold'] as ReputationTier[], dataSources: [], ageRanges: [], genders: [] } },
+  { label: 'High-Value Cohort', filters: { healthScoreRange: [75, 100] as [number, number], reputationTiers: ['high'] as ReputationTier[], dataSources: [], ageRanges: [], genders: [] } },
   { label: 'Wearable-Verified', filters: { healthScoreRange: [0, 100] as [number, number], reputationTiers: [], dataSources: ['apple_health', 'fitbit', 'garmin', 'oura', 'whoop'] as DataSource[], ageRanges: [], genders: [] } },
   { label: 'Lab-Confirmed', filters: { healthScoreRange: [0, 100] as [number, number], reputationTiers: [], dataSources: ['lab_results'] as DataSource[], ageRanges: [], genders: [] } },
 ];
@@ -36,9 +41,14 @@ const presets = [
 export default function NetworkExplorer() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [showFilters, setShowFilters] = useState(true);
+  const [selectedIdentity, setSelectedIdentity] = useState<HealthIdentity | null>(null);
   const demoActive = useDemoStore((s) => s.isActive);
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
+  const addToast = useToastStore((s) => s.addToast);
   const loading = useSimulatedLoading(600);
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !localStorage.getItem('healthid_explorer_onboarded')
+  );
 
   const filtered = useMemo(() => {
     return identities.filter((id) => {
@@ -91,7 +101,8 @@ export default function NetworkExplorer() {
       const color = v >= 80 ? 'text-health-excellent' : v >= 60 ? 'text-health-good' : v >= 40 ? 'text-health-moderate' : 'text-health-poor';
       return <span className={`font-mono text-sm ${color}`}>{v}</span>;
     }},
-    { accessorKey: 'reputationTier', header: 'Reputation', cell: ({ getValue }) => <ReputationBadge tier={getValue<ReputationTier>()} /> },
+    { accessorKey: 'reputationTier', header: 'Trust Tier', cell: ({ getValue }) => <ReputationBadge tier={getValue<ReputationTier>()} /> },
+    { accessorKey: 'riskCohort', header: 'Risk Cohort', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<string>()}</span> },
     { accessorKey: 'connectedSources', header: 'Sources', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<DataSource[]>().length}</span> },
     { accessorKey: 'verificationCount', header: 'Verifications', cell: ({ getValue }) => <span className="font-mono text-xs text-secondary">{getValue<number>()}</span> },
     { accessorKey: 'lastVerified', header: 'Last Verified', cell: ({ getValue }) => {
@@ -117,6 +128,7 @@ export default function NetworkExplorer() {
 
   return (
     <div className="flex flex-col gap-4 h-full">
+      {showOnboarding && <ExplorerOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
       <SectionHeader title="Open Pool" description="Anonymized health identities reachable through the protocol. No personal data is stored or transmitted." icon={<Globe size={16} />} />
 
@@ -204,12 +216,12 @@ export default function NetworkExplorer() {
               </div>
             </div>
 
-            {/* Reputation Tiers */}
+            {/* Trust Tiers */}
             <div>
-              <label className="metric-label block mb-1.5">Reputation Tier</label>
-              <div className="space-y-1">
+              <label className="metric-label block mb-1.5">Trust Tier</label>
+              <div className="space-y-2">
                 {REPUTATION_TIER_ORDER.map((tier) => (
-                  <label key={tier} className="flex items-center gap-2 cursor-pointer">
+                  <label key={tier} className="flex items-start gap-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={filters.reputationTiers.includes(tier)}
@@ -219,9 +231,12 @@ export default function NetworkExplorer() {
                           : filters.reputationTiers.filter((t) => t !== tier);
                         setFilters({ ...filters, reputationTiers: next });
                       }}
-                      className="accent-accent"
+                      className="accent-accent mt-0.5"
                     />
-                    <span className="text-xs text-secondary">{REPUTATION_TIER_LABELS[tier]}</span>
+                    <div>
+                      <span className="text-xs text-secondary block">{REPUTATION_TIER_LABELS[tier]}</span>
+                      <span className="text-2xs text-tertiary">{TRUST_TIER_DESCRIPTIONS[tier]}</span>
+                    </div>
                   </label>
                 ))}
               </div>
@@ -320,7 +335,7 @@ export default function NetworkExplorer() {
 
             {/* Reputation Breakdown */}
             <div className="card col-span-1">
-              <div className="flex items-center gap-1.5 mb-2"><span className="metric-label">Reputation Tiers</span><InfoTooltip content="Data trustworthiness rating based on source quality and verification history. Diamond = highest biological proof density." /></div>
+              <div className="flex items-center gap-1.5 mb-2"><span className="metric-label">Trust Tier Distribution</span><InfoTooltip content="Data trustworthiness rating based on source quality and verification history. High = clinical proofs, Medium = verified hardware, Low = self-reported." /></div>
               <div className="space-y-1.5">
                 {tierDistribution.map((t) => (
                   <div key={t.tier} className="flex items-center gap-2">
@@ -365,10 +380,42 @@ export default function NetworkExplorer() {
             </div>
           </div>
 
+          {/* Actions Bar */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const exportData = filtered.map((id) => ({
+                  anonymizedId: id.anonymizedId,
+                  healthScore: id.healthScore,
+                  reputationTier: id.reputationTier,
+                  riskCohort: id.riskCohort,
+                  connectedSources: id.connectedSources.join('; '),
+                  verificationCount: id.verificationCount,
+                  enrolledCampaigns: id.enrolledCampaigns,
+                  lastVerified: id.lastVerified || '',
+                  ageRange: id.demographics.ageRange,
+                  gender: id.demographics.gender,
+                  region: id.demographics.region,
+                }));
+                exportToCSV(exportData, `healthid-cohort-${filtered.length}.csv`);
+                addToast({ message: `Exported ${filtered.length} identities`, variant: 'success' });
+              }}
+              disabled={filtered.length === 0}
+              className="btn-ghost text-xs flex items-center gap-1 disabled:opacity-40"
+            >
+              <Download size={12} /> Export Cohort
+            </button>
+          </div>
+
           {/* Identity Table */}
           <div className="card flex-1 min-h-0 p-0 overflow-hidden">
             {filtered.length > 0 ? (
-              <DataTable data={filtered} columns={columns} pageSize={20} />
+              <DataTable
+                data={filtered}
+                columns={columns}
+                pageSize={20}
+                onRowClick={setSelectedIdentity}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
                 <div className="w-12 h-12 rounded-lg bg-elevated border border-border flex items-center justify-center">
@@ -389,6 +436,12 @@ export default function NetworkExplorer() {
           </div>
         </div>
       </div>
+
+      {/* Identity Detail Drawer */}
+      <IdentityDetailDrawer
+        identity={selectedIdentity}
+        onClose={() => setSelectedIdentity(null)}
+      />
     </div>
   );
 }

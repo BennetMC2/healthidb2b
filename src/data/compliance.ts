@@ -20,7 +20,7 @@ import { campaigns } from './campaigns';
 
 // ── Configuration ───────────────────────────────────────────────────
 
-const COMPLIANCE_COUNT = 200;
+const COMPLIANCE_COUNT = 1800;
 const SEED = 5555;
 
 const EVENT_TYPES: ComplianceEventType[] = [
@@ -151,7 +151,7 @@ function generateDataProcessingSummaries(): DataProcessingSummary[] {
 
     // Volumes grow over time (earlier months are smaller)
     const scale = 1 + (5 - m) * 0.15;
-    const recordsProcessed = Math.round(randomInt(rng, 8000, 15000) * scale);
+    const recordsProcessed = Math.round(randomInt(rng, 40000, 75000) * scale);
     const proofsGenerated = Math.round(recordsProcessed * (0.6 + rng() * 0.2));
     const proofsVerified = Math.round(proofsGenerated * (0.82 + rng() * 0.10));
     const proofsFailed = Math.round(proofsGenerated * (0.04 + rng() * 0.06));

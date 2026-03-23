@@ -79,8 +79,8 @@ export default function ROICalculator() {
 
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-    gradient.addColorStop(0, 'rgba(76, 165, 255, 0.12)');
-    gradient.addColorStop(1, 'rgba(76, 165, 255, 0.0)');
+    gradient.addColorStop(0, 'rgba(224, 122, 95, 0.12)');
+    gradient.addColorStop(1, 'rgba(224, 122, 95, 0.0)');
 
     ctx.beginPath();
     ctx.moveTo(xScale(0), h - pad.bottom);
@@ -96,7 +96,7 @@ export default function ROICalculator() {
       if (i === 0) ctx.moveTo(xScale(i), yScale(v));
       else ctx.lineTo(xScale(i), yScale(v));
     });
-    ctx.strokeStyle = '#4ca5ff';
+    ctx.strokeStyle = '#E07A5F';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -105,7 +105,7 @@ export default function ROICalculator() {
     ctx.setLineDash([2, 2]);
     ctx.moveTo(pad.left, yScale(budget));
     ctx.lineTo(w - pad.right, yScale(budget));
-    ctx.strokeStyle = 'rgba(139, 143, 163, 0.2)';
+    ctx.strokeStyle = 'rgba(74, 85, 104, 0.2)';
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.setLineDash([]);

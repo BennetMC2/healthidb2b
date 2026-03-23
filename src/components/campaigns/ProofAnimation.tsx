@@ -19,9 +19,9 @@ interface ProofAnimationProps {
 }
 
 const steps = [
-  { icon: Smartphone, label: 'Data Accessed', color: 'text-accent' },
-  { icon: Cpu, label: 'Circuit Compiled', color: 'text-accent' },
-  { icon: Lock, label: 'Proof Generated', color: 'text-accent' },
+  { icon: Smartphone, label: 'Challenge', color: 'text-accent' },
+  { icon: Cpu, label: 'ZK Bridge', color: 'text-accent' },
+  { icon: Lock, label: 'Verified Claim', color: 'text-accent' },
   { icon: CheckCircle, label: 'Verified', color: 'text-success' },
 ];
 
@@ -59,9 +59,9 @@ export default function ProofAnimation({ receipt, onClose }: ProofAnimationProps
   const metricName = HEALTH_METRIC_LABELS[receipt.metric];
 
   const stepDescriptions = [
-    `Health data queried from ${sourceName} on user device`,
-    `Zero-knowledge circuit compiled for ${metricName}`,
-    `Cryptographic proof generated in ${formatDuration(receipt.proofGenerationMs)}`,
+    `Challenge issued: verify ${metricName} from ${sourceName} on user device`,
+    `ZK Bridge: zero-knowledge circuit compiled for ${metricName}`,
+    `Verified Claim: cryptographic proof generated in ${formatDuration(receipt.proofGenerationMs)}`,
     'Proof validated. Verified receipt issued.',
   ];
 
@@ -71,7 +71,7 @@ export default function ProofAnimation({ receipt, onClose }: ProofAnimationProps
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-base/80 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-primary/30 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
@@ -162,13 +162,20 @@ export default function ProofAnimation({ receipt, onClose }: ProofAnimationProps
                 </div>
               )}
               {activeStep === 3 && (
-                <div className="mt-1.5 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs font-medium rounded-sm border bg-success-muted border-success/20 text-success">
-                    <CheckCircle size={10} /> Verified
-                  </span>
-                  <code className="font-mono text-2xs text-accent/50">
-                    {formatHash(receipt.proofHash)}
-                  </code>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs font-medium rounded border bg-success-muted border-success/20 text-success">
+                      <CheckCircle size={10} /> Verified
+                    </span>
+                    <code className="font-mono text-2xs text-accent/50">
+                      {formatHash(receipt.proofHash)}
+                    </code>
+                  </div>
+                  <div className="rounded border border-accent/20 bg-accent-muted px-3 py-2">
+                    <span className="text-xs font-semibold text-accent">
+                      0 bytes of raw medical records transferred to the insurer server
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
