@@ -184,17 +184,17 @@ const seeds: CampaignSeed[] = [
     eligible: 2800,
   },
 
-  // 6. Claims reduction — HRV (draft, stream)
+  // 6. Claims reduction — HRV (active, stream)
   {
     name: 'Cardiac Risk Reduction Programme',
     description: '90-day HRV monitoring programme for elevated cardiac risk cohort — verified via wearable, targeting claims cost reduction through early intervention.',
     purpose: 'Cardiac events account for 28% of critical illness claims in the 45+ cohort. This programme monitors heart rate variability (HRV) daily for 90 days to identify policyholders whose autonomic nervous system indicators are trending below safe thresholds. Early detection enables the insurer to trigger wellness interventions — coaching, telehealth consults — before a claimable event occurs. Actuarial models project a 12–18% reduction in cardiac-related claims cost for participants who complete the full 90-day stream.',
     useCase: 'claims_reduction',
     type: 'stream',
-    status: 'draft',
+    status: 'active',
     partnerIndex: 0,
     challenge: { metric: 'hrv', operator: 'gte', target: 45, unit: 'ms' },
-    targeting: { healthScoreMin: 30, dataSources: ['apple_health', 'garmin', 'oura', 'whoop'], ageRanges: ['45-54', '55-64', '65+'] },
+    targeting: { healthScoreMin: 30, dataSources: ['apple_health', 'garmin', 'oura', 'whoop'], ageRanges: ['45-54', '55-64', '65+'], regions: ['Singapore', 'Hong Kong', 'Thailand'] },
     budgetCeiling: 31000,
     pointsPerVerification: 55,
     maxParticipants: 3000,
@@ -342,21 +342,24 @@ const seeds: CampaignSeed[] = [
     dynamicPricing: true,
   },
 
-  // 14. Acquisition (embedded) — Body Temp Deviation (draft, snapshot)
+  // 14. Acquisition (corporate wellness) — Active Minutes (active, stream)
   {
-    name: 'Workplace Wellness Baseline Screen',
-    description: 'Corporate enrollment integration — employees prove nightly body temperature deviation ≤ 0.5°C to qualify for embedded group coverage, screening for acute illness at enrollment.',
-    purpose: 'Embedded insurance distributed through corporate wellness programmes is a high-volume, low-CAC acquisition channel. This campaign uses nightly body temperature stability as a baseline wellness gate: employees prove their temperature deviation is ≤ 0.5°C from their personal baseline, screening for acute illness, inflammation, or infection at the point of enrollment. Modern wearables (Oura, Apple Watch, WHOOP) track skin temperature deviation passively during sleep, making this a zero-effort check. The insurer acquires pre-qualified, healthy lives without any medical questionnaire friction, and the user never shares raw health data with either party.',
+    name: 'Workplace Active Minutes Challenge',
+    description: '90-day corporate wellness stream — employees prove ≥ 30 active minutes daily (WHO guideline aligned) to qualify for embedded group coverage. Verified via heart-rate-zone data from any connected device.',
+    purpose: 'Active minutes — time spent in elevated heart-rate zones — is the most clinically meaningful activity metric available from consumer wearables. Unlike step counts, which reward any ambulatory movement, active minutes require sustained cardiovascular effort, aligning with the WHO recommendation of ≥ 150 minutes of moderate-intensity activity per week (≈ 30 min/day). This 90-day stream targets employer-distributed group coverage: employees who consistently prove ≥ 30 active minutes daily demonstrate a health-engagement pattern that correlates with 25% lower short-term disability claims. The employer-as-distribution-channel model reduces customer acquisition cost to near zero while pre-qualifying healthy, engaged lives for the insurer\'s group book.',
     useCase: 'acquisition',
-    type: 'snapshot',
-    status: 'draft',
+    type: 'stream',
+    status: 'active',
     partnerIndex: 2,
-    challenge: { metric: 'body_temp_deviation', operator: 'lte', target: 0.5, unit: '°C' },
-    targeting: { healthScoreMin: 40, reputationTiers: ['low', 'medium', 'high'], dataSources: ['oura', 'apple_health', 'whoop'], regions: ['Hong Kong', 'Singapore'] },
-    budgetCeiling: 12000,
-    pointsPerVerification: 45,
-    maxParticipants: 3000,
-    eligible: 2200,
+    challenge: { metric: 'active_minutes', operator: 'gte', target: 30, unit: 'min' },
+    targeting: { reputationTiers: ['medium', 'high'], dataSources: ['apple_health', 'fitbit', 'garmin', 'samsung_health'], regions: ['Hong Kong', 'Singapore'] },
+    budgetCeiling: 28000,
+    pointsPerVerification: 50,
+    maxParticipants: 5000,
+    eligible: 3800,
+    frequency: 'daily',
+    streamDuration: 90,
+    dynamicPricing: false,
   },
 
   // 15. Claims reduction — Stress score (paused, stream)
@@ -555,5 +558,16 @@ export const campaignTemplates: CampaignTemplate[] = [
     targeting: { healthScoreMin: 55, dataSources: ['lab_results', 'apple_health'] },
     suggestedBudget: 20000,
     suggestedPoints: 120,
+  },
+  {
+    id: 'tmpl_active_minutes',
+    name: 'Active Minutes Wellness Stream',
+    description: 'Corporate wellness stream — employees prove ≥ 30 active minutes daily (WHO guideline aligned) to qualify for embedded group coverage via heart-rate-zone verification.',
+    type: 'stream',
+    icon: 'Flame',
+    challenge: { metric: 'active_minutes', operator: 'gte', target: 30, unit: 'min' },
+    targeting: { reputationTiers: ['medium', 'high'], dataSources: ['apple_health', 'fitbit', 'garmin'] },
+    suggestedBudget: 30000,
+    suggestedPoints: 50,
   },
 ];

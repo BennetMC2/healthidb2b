@@ -5,7 +5,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import CampaignOnboardingModal from '@/components/campaigns/CampaignOnboardingModal';
 import { campaignTemplates } from '@/data';
 import { useCampaignStore } from '@/stores/useCampaignStore';
-import { StatusBadge, TypeBadge, UseCaseBadge } from '@/components/ui/Badge';
+import { StatusBadge, TypeBadge, UseCaseBadge, MetricBadge } from '@/components/ui/Badge';
 import CampaignPopover from '@/components/campaigns/CampaignPopover';
 import Tabs from '@/components/ui/Tabs';
 import MetricCard from '@/components/ui/MetricCard';
@@ -120,6 +120,7 @@ export default function Campaigns() {
                     <span className="text-sm font-medium text-primary truncate">
                       {campaign.name}
                     </span>
+                    <MetricBadge metric={campaign.challenge.metric} />
                     <UseCaseBadge useCase={campaign.useCase} />
                     <TypeBadge type={campaign.type} />
                     <StatusBadge status={campaign.status} />
@@ -180,6 +181,7 @@ export default function Campaigns() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-medium text-primary">{template.name}</span>
+                <MetricBadge metric={template.challenge.metric} />
                 <TypeBadge type={template.type} />
               </div>
               <p className="text-xs text-tertiary mb-2">{template.description}</p>

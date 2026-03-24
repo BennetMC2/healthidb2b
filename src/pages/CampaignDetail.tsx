@@ -6,7 +6,7 @@ import { verifications } from '@/data';
 import { useCampaignStore } from '@/stores/useCampaignStore';
 import { useToastStore } from '@/stores/useToastStore';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import { StatusBadge, TypeBadge, ProofBadge, UseCaseBadge } from '@/components/ui/Badge';
+import { StatusBadge, TypeBadge, ProofBadge, UseCaseBadge, MetricBadge, ChallengeDisplay, DataSourceBadge } from '@/components/ui/Badge';
 import MetricCard from '@/components/ui/MetricCard';
 import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
@@ -14,7 +14,7 @@ import ProofAnimation from '@/components/campaigns/ProofAnimation';
 import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesChart';
 import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
 import { formatNumber, formatCurrency, formatPercent, formatDate, formatHash, formatTimestamp, formatDuration } from '@/utils/format';
-import { HEALTH_METRIC_LABELS, USE_CASE_LABELS, DATA_SOURCE_LABELS } from '@/utils/constants';
+import { USE_CASE_LABELS, formatOperator } from '@/utils/constants';
 import { useDemoStore } from '@/stores/useDemoStore';
 import type { VerificationReceipt, VerificationStatus, StreamCampaign } from '@/types';
 
@@ -145,20 +145,7 @@ export default function CampaignDetail() {
         <div className="grid grid-cols-3 gap-3 text-2xs">
           <div>
             <span className="text-tertiary block mb-0.5">Challenge</span>
-            <span className="text-secondary font-medium">
-              {HEALTH_METRIC_LABELS[campaign.challenge.metric]}{' '}
-              {campaign.challenge.operator === 'between'
-                ? `${campaign.challenge.target}–${campaign.challenge.targetMax ?? ''} ${campaign.challenge.unit}`
-                : `${campaign.challenge.operator === 'gte' ? '≥' : campaign.challenge.operator === 'lte' ? '≤' : '='} ${campaign.challenge.target} ${campaign.challenge.unit}`}
-            </span>
-            {campaign.additionalChallenges?.map((ac, i) => (
-              <span key={i} className="text-secondary font-medium block mt-0.5">
-                + {HEALTH_METRIC_LABELS[ac.metric]}{' '}
-                {ac.operator === 'between'
-                  ? `${ac.target}–${ac.targetMax ?? ''} ${ac.unit}`
-                  : `${ac.operator === 'gte' ? '≥' : ac.operator === 'lte' ? '≤' : '='} ${ac.target} ${ac.unit}`}
-              </span>
-            ))}
+            <ChallengeDisplay challenge={campaign.challenge} additionalChallenges={campaign.additionalChallenges} />
           </div>
           <div>
             <span className="text-tertiary block mb-0.5">Duration</span>
@@ -172,16 +159,20 @@ export default function CampaignDetail() {
           </div>
           <div>
             <span className="text-tertiary block mb-0.5">Targeting</span>
-            <span className="text-secondary font-medium">
+            <span className="text-secondary font-medium block">
               {[
                 campaign.targeting.regions?.length ? `${campaign.targeting.regions.length} region${campaign.targeting.regions.length > 1 ? 's' : ''}` : null,
                 campaign.targeting.ageRanges?.length ? campaign.targeting.ageRanges.join(', ') : null,
-                campaign.targeting.dataSources?.length
-                  ? campaign.targeting.dataSources.slice(0, 2).map((s) => DATA_SOURCE_LABELS[s]).join(', ') + (campaign.targeting.dataSources.length > 2 ? ` +${campaign.targeting.dataSources.length - 2}` : '')
-                  : null,
                 campaign.targeting.reputationTiers?.length ? campaign.targeting.reputationTiers.join('/') + ' trust' : null,
               ].filter(Boolean).join(' · ') || 'Open pool'}
             </span>
+            {campaign.targeting.dataSources && campaign.targeting.dataSources.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-1">
+                {campaign.targeting.dataSources.map((s) => (
+                  <DataSourceBadge key={s} source={s} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -199,11 +190,13 @@ export default function CampaignDetail() {
           value={formatCurrency(campaign.rewards.budgetSpent)}
           subValue={`of ${formatCurrency(campaign.rewards.budgetCeiling)}`}
         />
-        <MetricCard
-          label="Challenge"
-          value={HEALTH_METRIC_LABELS[campaign.challenge.metric]}
-          subValue={`${campaign.challenge.operator} ${campaign.challenge.target}${campaign.challenge.unit ? ' ' + campaign.challenge.unit : ''}`}
-        />
+        <div className="card flex flex-col gap-1.5">
+          <span className="metric-label">Challenge</span>
+          <MetricBadge metric={campaign.challenge.metric} />
+          <span className="text-2xs font-mono text-tertiary">
+            {formatOperator(campaign.challenge.operator)} {campaign.challenge.target} {campaign.challenge.unit}
+          </span>
+        </div>
       </div>
 
       {/* Time-Series Chart */}

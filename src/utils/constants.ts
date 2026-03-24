@@ -1,4 +1,4 @@
-import type { ReputationTier, DataSource, CampaignType, CampaignStatus, CampaignUseCase, ProofType, HealthMetric } from '@/types';
+import type { ReputationTier, DataSource, CampaignType, CampaignStatus, CampaignUseCase, ProofType, HealthMetric, ChallengeOperator } from '@/types';
 
 export const REPUTATION_TIER_ORDER: ReputationTier[] = [
   'high', 'medium', 'low',
@@ -72,23 +72,23 @@ export const PROOF_TYPE_LABELS: Record<ProofType, string> = {
 
 export const HEALTH_METRIC_LABELS: Record<HealthMetric, string> = {
   steps: 'Daily Steps',
-  sleep_hours: 'Sleep Hours',
-  sleep_quality: 'Sleep Quality',
+  sleep_hours: 'Time Asleep',
+  sleep_quality: 'Sleep Score',
   heart_rate_resting: 'Resting Heart Rate',
   hrv: 'Heart Rate Variability',
   active_minutes: 'Active Minutes',
   stress_score: 'Stress Score',
   hydration: 'Hydration',
   body_composition: 'Body Composition',
-  blood_glucose: 'Blood Glucose',
+  blood_glucose: 'Fasting Glucose',
   bmi: 'BMI',
-  blood_pressure: 'Blood Pressure',
-  cholesterol: 'Cholesterol',
+  blood_pressure: 'Systolic BP',
+  cholesterol: 'Total Cholesterol',
   hba1c: 'HbA1c',
-  vo2_max: 'VO2 Max',
-  spo2: 'Blood Oxygen (SpO2)',
-  respiratory_rate: 'Respiratory Rate',
-  body_temp_deviation: 'Temp Deviation',
+  vo2_max: 'Cardio Fitness (VO₂ Max)',
+  spo2: 'Blood Oxygen (SpO₂)',
+  respiratory_rate: 'Breathing Rate',
+  body_temp_deviation: 'Wrist Temp Variation',
 };
 
 export const HEALTH_METRIC_UNITS: Record<HealthMetric, string> = {
@@ -115,3 +115,75 @@ export const HEALTH_METRIC_UNITS: Record<HealthMetric, string> = {
 export const AGE_RANGES = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
 
 export const REGIONS = ['Singapore', 'Hong Kong', 'Japan', 'South Korea', 'Thailand', 'Malaysia', 'Indonesia', 'India', 'Australia', 'North America', 'Europe'];
+
+// ── Metric Category System ──────────────────────────────────────────
+
+export type MetricCategory = 'cardiac' | 'sleep' | 'respiratory' | 'activity' | 'body' | 'clinical';
+
+export const METRIC_CATEGORIES: Record<MetricCategory, { label: string; icon: string }> = {
+  cardiac:     { label: 'Cardiac',      icon: 'Heart' },
+  sleep:       { label: 'Sleep',        icon: 'Moon' },
+  respiratory: { label: 'Respiratory',  icon: 'Wind' },
+  activity:    { label: 'Activity',     icon: 'Flame' },
+  body:        { label: 'Body',         icon: 'Scale' },
+  clinical:    { label: 'Clinical',     icon: 'FlaskConical' },
+};
+
+export const METRIC_CATEGORY_MAP: Record<HealthMetric, MetricCategory> = {
+  heart_rate_resting: 'cardiac',
+  hrv:                'cardiac',
+  vo2_max:            'cardiac',
+  sleep_hours:        'sleep',
+  sleep_quality:      'sleep',
+  respiratory_rate:   'respiratory',
+  spo2:               'respiratory',
+  steps:              'activity',
+  active_minutes:     'activity',
+  stress_score:       'activity',
+  bmi:                'body',
+  body_composition:   'body',
+  body_temp_deviation:'body',
+  hydration:          'body',
+  blood_glucose:      'clinical',
+  cholesterol:        'clinical',
+  hba1c:              'clinical',
+  blood_pressure:     'clinical',
+};
+
+export const HIGH_SIGNAL_METRICS: ReadonlySet<HealthMetric> = new Set(['hrv', 'vo2_max']);
+
+export const METRIC_CATEGORY_ORDER: MetricCategory[] = ['cardiac', 'sleep', 'respiratory', 'activity', 'body', 'clinical'];
+
+export const METRIC_CATEGORY_LABELS: Record<MetricCategory, string> = {
+  cardiac:     'Cardiac',
+  sleep:       'Sleep',
+  respiratory: 'Respiratory',
+  activity:    'Activity',
+  body:        'Body & Wellness',
+  clinical:    'Clinical / Lab',
+};
+
+export function getMetricsGroupedByCategory(): { category: MetricCategory; label: string; metrics: { key: HealthMetric; label: string }[] }[] {
+  return METRIC_CATEGORY_ORDER.map((category) => {
+    const metrics = (Object.entries(METRIC_CATEGORY_MAP) as [HealthMetric, MetricCategory][])
+      .filter(([, cat]) => cat === category)
+      .map(([key]) => ({ key, label: HEALTH_METRIC_LABELS[key] }))
+      .sort((a, b) => {
+        // High-signal metrics first
+        const aHigh = HIGH_SIGNAL_METRICS.has(a.key) ? 0 : 1;
+        const bHigh = HIGH_SIGNAL_METRICS.has(b.key) ? 0 : 1;
+        return aHigh - bHigh;
+      });
+    return { category, label: METRIC_CATEGORY_LABELS[category], metrics };
+  });
+}
+
+export function formatOperator(op: ChallengeOperator | string): string {
+  switch (op) {
+    case 'gte': return '≥';
+    case 'lte': return '≤';
+    case 'eq':  return '=';
+    case 'between': return 'between';
+    default: return op;
+  }
+}

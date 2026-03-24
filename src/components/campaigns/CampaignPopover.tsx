@@ -1,34 +1,10 @@
 import type { Campaign, StreamCampaign } from '@/types';
-import { UseCaseBadge, TypeBadge, StatusBadge } from '@/components/ui/Badge';
-import { HEALTH_METRIC_LABELS, DATA_SOURCE_LABELS } from '@/utils/constants';
+import { UseCaseBadge, TypeBadge, StatusBadge, ChallengeDisplay, DataSourceBadge } from '@/components/ui/Badge';
 import { formatDate } from '@/utils/format';
 
 interface CampaignPopoverProps {
   campaign: Campaign;
   children: React.ReactNode;
-}
-
-function formatOperator(op: string): string {
-  switch (op) {
-    case 'gte': return '≥';
-    case 'lte': return '≤';
-    case 'eq': return '=';
-    case 'between': return 'between';
-    default: return op;
-  }
-}
-
-function formatCriteria(criteria: Campaign['challenge']): string {
-  const { metric, operator, target, targetMax, unit } = criteria;
-  const label = HEALTH_METRIC_LABELS[metric];
-  if (operator === 'between' && targetMax != null) {
-    return `${label} ${target}–${targetMax} ${unit}`;
-  }
-  return `${label} ${formatOperator(operator)} ${target} ${unit}`;
-}
-
-function formatChallenge(campaign: Campaign): string {
-  return formatCriteria(campaign.challenge);
 }
 
 function formatDuration(campaign: Campaign): string {
@@ -46,13 +22,6 @@ function formatRegions(campaign: Campaign): string {
   if (!regions || regions.length === 0) return 'All regions';
   if (regions.length <= 2) return regions.join(', ');
   return `${regions[0]}, ${regions[1]} +${regions.length - 2}`;
-}
-
-function formatSources(campaign: Campaign): string {
-  const sources = campaign.targeting.dataSources;
-  if (!sources || sources.length === 0) return 'Any source';
-  if (sources.length <= 2) return sources.map((s) => DATA_SOURCE_LABELS[s]).join(', ');
-  return `${DATA_SOURCE_LABELS[sources[0]]}, ${DATA_SOURCE_LABELS[sources[1]]} +${sources.length - 2}`;
 }
 
 export default function CampaignPopover({ campaign, children }: CampaignPopoverProps) {
@@ -84,11 +53,8 @@ export default function CampaignPopover({ campaign, children }: CampaignPopoverP
         {/* Characteristics grid */}
         <div className="grid grid-cols-2 gap-2 text-2xs">
           <div>
-            <span className="text-tertiary block">Challenge</span>
-            <span className="text-secondary font-medium">{formatChallenge(campaign)}</span>
-            {campaign.additionalChallenges?.map((ac, i) => (
-              <span key={i} className="text-secondary font-medium block mt-0.5">+ {formatCriteria(ac)}</span>
-            ))}
+            <span className="text-tertiary block mb-0.5">Challenge</span>
+            <ChallengeDisplay challenge={campaign.challenge} additionalChallenges={campaign.additionalChallenges} />
           </div>
           <div>
             <span className="text-tertiary block">Duration</span>
@@ -99,8 +65,18 @@ export default function CampaignPopover({ campaign, children }: CampaignPopoverP
             <span className="text-secondary font-medium">{formatRegions(campaign)}</span>
           </div>
           <div>
-            <span className="text-tertiary block">Data Sources</span>
-            <span className="text-secondary font-medium">{formatSources(campaign)}</span>
+            <span className="text-tertiary block mb-0.5">Data Sources</span>
+            <div className="flex flex-wrap gap-1">
+              {(campaign.targeting.dataSources ?? []).slice(0, 3).map((s) => (
+                <DataSourceBadge key={s} source={s} />
+              ))}
+              {(campaign.targeting.dataSources?.length ?? 0) > 3 && (
+                <span className="text-2xs text-tertiary self-center">+{(campaign.targeting.dataSources?.length ?? 0) - 3}</span>
+              )}
+              {(!campaign.targeting.dataSources || campaign.targeting.dataSources.length === 0) && (
+                <span className="text-2xs text-secondary">Any source</span>
+              )}
+            </div>
           </div>
         </div>
       </div>

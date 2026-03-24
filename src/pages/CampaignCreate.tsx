@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Zap, Radio } from 'lucide-react';
-import { HEALTH_METRIC_LABELS, HEALTH_METRIC_UNITS, DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, REPUTATION_TIER_ORDER, AGE_RANGES } from '@/utils/constants';
+import { HEALTH_METRIC_UNITS, DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, REPUTATION_TIER_ORDER, AGE_RANGES, getMetricsGroupedByCategory } from '@/utils/constants';
+import { ChallengeDisplay } from '@/components/ui/Badge';
 import { useToastStore } from '@/stores/useToastStore';
 import { useCampaignStore } from '@/stores/useCampaignStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
@@ -244,8 +245,12 @@ export default function CampaignCreate() {
                 className="input-field w-full"
               >
                 <option value="">Select metric...</option>
-                {Object.entries(HEALTH_METRIC_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
+                {getMetricsGroupedByCategory().map((group) => (
+                  <optgroup key={group.category} label={group.label}>
+                    {group.metrics.map((m) => (
+                      <option key={m.key} value={m.key}>{m.label}</option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
@@ -336,20 +341,30 @@ export default function CampaignCreate() {
             <div>
               <label className="metric-label block mb-1.5">Required Data Sources</label>
               <div className="flex flex-wrap gap-2">
-                {(Object.entries(DATA_SOURCE_LABELS) as [DataSource, string][]).map(([key, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      const next = form.dataSources.includes(key)
-                        ? form.dataSources.filter((d) => d !== key)
-                        : [...form.dataSources, key];
-                      setForm({ ...form, dataSources: next });
-                    }}
-                    className={`badge cursor-pointer ${form.dataSources.includes(key) ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-elevated border-border text-tertiary'}`}
-                  >
-                    {label}
-                  </button>
-                ))}
+                {(Object.entries(DATA_SOURCE_LABELS) as [DataSource, string][]).map(([key, label]) => {
+                  const isSelected = form.dataSources.includes(key);
+                  const isLab = key === 'lab_results';
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        const next = isSelected
+                          ? form.dataSources.filter((d) => d !== key)
+                          : [...form.dataSources, key];
+                        setForm({ ...form, dataSources: next });
+                      }}
+                      className={`badge cursor-pointer ${
+                        isSelected
+                          ? isLab
+                            ? 'bg-metric-clinical/10 border-metric-clinical/30 text-metric-clinical'
+                            : 'bg-accent/10 border-accent/30 text-accent'
+                          : 'bg-elevated border-border text-tertiary'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>
@@ -423,10 +438,17 @@ export default function CampaignCreate() {
                 <div className="text-sm text-primary capitalize">{form.type || '—'}</div>
               </div>
               <div className="card-elevated">
-                <span className="text-2xs text-tertiary">Metric</span>
-                <div className="text-sm text-primary">
-                  {form.metric ? HEALTH_METRIC_LABELS[form.metric as HealthMetric] : '—'} {form.operator} {form.target}
-                </div>
+                <span className="text-2xs text-tertiary block mb-1">Challenge</span>
+                {form.metric ? (
+                  <ChallengeDisplay challenge={{
+                    metric: form.metric as HealthMetric,
+                    operator: form.operator as import('@/types').ChallengeOperator,
+                    target: Number(form.target) || 0,
+                    unit: HEALTH_METRIC_UNITS[form.metric as HealthMetric],
+                  }} />
+                ) : (
+                  <div className="text-sm text-primary">—</div>
+                )}
               </div>
               <div className="card-elevated">
                 <span className="text-2xs text-tertiary">Budget</span>

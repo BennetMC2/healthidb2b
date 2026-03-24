@@ -53,6 +53,15 @@ export default {
           medium: '#B8860B',
           low: '#8896AB',
         },
+
+        metric: {
+          cardiac:     '#C06050',
+          sleep:       '#7B6DAA',
+          respiratory: '#4A90A4',
+          activity:    '#D08B2D',
+          body:        '#6B8E5A',
+          clinical:    '#8B6F60',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
