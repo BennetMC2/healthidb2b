@@ -98,99 +98,101 @@ export default function Campaigns() {
         </div>
       </div>
 
-      {/* Campaign List */}
-      <div className="flex-1 overflow-auto scrollbar-thin space-y-1">
-        {filtered.length === 0 && (
-          <EmptyState
-            icon={<Filter size={20} className="text-tertiary" />}
-            title="No campaigns match your filters"
-            description="Try changing the type or status filter to see more campaigns."
-            action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
-          />
-        )}
-        {filtered.map((campaign) => (
-          <CampaignPopover key={campaign.id} campaign={campaign}>
-            <button
-              onClick={() => navigate(`/campaigns/${campaign.id}`)}
-              className="w-full card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-primary truncate">
-                      {campaign.name}
-                    </span>
-                    <MetricBadge metric={campaign.challenge.metric} />
-                    <UseCaseBadge useCase={campaign.useCase} />
-                    <TypeBadge type={campaign.type} />
-                    <StatusBadge status={campaign.status} />
+      {/* Campaign List + Templates — single scrollable area */}
+      <div className="flex-1 min-h-0 overflow-auto scrollbar-thin space-y-4">
+        <div className="space-y-1">
+          {filtered.length === 0 && (
+            <EmptyState
+              icon={<Filter size={20} className="text-tertiary" />}
+              title="No campaigns match your filters"
+              description="Try changing the type or status filter to see more campaigns."
+              action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
+            />
+          )}
+          {filtered.map((campaign) => (
+            <CampaignPopover key={campaign.id} campaign={campaign}>
+              <button
+                onClick={() => navigate(`/campaigns/${campaign.id}`)}
+                className="w-full card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium text-primary truncate">
+                        {campaign.name}
+                      </span>
+                      <MetricBadge metric={campaign.challenge.metric} />
+                      <UseCaseBadge useCase={campaign.useCase} />
+                      <TypeBadge type={campaign.type} />
+                      <StatusBadge status={campaign.status} />
+                    </div>
+                    <p className="text-xs text-tertiary truncate">
+                      {campaign.description}
+                    </p>
                   </div>
-                  <p className="text-xs text-tertiary truncate">
-                    {campaign.description}
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-6 flex-shrink-0">
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatNumber(campaign.funnel.enrolled)}
+                  <div className="flex items-center gap-6 flex-shrink-0">
+                    <div className="text-right">
+                      <div className="text-xs font-mono text-secondary">
+                        {formatNumber(campaign.funnel.enrolled)}
+                      </div>
+                      <div className="text-2xs text-tertiary">enrolled</div>
                     </div>
-                    <div className="text-2xs text-tertiary">enrolled</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatNumber(campaign.funnel.verified)}
+                    <div className="text-right">
+                      <div className="text-xs font-mono text-secondary">
+                        {formatNumber(campaign.funnel.verified)}
+                      </div>
+                      <div className="text-2xs text-tertiary">verified</div>
                     </div>
-                    <div className="text-2xs text-tertiary">verified</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatPercent(campaign.funnel.verified / Math.max(campaign.funnel.enrolled, 1))}
+                    <div className="text-right">
+                      <div className="text-xs font-mono text-secondary">
+                        {formatPercent(campaign.funnel.verified / Math.max(campaign.funnel.enrolled, 1))}
+                      </div>
+                      <div className="text-2xs text-tertiary">rate</div>
                     </div>
-                    <div className="text-2xs text-tertiary">rate</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatCurrency(campaign.rewards.budgetSpent)}
+                    <div className="text-right">
+                      <div className="text-xs font-mono text-secondary">
+                        {formatCurrency(campaign.rewards.budgetSpent)}
+                      </div>
+                      <div className="text-2xs text-tertiary">
+                        of {formatCurrency(campaign.rewards.budgetCeiling)}
+                      </div>
                     </div>
-                    <div className="text-2xs text-tertiary">
-                      of {formatCurrency(campaign.rewards.budgetCeiling)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xs text-tertiary">
-                      {formatDate(campaign.startDate)}
+                    <div className="text-right">
+                      <div className="text-2xs text-tertiary">
+                        {formatDate(campaign.startDate)}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </button>
-          </CampaignPopover>
-        ))}
-      </div>
-
-      {/* Templates */}
-      <div>
-        <SectionHeader title="Campaign Templates" description="Pre-configured campaigns for common use cases. One-click to launch." />
-        <div className="grid grid-cols-4 gap-3">
-          {campaignTemplates.map((template) => (
-            <button
-              key={template.id}
-              onClick={() => navigate('/campaigns/new', { state: { template } })}
-              className="card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium text-primary">{template.name}</span>
-                <MetricBadge metric={template.challenge.metric} />
-                <TypeBadge type={template.type} />
-              </div>
-              <p className="text-xs text-tertiary mb-2">{template.description}</p>
-              <div className="flex items-center gap-3 text-2xs text-tertiary">
-                <span>{formatCurrency(template.suggestedBudget)} budget</span>
-                <span>{template.suggestedPoints} HP/proof</span>
-              </div>
-            </button>
+              </button>
+            </CampaignPopover>
           ))}
+        </div>
+
+        {/* Templates — below campaign list, scrolls naturally */}
+        <div>
+          <SectionHeader title="Campaign Templates" description="Pre-configured campaigns for common use cases. One-click to launch." />
+          <div className="grid grid-cols-4 gap-3">
+            {campaignTemplates.map((template) => (
+              <button
+                key={template.id}
+                onClick={() => navigate('/campaigns/new', { state: { template } })}
+                className="card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-medium text-primary">{template.name}</span>
+                  <MetricBadge metric={template.challenge.metric} />
+                  <TypeBadge type={template.type} />
+                </div>
+                <p className="text-xs text-tertiary mb-2">{template.description}</p>
+                <div className="flex items-center gap-3 text-2xs text-tertiary">
+                  <span>{formatCurrency(template.suggestedBudget)} budget</span>
+                  <span>{template.suggestedPoints} HP/proof</span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

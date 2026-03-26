@@ -21,6 +21,7 @@ import {
   Lock,
   Users,
   Plug,
+  TrendingUp,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
@@ -440,12 +441,33 @@ export default function Overview() {
             </button>
 
             {/* Multiplier callout — links to Treasury */}
-            <button onClick={() => navigate('/treasury#value-multiplier')} className="rounded-lg bg-surface border border-accent/15 p-3 text-center mb-4 shadow-sm w-full hover:shadow-md transition-shadow cursor-pointer">
+            <button onClick={() => navigate('/treasury#value-multiplier')} className="rounded-lg bg-surface border border-accent/15 p-3 text-center mb-3 shadow-sm w-full hover:shadow-md transition-shadow cursor-pointer">
               <div className="text-2xs text-tertiary uppercase tracking-wider mb-1">High-Value Multiplier</div>
               <div className="font-mono text-2xl font-bold text-accent">1.50x+</div>
               <div className="text-2xs text-secondary mt-0.5">
                 Every dollar of budget creates &gt;$1.50 of user value
               </div>
+            </button>
+
+            {/* Actuarial Risk Model — links to Campaign Builder */}
+            <button
+              onClick={() => navigate('/campaigns/new')}
+              className="rounded-lg bg-surface border border-accent/15 p-3 text-left w-full hover:shadow-md transition-shadow cursor-pointer mb-3"
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-2xs text-accent uppercase tracking-wider font-medium">Actuarial Risk Model</span>
+                <TrendingUp size={11} className="text-accent/60" />
+              </div>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="font-mono text-xl font-bold text-accent">22%</span>
+                <span className="text-2xs text-secondary">avg. claims reduction · HbA1c</span>
+              </div>
+              <div className="text-2xs text-tertiary leading-relaxed mb-2">
+                Live per-metric model with evidence-graded projections and HP reward back-out.
+              </div>
+              <span className="text-2xs text-accent flex items-center gap-1">
+                Build a campaign <ArrowRight size={10} />
+              </span>
             </button>
 
             {/* Yield layers — clickable to Treasury sections */}
@@ -484,6 +506,15 @@ export default function Overview() {
                 <div className="flex-1">
                   <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Behavioral Economics</div>
                   <div className="text-2xs text-tertiary">Aspirational rewards (flights, experiences) drive <span className="font-semibold text-accent">1.5–2.5x</span> more sustained habit formation than instant cash</div>
+                </div>
+              </button>
+              <button onClick={() => navigate('/campaigns/new')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
+                <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp size={13} className="text-accent" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Actuarial Risk Model</div>
+                  <div className="text-2xs text-tertiary">Per-metric claims projections with evidence grading and HP back-out</div>
                 </div>
               </button>
             </div>

@@ -18,7 +18,8 @@ import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculato
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { identities, computeTreasuryState, treasuryTransactions, treasurySnapshots } from '@/data';
 import { formatCurrency, formatCurrencyPrecise, formatMultiplier, formatNumber, formatTimestamp } from '@/utils/format';
-import type { TreasuryTransaction, TreasurySnapshot, TransactionType } from '@/types';
+import { getMetricsGroupedByCategory } from '@/utils/constants';
+import type { TreasuryTransaction, TreasurySnapshot, TransactionType, HealthMetric, CampaignType } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
 const typeVariants: Record<TransactionType, 'success' | 'accent' | 'warning' | 'error' | 'default'> = {
@@ -116,6 +117,8 @@ export default function Treasury() {
   const [showOnboarding, setShowOnboarding] = useState(
     () => !localStorage.getItem('healthid_treasury_onboarded')
   );
+  const [actuarialMetric, setActuarialMetric] = useState<HealthMetric>('hba1c');
+  const [actuarialType, setActuarialType] = useState<CampaignType>('snapshot');
 
   // Scroll to section via hash
   useEffect(() => {
@@ -268,13 +271,43 @@ export default function Treasury() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <ActuarialROICalculator
-            metric="hba1c"
-            type="snapshot"
-            useCase="underwriting"
-            maxParticipants={audienceSize}
-            budgetCeiling={25000}
-          />
+          <div className="flex flex-col gap-3">
+            {/* Interactive controls */}
+            <div className="flex items-center gap-2">
+              <select
+                value={actuarialMetric}
+                onChange={(e) => setActuarialMetric(e.target.value as HealthMetric)}
+                className="input-field text-xs flex-1"
+              >
+                {getMetricsGroupedByCategory().map((group) => (
+                  <optgroup key={group.category} label={group.label}>
+                    {group.metrics.map((m) => (
+                      <option key={m.key} value={m.key}>{m.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <button
+                onClick={() => setActuarialType('snapshot')}
+                className={`badge cursor-pointer ${actuarialType === 'snapshot' ? 'badge-accent' : 'badge-default'}`}
+              >
+                Snapshot
+              </button>
+              <button
+                onClick={() => setActuarialType('stream')}
+                className={`badge cursor-pointer ${actuarialType === 'stream' ? 'badge-accent' : 'badge-default'}`}
+              >
+                Stream
+              </button>
+            </div>
+            <ActuarialROICalculator
+              metric={actuarialMetric}
+              type={actuarialType}
+              useCase="underwriting"
+              maxParticipants={audienceSize}
+              budgetCeiling={25000}
+            />
+          </div>
           <ClaimsImpactChart />
         </div>
 

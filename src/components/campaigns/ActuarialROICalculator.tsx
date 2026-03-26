@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/utils/format';
-import { calculateActuarialROI } from '@/utils/actuarial';
+import { calculateActuarialROI, getMetricComparisons } from '@/utils/actuarial';
 import type { HealthMetric, CampaignType, CampaignUseCase } from '@/types';
 
 interface ActuarialROICalculatorProps {
@@ -33,6 +33,13 @@ export default function ActuarialROICalculator({
   );
 
   const evidence = EVIDENCE_COLORS[roi.evidenceLevel] ?? EVIDENCE_COLORS.low;
+
+  const comparisons = useMemo(
+    () => (roi.isReady ? getMetricComparisons(useCase, type, metric) : []),
+    [useCase, type, metric, roi.isReady],
+  );
+
+  const maxSavings = comparisons.length > 0 ? comparisons[0].savingsPerMember : 1;
 
   return (
     <div className="card border-accent/10">
@@ -102,6 +109,29 @@ export default function ActuarialROICalculator({
         </div>
       )}
 
+      {/* Metric Comparison Bars */}
+      {roi.isReady && comparisons.length > 0 && (
+        <div className="mt-2.5 space-y-1">
+          <span className="text-2xs text-tertiary">vs. top metrics · savings / member</span>
+          {comparisons.map((c) => (
+            <div key={c.metric} className="flex items-center gap-2">
+              <span className={`w-28 truncate text-2xs ${c.isSelected ? 'text-accent font-medium' : 'text-tertiary'}`}>
+                {c.label}
+              </span>
+              <div className="flex-1 h-1 rounded-full bg-border">
+                <div
+                  className={`h-full rounded-full ${c.isSelected ? 'bg-accent/50' : 'bg-border'}`}
+                  style={{ width: `${(c.savingsPerMember / maxSavings) * 100}%` }}
+                />
+              </div>
+              <span className={`w-10 text-right font-mono text-2xs ${c.isSelected ? 'text-accent font-medium' : 'text-tertiary'}`}>
+                ${c.savingsPerMember.toFixed(0)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Footer */}
       <p className="text-2xs text-tertiary mt-1.5">
         {roi.isReady ? (
@@ -111,6 +141,14 @@ export default function ActuarialROICalculator({
               <>
                 <br />
                 <span className="text-tertiary/70">{roi.additionalNote}</span>
+              </>
+            )}
+            {budgetCeiling > 0 && roi.suggestedHP > 0 && (
+              <>
+                <br />
+                <span className="text-tertiary/70">
+                  Budget funds ~{Math.floor(budgetCeiling / roi.suggestedHP).toLocaleString()} verifications at {roi.suggestedHP} HP each
+                </span>
               </>
             )}
           </>

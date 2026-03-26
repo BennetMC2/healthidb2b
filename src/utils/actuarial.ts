@@ -1,4 +1,5 @@
 import type { HealthMetric, CampaignUseCase, CampaignType } from '@/types';
+import { HEALTH_METRIC_LABELS } from '@/utils/constants';
 
 // ── Metric Actuarial Config ────────────────────────────────────────
 
@@ -128,6 +129,47 @@ export function calculateActuarialROI(params: ActuarialROIParams): ActuarialROIR
     additionalNote: useCaseConfig?.additionalNote ?? null,
     isReady: true,
   };
+}
+
+// ── Metric Comparison ─────────────────────────────────────────────
+
+export interface MetricComparison {
+  metric: HealthMetric;
+  label: string;
+  savingsPerMember: number;
+  isSelected: boolean;
+}
+
+export function getMetricComparisons(
+  useCase: CampaignUseCase | '',
+  type: CampaignType | '',
+  selectedMetric: HealthMetric | '',
+  count = 5,
+): MetricComparison[] {
+  const useCaseConfig = useCase ? USE_CASE_CONFIG[useCase] : null;
+  const typeMultiplier = type === 'stream' ? STREAM_MULTIPLIER : 1.0;
+  const useCaseMultiplier = useCaseConfig?.savingsMultiplier ?? 1.0;
+
+  const all: MetricComparison[] = (Object.keys(METRIC_ACTUARIAL_CONFIG) as HealthMetric[]).map((m) => {
+    const cfg = METRIC_ACTUARIAL_CONFIG[m];
+    return {
+      metric: m,
+      label: HEALTH_METRIC_LABELS[m],
+      savingsPerMember: cfg.baselineClaimCostPerMember * cfg.claimsReductionRate * typeMultiplier * useCaseMultiplier,
+      isSelected: m === selectedMetric,
+    };
+  });
+
+  all.sort((a, b) => b.savingsPerMember - a.savingsPerMember);
+
+  // Always include the selected metric in the top N
+  const top = all.slice(0, count);
+  if (selectedMetric && !top.some((m) => m.isSelected)) {
+    const selected = all.find((m) => m.isSelected);
+    if (selected) top[count - 1] = selected;
+  }
+
+  return top;
 }
 
 // ── Use Case Suggestion ────────────────────────────────────────────
