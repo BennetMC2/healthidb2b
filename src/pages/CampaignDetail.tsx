@@ -12,6 +12,7 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 import ProofAnimation from '@/components/campaigns/ProofAnimation';
 import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesChart';
+import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
 import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
 import { formatNumber, formatCurrency, formatPercent, formatDate, formatHash, formatTimestamp, formatDuration } from '@/utils/format';
 import { USE_CASE_LABELS, formatOperator } from '@/utils/constants';
@@ -199,8 +200,17 @@ export default function CampaignDetail() {
         </div>
       </div>
 
-      {/* Time-Series Chart */}
-      <CampaignTimeSeriesChart campaignId={campaign.id} />
+      {/* Time-Series Chart + Actuarial ROI */}
+      <div className="grid grid-cols-2 gap-4">
+        <CampaignTimeSeriesChart campaignId={campaign.id} />
+        <ActuarialROICalculator
+          metric={campaign.challenge.metric}
+          type={campaign.type}
+          useCase={campaign.useCase}
+          maxParticipants={funnel.enrolled}
+          budgetCeiling={campaign.rewards.budgetCeiling}
+        />
+      </div>
 
       <div className="flex gap-4 flex-1 min-h-0">
         {/* Funnel */}
