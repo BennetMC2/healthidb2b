@@ -221,9 +221,9 @@ export default function CampaignDetail() {
                     {formatNumber(step.value)}
                   </span>
                 </div>
-                <div className="h-[18px] bg-base rounded-sm overflow-hidden">
+                <div className="h-[18px] bg-border/40 rounded-sm overflow-hidden">
                   <div
-                    className="h-full bg-accent/30 rounded-sm transition-all duration-500"
+                    className="h-full bg-accent rounded-sm transition-all duration-500"
                     style={{ width: `${(step.value / maxFunnel) * 100}%` }}
                   />
                 </div>
