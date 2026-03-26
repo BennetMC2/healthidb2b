@@ -268,7 +268,13 @@ export default function Treasury() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <ActuarialROICalculator audienceSize={audienceSize} />
+          <ActuarialROICalculator
+            metric="hba1c"
+            type="snapshot"
+            useCase="underwriting"
+            maxParticipants={audienceSize}
+            budgetCeiling={25000}
+          />
           <ClaimsImpactChart />
         </div>
 

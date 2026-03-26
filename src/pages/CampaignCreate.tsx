@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Zap, Radio } from 'lucide-react';
-import { HEALTH_METRIC_UNITS, DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, REPUTATION_TIER_ORDER, AGE_RANGES, getMetricsGroupedByCategory } from '@/utils/constants';
+import { HEALTH_METRIC_UNITS, DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, REPUTATION_TIER_ORDER, AGE_RANGES, getMetricsGroupedByCategory, USE_CASE_LABELS, CAMPAIGN_USE_CASE_ORDER } from '@/utils/constants';
+import { suggestUseCase } from '@/utils/actuarial';
 import { ChallengeDisplay } from '@/components/ui/Badge';
 import { useToastStore } from '@/stores/useToastStore';
 import { useCampaignStore } from '@/stores/useCampaignStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import LaunchSuccess from '@/components/campaigns/LaunchSuccess';
 import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
-import type { Campaign, CampaignType, CampaignTemplate, HealthMetric, DataSource, ReputationTier, ChallengeOperator } from '@/types';
+import type { Campaign, CampaignType, CampaignUseCase, CampaignTemplate, HealthMetric, DataSource, ReputationTier, ChallengeOperator } from '@/types';
 
 const steps = [
   { id: 'type', label: 'Type' },
@@ -31,6 +32,7 @@ export default function CampaignCreate() {
     name: '',
     description: '',
     type: '' as CampaignType | '',
+    useCase: '' as CampaignUseCase | '',
     metric: '' as HealthMetric | '',
     operator: 'gte' as string,
     target: '',
@@ -103,7 +105,7 @@ export default function CampaignCreate() {
       name: form.name,
       description: form.description,
       purpose: '',
-      useCase: 'underwriting',
+      useCase: (form.useCase as CampaignUseCase) || 'underwriting',
       type: form.type as CampaignType,
       status: 'active',
       partnerId: currentPartner.id,
@@ -232,6 +234,20 @@ export default function CampaignCreate() {
                 rows={3}
               />
             </div>
+            <div>
+              <label className="metric-label block mb-1.5">Use Case</label>
+              <div className="flex flex-wrap gap-2">
+                {CAMPAIGN_USE_CASE_ORDER.map((uc) => (
+                  <button
+                    key={uc}
+                    onClick={() => setForm({ ...form, useCase: uc })}
+                    className={`badge cursor-pointer ${form.useCase === uc ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-elevated border-border text-tertiary'}`}
+                  >
+                    {USE_CASE_LABELS[uc]}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -241,7 +257,14 @@ export default function CampaignCreate() {
               <label className="metric-label block mb-1.5">Health Metric</label>
               <select
                 value={form.metric}
-                onChange={(e) => setForm({ ...form, metric: e.target.value as HealthMetric })}
+                onChange={(e) => {
+                  const newMetric = e.target.value as HealthMetric;
+                  setForm((f) => ({
+                    ...f,
+                    metric: newMetric,
+                    useCase: f.useCase || (newMetric ? suggestUseCase(newMetric) : ''),
+                  }));
+                }}
                 className="input-field w-full"
               >
                 <option value="">Select metric...</option>
@@ -468,7 +491,14 @@ export default function CampaignCreate() {
       </div>
 
       {/* Actuarial ROI Calculator */}
-      <ActuarialROICalculator audienceSize={Number(form.maxParticipants) || 0} />
+      <ActuarialROICalculator
+        metric={form.metric}
+        type={form.type}
+        useCase={form.useCase}
+        maxParticipants={Number(form.maxParticipants) || 0}
+        budgetCeiling={Number(form.budgetCeiling) || 0}
+        onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
+      />
 
       {/* Navigation */}
       <div className="flex items-center justify-between">

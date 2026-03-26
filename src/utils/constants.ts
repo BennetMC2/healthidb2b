@@ -57,6 +57,10 @@ export const USE_CASE_LABELS: Record<CampaignUseCase, string> = {
   acquisition: 'Acquisition',
 };
 
+export const CAMPAIGN_USE_CASE_ORDER: CampaignUseCase[] = [
+  'underwriting', 'dynamic_premium', 'claims_reduction', 'renewal', 'acquisition',
+];
+
 export const CAMPAIGN_STATUS_LABELS: Record<CampaignStatus, string> = {
   draft: 'Draft',
   active: 'Active',
