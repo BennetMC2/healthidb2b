@@ -81,7 +81,7 @@ export default function OnboardingModal({
 
       {/* Modal */}
       <div
-        className="relative card w-[680px] border-border bg-surface animate-fade-in"
+        className="relative card w-[95vw] max-w-[680px] border-border bg-surface animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

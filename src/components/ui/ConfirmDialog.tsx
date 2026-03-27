@@ -23,7 +23,7 @@ export default function ConfirmDialog({
     <div className="fixed inset-0 z-[9600] flex items-center justify-center" onClick={onCancel}>
       <div className="absolute inset-0 bg-base/70 backdrop-blur-sm" />
       <div
-        className="relative card w-[400px] bg-surface animate-fade-in"
+        className="relative card w-[90vw] max-w-[400px] bg-surface animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3 mb-4">

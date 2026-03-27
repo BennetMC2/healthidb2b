@@ -7,6 +7,12 @@ const sparklineData = [
   { x: 9, y: 55 }, { x: 10, y: 68 }, { x: 11, y: 80 },
 ];
 
+// Helper to get CSS variable color as rgb string
+function getCSSColorAsRgb(varName: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value ? `rgb(${value})` : '#E07A5F';
+}
+
 function MiniSparkline() {
   const width = 200;
   const height = 60;
@@ -15,6 +21,8 @@ function MiniSparkline() {
   const chartH = height - padding * 2;
   const minY = Math.min(...sparklineData.map((d) => d.y));
   const maxY = Math.max(...sparklineData.map((d) => d.y));
+
+  const accentColor = getCSSColorAsRgb('--a-accent');
 
   const points = sparklineData
     .map((d, i) => {
@@ -28,8 +36,8 @@ function MiniSparkline() {
     <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
       <defs>
         <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#E07A5F" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#E07A5F" stopOpacity="0" />
+          <stop offset="0%" stopColor={accentColor} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon
@@ -39,7 +47,7 @@ function MiniSparkline() {
       <polyline
         points={points}
         fill="none"
-        stroke="#E07A5F"
+        stroke={accentColor}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

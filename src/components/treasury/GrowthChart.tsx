@@ -1,6 +1,13 @@
 import { useMemo, useRef, useEffect } from 'react';
 import type { TreasurySnapshot } from '@/types';
 import { formatCurrency } from '@/utils/format';
+import { useThemeStore } from '@/stores/useThemeStore';
+
+// Helper to get CSS variable color as rgb string
+function getCSSColorAsRgb(varName: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value ? `rgb(${value})` : '#999';
+}
 
 interface GrowthChartProps {
   data: TreasurySnapshot[];
@@ -8,6 +15,7 @@ interface GrowthChartProps {
 
 export default function GrowthChart({ data }: GrowthChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useThemeStore();
 
   const { minVal, maxVal } = useMemo(() => {
     const values = data.map((d) => d.totalBudget + d.cumulativeYield);
@@ -23,6 +31,11 @@ export default function GrowthChart({ data }: GrowthChartProps) {
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Get theme colors
+    const accentColor = getCSSColorAsRgb('--a-accent');
+    const secondaryColor = getCSSColorAsRgb('--n-secondary');
+    const tertiaryColor = getCSSColorAsRgb('--n-tertiary');
 
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -44,8 +57,8 @@ export default function GrowthChart({ data }: GrowthChartProps) {
 
     // Draw gradient fill
     const gradient = ctx.createLinearGradient(0, padding.top, 0, h - padding.bottom);
-    gradient.addColorStop(0, 'rgba(224, 122, 95, 0.15)');
-    gradient.addColorStop(1, 'rgba(224, 122, 95, 0.0)');
+    gradient.addColorStop(0, accentColor.replace('rgb(', 'rgba(').replace(')', ', 0.15)'));
+    gradient.addColorStop(1, accentColor.replace('rgb(', 'rgba(').replace(')', ', 0)'));
 
     ctx.beginPath();
     ctx.moveTo(xScale(0), h - padding.bottom);
@@ -65,7 +78,7 @@ export default function GrowthChart({ data }: GrowthChartProps) {
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = '#E07A5F';
+    ctx.strokeStyle = accentColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -78,14 +91,14 @@ export default function GrowthChart({ data }: GrowthChartProps) {
       if (i === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
-    ctx.strokeStyle = 'rgba(74, 85, 104, 0.2)';
+    ctx.strokeStyle = secondaryColor.replace('rgb(', 'rgba(').replace(')', ', 0.2)');
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.setLineDash([]);
 
     // X-axis labels (first, middle, last)
     ctx.font = '9px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#8896AB';
+    ctx.fillStyle = tertiaryColor;
     ctx.textAlign = 'center';
 
     const labelIndices = [0, Math.floor(data.length / 2), data.length - 1];
@@ -94,7 +107,7 @@ export default function GrowthChart({ data }: GrowthChartProps) {
       const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       ctx.fillText(label, xScale(i), h - 4);
     });
-  }, [data, minVal, maxVal]);
+  }, [data, minVal, maxVal, theme]);
 
   const latestValue = data.length > 0
     ? data[data.length - 1].totalBudget + data[data.length - 1].cumulativeYield

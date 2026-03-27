@@ -2,6 +2,13 @@ import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
 import { formatCurrency } from '@/utils/format';
+import { useThemeStore } from '@/stores/useThemeStore';
+
+// Helper to get CSS variable color as hex
+function getCSSColorAsRgb(varName: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value ? `rgb(${value})` : '#999';
+}
 
 interface SankeyDiagramProps {
   budget: number;
@@ -23,12 +30,18 @@ interface SankeyLink {
 
 export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue }: SankeyDiagramProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     if (!svgRef.current) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
+
+    // Get theme colors
+    const accentColor = getCSSColorAsRgb('--a-accent');
+    const primaryColor = getCSSColorAsRgb('--n-primary');
+    const tertiaryColor = getCSSColorAsRgb('--n-tertiary');
 
     const width = svgRef.current.clientWidth;
     const height = 180;
@@ -70,7 +83,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .join('path')
       .attr('d', sankeyLinkHorizontal())
       .attr('fill', 'none')
-      .attr('stroke', '#E07A5F')
+      .attr('stroke', accentColor)
       .attr('stroke-opacity', 0.15)
       .attr('stroke-width', (d) => Math.max(1, (d as { width?: number }).width || 1));
 
@@ -84,7 +97,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .attr('y', (d) => (d as { y0?: number }).y0 || 0)
       .attr('width', (d) => ((d as { x1?: number }).x1 || 0) - ((d as { x0?: number }).x0 || 0))
       .attr('height', (d) => Math.max(1, ((d as { y1?: number }).y1 || 0) - ((d as { y0?: number }).y0 || 0)))
-      .attr('fill', '#E07A5F')
+      .attr('fill', accentColor)
       .attr('fill-opacity', 0.3)
       .attr('rx', 2);
 
@@ -102,7 +115,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .attr('y', (d) => (((d as { y0?: number }).y0 || 0) + ((d as { y1?: number }).y1 || 0)) / 2)
       .attr('text-anchor', (d) => ((d as { x0?: number }).x0 || 0) < width / 2 ? 'end' : 'start')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#4A5568')
+      .attr('fill', primaryColor)
       .attr('font-size', '10px')
       .attr('font-family', 'Inter, system-ui, sans-serif')
       .text((d) => d.name || '');
@@ -121,14 +134,14 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
       .attr('y', (d) => (((d as { y0?: number }).y0 || 0) + ((d as { y1?: number }).y1 || 0)) / 2 + 12)
       .attr('text-anchor', (d) => ((d as { x0?: number }).x0 || 0) < width / 2 ? 'end' : 'start')
       .attr('dominant-baseline', 'middle')
-      .attr('fill', '#8896AB')
+      .attr('fill', tertiaryColor)
       .attr('font-size', '9px')
       .attr('font-family', 'JetBrains Mono, monospace')
       .text((_d, i) => {
         const values = [budget, yield_, buyingPower, totalValue];
         return formatCurrency(values[i]);
       });
-  }, [budget, yield_, buyingPower, totalValue]);
+  }, [budget, yield_, buyingPower, totalValue, theme]);
 
   return <svg ref={svgRef} className="w-full h-[180px]" />;
 }

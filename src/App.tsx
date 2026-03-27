@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Joyride, { STATUS } from 'react-joyride';
 import Layout from '@/components/layout/Layout';
 import NetworkExplorer from '@/pages/NetworkExplorer';
@@ -15,6 +15,7 @@ import ToastContainer from '@/components/ui/Toast';
 import { useDemoStore } from '@/stores/useDemoStore';
 import { tourSteps } from '@/utils/tourSteps';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import NotFound from '@/pages/NotFound';
 
 export default function App() {
   const [runTour, setRunTour] = useState(false);
@@ -96,7 +97,7 @@ export default function App() {
             <Route path="/treasury" element={<Treasury />} />
             <Route path="/compliance" element={<Compliance />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="*" element={<Navigate to="/overview" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </ErrorBoundary>

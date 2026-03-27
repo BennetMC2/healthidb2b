@@ -42,13 +42,13 @@ export default function ActuarialROICalculator({
   const maxSavings = comparisons.length > 0 ? comparisons[0].savingsPerMember : 1;
 
   return (
-    <div className="card border-accent/10">
+    <div className="card border-accent/10 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-accent/40 before:rounded-l">
       <div className="flex items-center gap-2 mb-3">
         <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center">
           <TrendingUp size={14} className="text-accent" />
         </div>
         <div>
-          <span className="text-xs font-semibold text-primary">Actuarial ROI Projection</span>
+          <span className="text-sm font-semibold text-primary font-display">Actuarial ROI Projection</span>
           <span className="text-2xs text-tertiary ml-2">Live Model</span>
         </div>
       </div>

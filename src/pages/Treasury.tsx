@@ -140,10 +140,10 @@ export default function Treasury() {
     return (
       <div className="flex flex-col gap-4 h-full animate-pulse">
         <div className="skeleton h-8 w-72" />
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => <div key={i} className="skeleton h-32 rounded" />)}
         </div>
         <div className="skeleton h-48 rounded" />
@@ -171,7 +171,7 @@ export default function Treasury() {
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <MetricCard
             label="Budget Deployed"
             value={formatCurrency(ts.totalBudget)}
@@ -213,7 +213,7 @@ export default function Treasury() {
 
         <MultiplierSources />
 
-        <div id="value-multiplier" className="grid grid-cols-2 gap-3 mt-3">
+        <div id="value-multiplier" className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
           <div id="sankey" className="card">
             <div className="flex items-center gap-1.5 mb-2">
               <span className="metric-label">Value Flow</span>
@@ -270,7 +270,7 @@ export default function Treasury() {
           <p className="text-2xs text-tertiary mt-0.5">From risk classification to risk reduction</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex flex-col gap-3">
             {/* Interactive controls */}
             <div className="flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function Treasury() {
         {/* Behavioral Economics */}
         <div id="behavioral-economics" className="card mt-3">
           <span className="metric-label block mb-2">Reward Type Impact</span>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="rounded-lg border border-border bg-elevated p-3">
               <div className="text-2xs text-tertiary uppercase tracking-wider mb-1">Cash Rewards</div>
               <div className="font-mono text-lg font-bold text-secondary">1.0x</div>

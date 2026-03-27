@@ -54,7 +54,7 @@ export default function CampaignDetail() {
           <div className="skeleton w-8 h-8 rounded" />
           <div className="skeleton h-6 w-64" />
         </div>
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {Array.from({ length: 5 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
         </div>
         <div className="flex-1 skeleton rounded" />
@@ -179,7 +179,7 @@ export default function CampaignDetail() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <MetricCard label="Enrolled" value={formatNumber(funnel.enrolled)} />
         <MetricCard label="Verified" value={formatNumber(funnel.verified)} />
         <MetricCard
@@ -201,7 +201,7 @@ export default function CampaignDetail() {
       </div>
 
       {/* Time-Series Chart + Actuarial ROI */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CampaignTimeSeriesChart campaignId={campaign.id} />
         <ActuarialROICalculator
           metric={campaign.challenge.metric}
@@ -212,9 +212,9 @@ export default function CampaignDetail() {
         />
       </div>
 
-      <div className="flex gap-4 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-4 flex-1 min-h-0">
         {/* Funnel */}
-        <div className="card w-[280px] flex-shrink-0">
+        <div className="card w-full lg:w-[280px] flex-shrink-0">
           <SectionHeader
             title="Campaign Funnel"
             description="Conversion pipeline from eligible pool through to verified and rewarded identities."

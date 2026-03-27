@@ -34,18 +34,18 @@ export default function CampaignTimeSeriesChart({ campaignId }: CampaignTimeSeri
           <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="enrollGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-accent)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="var(--color-accent)" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="rgb(var(--a-accent))" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="rgb(var(--a-accent))" stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="verifyGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-success)" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="var(--color-success)" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="rgb(var(--a-success))" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="rgb(var(--a-success))" stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--n-border))" />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10, fill: 'var(--color-tertiary)' }}
+              tick={{ fontSize: 10, fill: 'rgb(var(--n-tertiary))' }}
               tickFormatter={(v: string) => {
                 const d = new Date(v);
                 return `${d.getMonth() + 1}/${d.getDate()}`;
@@ -53,11 +53,11 @@ export default function CampaignTimeSeriesChart({ campaignId }: CampaignTimeSeri
               interval="preserveStartEnd"
               minTickGap={40}
             />
-            <YAxis tick={{ fontSize: 10, fill: 'var(--color-tertiary)' }} />
+            <YAxis tick={{ fontSize: 10, fill: 'rgb(var(--n-tertiary))' }} />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'var(--color-surface)',
-                borderColor: 'var(--color-border)',
+                backgroundColor: 'rgb(var(--n-surface))',
+                borderColor: 'rgb(var(--n-border))',
                 borderRadius: 6,
                 fontSize: 11,
               }}
@@ -76,14 +76,14 @@ export default function CampaignTimeSeriesChart({ campaignId }: CampaignTimeSeri
             <Area
               type="monotone"
               dataKey="enrolled"
-              stroke="var(--color-accent)"
+              stroke="rgb(var(--a-accent))"
               strokeWidth={1.5}
               fill="url(#enrollGrad)"
             />
             <Area
               type="monotone"
               dataKey="verified"
-              stroke="var(--color-success)"
+              stroke="rgb(var(--a-success))"
               strokeWidth={1.5}
               fill="url(#verifyGrad)"
             />

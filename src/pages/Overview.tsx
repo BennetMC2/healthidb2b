@@ -70,7 +70,7 @@ function InfrastructurePipeline() {
             top: '50%',
             transform: 'translateY(-50%)',
             height: 14,
-            background: 'linear-gradient(90deg, #D4D2CD 0%, #E2E0DB 30%, #D4D2CD 50%, #E2E0DB 70%, #D4D2CD 100%)',
+            background: `linear-gradient(90deg, rgb(var(--n-border-light)) 0%, rgb(var(--n-border)) 30%, rgb(var(--n-border-light)) 50%, rgb(var(--n-border)) 70%, rgb(var(--n-border-light)) 100%)`,
             boxShadow: 'inset 0 2px 3px rgba(27,42,74,0.07), 0 1px 2px rgba(27,42,74,0.04)',
           }}
         />
@@ -273,9 +273,9 @@ export default function Overview() {
     return (
       <div className="h-full overflow-auto scrollbar-thin">
         <div className="px-6 py-8 space-y-6 animate-pulse">
-          <div className="skeleton h-12 w-[500px] mx-auto" />
-          <div className="skeleton h-5 w-[400px] mx-auto" />
-          <div className="grid grid-cols-3 gap-4 mt-8">
+          <div className="skeleton h-12 w-full max-w-[500px] mx-auto" />
+          <div className="skeleton h-5 w-full max-w-[400px] mx-auto" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-8">
             <div className="skeleton h-[520px] rounded-xl" />
             <div className="skeleton h-[520px] rounded-xl" />
             <div className="skeleton h-[520px] rounded-xl" />
@@ -290,7 +290,7 @@ export default function Overview() {
       <div className="px-6 py-8 space-y-8">
         {/* ── Header ─────────────────────────────────────────── */}
         <section className="text-center space-y-3">
-          <h1 className="text-2xl font-bold text-primary tracking-tight">
+          <h1 className="text-3xl font-bold text-primary tracking-tight font-display">
             HealthID: The Universal Infrastructure for the New Health Economy
           </h1>
           <p className="text-sm text-secondary max-w-[560px] mx-auto leading-relaxed">
@@ -317,7 +317,7 @@ export default function Overview() {
         </section>
 
         {/* ── 3-Panel Canvas ─────────────────────────────────── */}
-        <section className="grid grid-cols-3 gap-4" data-tour="overview-personas">
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4" data-tour="overview-personas">
 
           {/* ─── LEFT: Trust & Privacy Chasm ─────────────────── */}
           <div className="rounded-xl bg-base border border-border p-5 shadow-sm flex flex-col">
@@ -523,13 +523,13 @@ export default function Overview() {
 
         {/* ── Two Products. One Ecosystem. ───────────────────── */}
         <section>
-          <h2 className="text-sm font-bold text-primary mb-1 text-center">
+          <h2 className="text-xl font-bold text-primary mb-1 text-center font-display">
             Two Products. One Ecosystem.
           </h2>
           <p className="text-2xs text-tertiary text-center mb-4">
             The supply, the bridge, and the demand — connected by cryptographic trust.
           </p>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Card 1: Supply */}
             <div
               className="rounded-xl bg-surface border border-border p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
@@ -661,7 +661,7 @@ export default function Overview() {
 
         {/* ── Comparison: Traditional vs HealthID ──────────── */}
         <section>
-          <h2 className="text-sm font-bold text-primary mb-1 text-center">
+          <h2 className="text-xl font-bold text-primary mb-1 text-center font-display">
             Traditional Verification vs. HealthID
           </h2>
           <p className="text-2xs text-tertiary text-center mb-4">

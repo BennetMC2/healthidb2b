@@ -4,6 +4,13 @@ import InfoTooltip from '@/components/ui/InfoTooltip';
 import { Calculator } from 'lucide-react';
 import { formatCurrency, formatMultiplier } from '@/utils/format';
 import { useDemoStore } from '@/stores/useDemoStore';
+import { useThemeStore } from '@/stores/useThemeStore';
+
+// Helper to get CSS variable color as rgb string
+function getCSSColorAsRgb(varName: string): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value ? `rgb(${value})` : '#999';
+}
 
 export default function ROICalculator() {
   const [budget, setBudget] = useState(100000);
@@ -11,6 +18,7 @@ export default function ROICalculator() {
   const [yieldRate, setYieldRate] = useState(4.5);
   const demoActive = useDemoStore((s) => s.isActive);
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
+  const { theme } = useThemeStore();
 
   const results = useMemo(() => {
     const rate = yieldRate / 100;
@@ -49,6 +57,10 @@ export default function ROICalculator() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Get theme colors
+    const accentColor = getCSSColorAsRgb('--a-accent');
+    const secondaryColor = getCSSColorAsRgb('--n-secondary');
+
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
@@ -79,8 +91,8 @@ export default function ROICalculator() {
 
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-    gradient.addColorStop(0, 'rgba(224, 122, 95, 0.12)');
-    gradient.addColorStop(1, 'rgba(224, 122, 95, 0.0)');
+    gradient.addColorStop(0, accentColor.replace('rgb(', 'rgba(').replace(')', ', 0.12)'));
+    gradient.addColorStop(1, accentColor.replace('rgb(', 'rgba(').replace(')', ', 0)'));
 
     ctx.beginPath();
     ctx.moveTo(xScale(0), h - pad.bottom);
@@ -96,7 +108,7 @@ export default function ROICalculator() {
       if (i === 0) ctx.moveTo(xScale(i), yScale(v));
       else ctx.lineTo(xScale(i), yScale(v));
     });
-    ctx.strokeStyle = '#E07A5F';
+    ctx.strokeStyle = accentColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -105,11 +117,11 @@ export default function ROICalculator() {
     ctx.setLineDash([2, 2]);
     ctx.moveTo(pad.left, yScale(budget));
     ctx.lineTo(w - pad.right, yScale(budget));
-    ctx.strokeStyle = 'rgba(74, 85, 104, 0.2)';
+    ctx.strokeStyle = secondaryColor.replace('rgb(', 'rgba(').replace(')', ', 0.2)');
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.setLineDash([]);
-  }, [budget, months, yieldRate, results.buyingPowerBonus]);
+  }, [budget, months, yieldRate, results.buyingPowerBonus, theme]);
 
   useEffect(() => {
     drawChart();

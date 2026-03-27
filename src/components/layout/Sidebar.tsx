@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   BookOpen,
@@ -10,7 +10,40 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
+  X,
 } from 'lucide-react';
+
+const SIDEBAR_KEY = 'healthid_sidebar_expanded';
+
+// HealthID Logomark SVG Component
+function HealthIDLogomark({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <path
+        d="M10 1.5 L17.5 5.5 L17.5 13.5 L10 17.5 L2.5 13.5 L2.5 5.5 Z"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeLinejoin="round"
+        strokeDasharray="0 0 30 3"
+      />
+      <path
+        d="M10 4.5 L14.5 6.5 L14.5 10.5 C14.5 13 10 15.5 10 15.5 C10 15.5 5.5 13 5.5 10.5 L5.5 6.5 Z"
+        fill="currentColor"
+        fillOpacity={0.12}
+        stroke="currentColor"
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.5 10 L9.2 12 L12.5 8"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 const navItems = [
   { path: '/overview', label: 'Overview', icon: BookOpen, tourId: 'overview-nav' },
@@ -21,25 +54,51 @@ const navItems = [
   { path: '/settings', label: 'Settings', icon: Settings, tourId: undefined },
 ];
 
-export default function Sidebar() {
-  const [expanded, setExpanded] = useState(true);
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
+  const [expanded, setExpanded] = useState(() => {
+    const stored = localStorage.getItem(SIDEBAR_KEY);
+    return stored !== null ? stored === 'true' : true;
+  });
   const location = useLocation();
 
-  return (
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_KEY, String(expanded));
+  }, [expanded]);
+
+  // Close mobile drawer on navigation
+  useEffect(() => {
+    onMobileClose?.();
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sidebarContent = (isMobile: boolean) => (
     <aside
       className={`flex flex-col h-full bg-surface border-r border-border transition-all duration-150 ${
-        expanded ? 'w-[200px]' : 'w-[48px]'
+        isMobile ? 'w-[200px]' : expanded ? 'w-[200px]' : 'w-[48px]'
       }`}
     >
       {/* Logo */}
-      <div className="flex items-center h-[40px] px-3 border-b border-border">
-        <div className="w-[22px] h-[22px] rounded-sm bg-accent/20 flex items-center justify-center flex-shrink-0">
-          <span className="text-accent text-2xs font-bold font-mono">H</span>
+      <div className="flex items-center h-[44px] px-3 border-b border-border">
+        <div className="text-accent flex-shrink-0">
+          <HealthIDLogomark size={24} />
         </div>
-        {expanded && (
-          <span className="ml-2 text-sm font-semibold text-primary truncate">
-            HealthID
-          </span>
+        {(isMobile || expanded) && (
+          <div className="ml-2 flex flex-col leading-tight">
+            <span className="text-sm font-semibold font-display text-primary">HealthID</span>
+            <span className="text-2xs font-mono text-accent/70">ZK</span>
+          </div>
+        )}
+        {isMobile && (
+          <button
+            onClick={onMobileClose}
+            className="ml-auto w-[24px] h-[24px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors"
+          >
+            <X size={14} />
+          </button>
         )}
       </div>
 
@@ -66,10 +125,10 @@ export default function Sidebar() {
                 strokeWidth={isActive ? 2 : 1.5}
                 className="flex-shrink-0"
               />
-              {expanded && (
+              {(isMobile || expanded) && (
                 <span className="ml-2.5 text-sm truncate">{label}</span>
               )}
-              {!expanded && isActive && (
+              {!isMobile && !expanded && isActive && (
                 <div className="absolute left-0 w-[2px] h-4 bg-accent rounded-r" />
               )}
             </NavLink>
@@ -81,11 +140,11 @@ export default function Sidebar() {
       <div className="px-2 pb-2" data-tour="zk-badge">
         <div
           className={`flex items-center gap-1.5 px-2 py-1.5 rounded bg-accent-dim border border-accent/10 ${
-            expanded ? '' : 'justify-center'
+            (isMobile || expanded) ? '' : 'justify-center'
           }`}
         >
           <Lock size={12} className="text-accent flex-shrink-0" />
-          {expanded && (
+          {(isMobile || expanded) && (
             <span className="text-2xs text-accent font-medium">
               ZK Verification Active
             </span>
@@ -93,13 +152,37 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="flex items-center justify-center h-[32px] border-t border-border text-tertiary hover:text-secondary transition-colors"
-      >
-        {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
-      </button>
+      {/* Collapse Toggle — desktop only */}
+      {!isMobile && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center justify-center h-[32px] border-t border-border text-tertiary hover:text-secondary transition-colors"
+        >
+          {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
+        </button>
+      )}
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex">
+        {sidebarContent(false)}
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-primary/40"
+            onClick={onMobileClose}
+          />
+          <div className="relative z-10 h-full w-fit shadow-lg animate-slide-in-right">
+            {sidebarContent(true)}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

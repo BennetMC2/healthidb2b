@@ -190,7 +190,7 @@ export default function NetworkExplorer() {
       <div className="flex gap-4 flex-1 min-h-0">
         {/* Filter Panel */}
         {showFilters && (
-          <div className="w-[220px] flex-shrink-0 card overflow-auto scrollbar-thin space-y-4" data-tour="explorer-filters">
+          <div className="hidden md:block w-[220px] flex-shrink-0 card overflow-auto scrollbar-thin space-y-4" data-tour="explorer-filters">
             <div className="text-xs text-tertiary mb-2">Narrow the pool to target specific cohorts for campaigns.</div>
             {/* Health Score Range */}
             <div>

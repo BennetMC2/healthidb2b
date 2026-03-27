@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import { Plus, Zap, Radio, Target, Filter } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import CampaignOnboardingModal from '@/components/campaigns/CampaignOnboardingModal';
@@ -17,6 +18,7 @@ import type { CampaignType, CampaignStatus } from '@/types';
 
 export default function Campaigns() {
   const navigate = useNavigate();
+  const loading = useSimulatedLoading(300);
   const allCampaigns = useCampaignStore((s) => s.campaigns);
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const [typeFilter, setTypeFilter] = useState<'all' | CampaignType>('all');
@@ -52,6 +54,19 @@ export default function Campaigns() {
     { id: 'stream', label: 'Stream', count: campaigns.filter((c) => c.type === 'stream').length },
   ];
 
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-4 h-full animate-pulse">
+        <div className="skeleton h-8 w-48" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
+        </div>
+        <div className="skeleton h-10 rounded" />
+        <div className="flex-1 skeleton rounded" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4 h-full">
       {showOnboarding && (
@@ -62,7 +77,7 @@ export default function Campaigns() {
       <SectionHeader title="Campaigns" description="Campaigns are how you engage the pool. Create a challenge, define the health metric, and receive cryptographic proof receipts — never raw data." icon={<Target size={16} />} />
 
       {/* Metrics */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <MetricCard label="Total Campaigns" value={stats.total} icon={<Zap size={14} />} />
         <MetricCard label="Active" value={stats.active} icon={<Radio size={14} />} />
         <MetricCard label="Total Budget" value={formatCurrency(stats.totalBudget)} />
@@ -173,7 +188,7 @@ export default function Campaigns() {
         {/* Templates — below campaign list, scrolls naturally */}
         <div>
           <SectionHeader title="Campaign Templates" description="Pre-configured campaigns for common use cases. One-click to launch." />
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {campaignTemplates.map((template) => (
               <button
                 key={template.id}
