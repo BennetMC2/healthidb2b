@@ -12,6 +12,14 @@ function getCSSColorAsRgb(varName: string): string {
   return value ? `rgb(${value})` : '#999';
 }
 
+// Helper to create rgba from CSS variable (converts space-separated to comma-separated)
+function getCSSColorAsRgba(varName: string, alpha: number): string {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  if (!value) return `rgba(153, 153, 153, ${alpha})`;
+  const parts = value.split(/\s+/);
+  return `rgba(${parts.join(',')},${alpha})`;
+}
+
 export default function ROICalculator() {
   const [budget, setBudget] = useState(100000);
   const [months, setMonths] = useState(12);
@@ -59,7 +67,6 @@ export default function ROICalculator() {
 
     // Get theme colors
     const accentColor = getCSSColorAsRgb('--a-accent');
-    const secondaryColor = getCSSColorAsRgb('--n-secondary');
 
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
@@ -91,8 +98,8 @@ export default function ROICalculator() {
 
     // Gradient fill
     const gradient = ctx.createLinearGradient(0, pad.top, 0, h - pad.bottom);
-    gradient.addColorStop(0, accentColor.replace('rgb(', 'rgba(').replace(')', ', 0.12)'));
-    gradient.addColorStop(1, accentColor.replace('rgb(', 'rgba(').replace(')', ', 0)'));
+    gradient.addColorStop(0, getCSSColorAsRgba('--a-accent', 0.12));
+    gradient.addColorStop(1, getCSSColorAsRgba('--a-accent', 0));
 
     ctx.beginPath();
     ctx.moveTo(xScale(0), h - pad.bottom);
@@ -117,7 +124,7 @@ export default function ROICalculator() {
     ctx.setLineDash([2, 2]);
     ctx.moveTo(pad.left, yScale(budget));
     ctx.lineTo(w - pad.right, yScale(budget));
-    ctx.strokeStyle = secondaryColor.replace('rgb(', 'rgba(').replace(')', ', 0.2)');
+    ctx.strokeStyle = getCSSColorAsRgba('--n-secondary', 0.2);
     ctx.lineWidth = 1;
     ctx.stroke();
     ctx.setLineDash([]);
