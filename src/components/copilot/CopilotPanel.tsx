@@ -1,12 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useCopilotKeyboard, COPILOT_INPUT_ID } from '@/hooks/useCopilotKeyboard';
 import { getPageSuggestions } from '@/copilot/suggestions';
 import CopilotMessage from './CopilotMessage';
 
-export default function CopilotPanel() {
+interface CopilotPanelProps {
+  onClose?: () => void;
+}
+
+export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
   useCopilotKeyboard();
 
   const { messages, isStreaming, sendMessage, clearMessages } = useCopilotStore();
@@ -37,7 +42,7 @@ export default function CopilotPanel() {
   }
 
   return (
-    <div className="w-[320px] h-full border-l border-border bg-surface flex flex-col shrink-0">
+    <div className="h-full bg-surface flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
@@ -52,6 +57,15 @@ export default function CopilotPanel() {
           </span>
         </div>
         <div className="flex items-center gap-1">
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="rounded p-1 text-tertiary transition-colors hover:bg-hover hover:text-secondary"
+              title="Close"
+            >
+              <X size={14} />
+            </button>
+          )}
           {messages.length > 0 && (
             <button
               onClick={clearMessages}
