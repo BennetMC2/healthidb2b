@@ -606,7 +606,7 @@ export default function Treasury() {
         {showOperations && (
           <div className="flex flex-col gap-3 mt-1">
             {/* Points metrics row */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <MetricCard
                 label="Points Distributed"
                 value={formatNumber(ts.pointsDistributed)}

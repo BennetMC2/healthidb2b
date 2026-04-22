@@ -118,7 +118,7 @@ export default function NetworkExplorer() {
       <div className="flex flex-col gap-4 h-full animate-pulse">
         <div className="skeleton h-8 w-48" />
         <div className="skeleton h-4 w-80" />
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
         </div>
         <div className="flex-1 skeleton rounded" />
@@ -133,7 +133,7 @@ export default function NetworkExplorer() {
       <SectionHeader title="Open Pool" description="Anonymized health identities reachable through the protocol. No personal data is stored or transmitted." icon={<Globe size={16} />} />
 
       {/* Top metrics */}
-      <div className="grid grid-cols-4 gap-3" data-tour="explorer-metrics">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-tour="explorer-metrics">
         <MetricCard
           label="Reachable Identities"
           value={formatCompact(filtered.length)}
@@ -316,7 +316,7 @@ export default function NetworkExplorer() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col gap-3 min-w-0">
           {/* Charts Row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {/* Health Score Distribution */}
             <div className="card col-span-1">
               <div className="flex items-center gap-1.5 mb-2"><span className="metric-label">Health Score Distribution</span><InfoTooltip content="Composite score (0–100) derived from verified wearable and clinical data sources. Higher scores indicate more consistent health tracking." /></div>

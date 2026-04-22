@@ -236,7 +236,7 @@ function InfrastructurePipeline() {
       <div className="relative mx-3 mt-1">
         {/* Background bar connecting the steps */}
         <div className="absolute left-6 right-6 top-3 h-0.5 bg-border z-0" />
-        <div className="relative z-10 grid grid-cols-4">
+        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4">
           {[
             { n: '1', label: 'User Consent' },
             { n: '2', label: 'The Challenge' },
@@ -304,10 +304,10 @@ export default function Overview() {
 
   return (
     <div className="h-full overflow-auto scrollbar-thin" data-tour="overview-hero">
-      <div className="px-6 py-8 space-y-8">
+      <div className="px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         {/* ── Header ─────────────────────────────────────────── */}
         <section className="text-center space-y-3">
-          <h1 className="text-3xl font-bold text-primary tracking-tight font-display">
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight font-display">
             HealthID: The Universal Infrastructure for the New Health Economy
           </h1>
           <p className="text-sm text-secondary max-w-[560px] mx-auto leading-relaxed">
@@ -315,7 +315,7 @@ export default function Overview() {
           </p>
 
           {/* Key stats */}
-          <div className="flex justify-center gap-6 pt-2">
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 pt-2">
             <div className="text-center">
               <span className="font-mono text-lg font-semibold text-primary">{formatCompact(poolSize)}</span>
               <span className="text-2xs text-tertiary uppercase tracking-wider ml-1.5">Identities</span>
@@ -429,8 +429,27 @@ export default function Overview() {
             <div className="text-2xs text-tertiary mb-2">
               Health data verified on-device, delivered as cryptographic proof — never raw files.
             </div>
-            <div className="flex-1 flex flex-col justify-center">
+            {/* Full animation — desktop only */}
+            <div className="hidden sm:flex flex-1 flex-col justify-center">
               <InfrastructurePipeline />
+            </div>
+            {/* Compact static — mobile only */}
+            <div className="flex sm:hidden flex-1 items-center justify-center gap-3 py-4">
+              {[
+                { icon: '📱', label: 'Device' },
+                { icon: '🔒', label: 'ZK Proof' },
+                { icon: '🏢', label: 'Partner' },
+              ].map((n, i) => (
+                <div key={n.label} className="flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="w-12 h-12 rounded-xl bg-surface border-2 border-accent/25 flex items-center justify-center text-xl shadow-sm">
+                      {n.icon}
+                    </div>
+                    <span className="text-2xs text-tertiary font-medium">{n.label}</span>
+                  </div>
+                  {i < 2 && <span className="text-accent/40 text-lg mb-4">→</span>}
+                </div>
+              ))}
             </div>
             <div className="text-center mt-2">
               <LiveProofButton variant="primary" size="sm" />

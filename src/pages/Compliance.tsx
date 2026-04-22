@@ -169,7 +169,7 @@ export default function Compliance() {
     return (
       <div className="flex flex-col gap-4 h-full animate-pulse">
         <div className="skeleton h-8 w-52" />
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-20 rounded" />)}
         </div>
         <div className="skeleton h-12 rounded" />
@@ -185,7 +185,7 @@ export default function Compliance() {
       <SectionHeader title="Audit & Risk Dashboard" description="Executive risk overview with estimated liability avoidance. Complete audit trail proving zero PII exposure across all protocol operations." icon={<ShieldCheck size={16} />} />
 
       {/* Metrics */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <MetricCard
           label="Audit Records"
           value={formatCompact(stats.totalRecords)}
@@ -299,7 +299,7 @@ export default function Compliance() {
                   <span className="text-sm font-medium text-primary">{summary.period}</span>
                   <Badge variant="success">PII Events: 0</Badge>
                 </div>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <div>
                     <span className="text-2xs text-tertiary block">Records Processed</span>
                     <span className="font-mono text-sm text-secondary">{formatCompact(summary.recordsProcessed)}</span>

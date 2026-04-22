@@ -26,10 +26,10 @@ export default function IdentityDetailDrawer({ identity, onClose }: IdentityDeta
           />
           {/* Drawer */}
           <motion.div
-            className="fixed right-0 top-0 bottom-0 z-50 w-[380px] bg-surface border-l border-border shadow-lg overflow-auto scrollbar-thin"
-            initial={{ x: 380 }}
+            className="fixed right-0 top-0 bottom-0 z-50 w-[min(380px,92vw)] bg-surface border-l border-border shadow-lg overflow-auto scrollbar-thin"
+            initial={{ x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: 380 }}
+            exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
             {/* Header */}

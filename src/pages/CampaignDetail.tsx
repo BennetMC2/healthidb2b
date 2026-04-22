@@ -143,7 +143,7 @@ export default function CampaignDetail() {
         <p className="text-xs text-secondary leading-relaxed mb-3">
           {campaign.purpose}
         </p>
-        <div className="grid grid-cols-3 gap-3 text-2xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-2xs">
           <div>
             <span className="text-tertiary block mb-0.5">Challenge</span>
             <ChallengeDisplay challenge={campaign.challenge} additionalChallenges={campaign.additionalChallenges} />
@@ -274,17 +274,17 @@ export default function CampaignDetail() {
                   v.status === 'pending' ? 'bg-warning' :
                   v.status === 'failed' ? 'bg-error' : 'bg-tertiary'
                 }`} />
-                <span className="text-2xs text-tertiary w-[120px] flex-shrink-0">
+                <span className="text-2xs text-tertiary w-[90px] sm:w-[120px] flex-shrink-0 truncate">
                   {formatTimestamp(v.timestamp)}
                 </span>
                 <ProofBadge type={v.proofType} />
-                <span className="font-mono text-2xs text-accent/60 truncate-hash flex-1">
+                <span className="font-mono text-2xs text-accent/60 truncate-hash flex-1 min-w-0">
                   {formatHash(v.proofHash)}
                 </span>
                 <span className={`text-2xs font-medium ${statusColors[v.status]}`}>
                   {v.status}
                 </span>
-                <span className="text-2xs font-mono text-tertiary w-[60px] text-right">
+                <span className="hidden sm:block text-2xs font-mono text-tertiary w-[60px] text-right flex-shrink-0">
                   {formatDuration(v.proofGenerationMs)}
                 </span>
               </button>

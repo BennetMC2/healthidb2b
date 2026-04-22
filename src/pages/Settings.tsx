@@ -181,7 +181,7 @@ export default function Settings() {
           <Shield size={12} className="text-tertiary" />
           <span className="metric-label">Session & Access</span>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <span className="text-2xs text-tertiary block">Last Login</span>
             <span className="text-sm text-secondary">Today, 09:14 AM</span>

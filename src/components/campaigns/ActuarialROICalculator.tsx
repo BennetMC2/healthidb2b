@@ -93,7 +93,7 @@ export default function ActuarialROICalculator({
         </div>
       )}
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
         {/* Claims Reduction */}
         <div>
           <span className="text-2xs text-tertiary block">Claims Reduction</span>

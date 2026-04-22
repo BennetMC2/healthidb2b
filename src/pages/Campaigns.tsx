@@ -115,7 +115,7 @@ export default function Campaigns() {
 
       {/* Campaign List + Templates — single scrollable area */}
       <div className="flex-1 min-h-0 overflow-auto scrollbar-thin space-y-4">
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-[520px]">
           {filtered.length === 0 && (
             <EmptyState
               icon={<Filter size={20} className="text-tertiary" />}

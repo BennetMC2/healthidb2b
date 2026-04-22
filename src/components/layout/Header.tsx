@@ -74,6 +74,14 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
 
         {/* Right actions */}
         <div className="flex items-center gap-1">
+          {/* Mobile search icon */}
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="sm:hidden w-[30px] h-[30px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors"
+            title="Search"
+          >
+            <Search size={14} />
+          </button>
           {/* Uptime/Status Badge */}
           <div className="hidden sm:flex items-center gap-1.5 px-2 h-[30px] rounded border border-border bg-base mr-1 group relative">
             <CheckCircle size={10} className="text-success" />
@@ -87,7 +95,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           <select
             value={currentPartner.id}
             onChange={(e) => setCurrentPartner(e.target.value)}
-            className="h-[30px] px-2 bg-base border border-border rounded text-xs text-secondary focus:outline-none focus:border-accent/30 cursor-pointer"
+            className="h-[30px] px-2 bg-base border border-border rounded text-xs text-secondary focus:outline-none focus:border-accent/30 cursor-pointer max-w-[120px] sm:max-w-none"
           >
             {allPartners.map((p) => (
               <option key={p.id} value={p.id}>
