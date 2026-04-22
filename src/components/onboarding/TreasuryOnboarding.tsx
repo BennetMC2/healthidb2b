@@ -1,27 +1,27 @@
-import { Vault, TrendingUp, Coins, DollarSign } from 'lucide-react';
+import { Activity, TrendingUp, Layers, BookOpen } from 'lucide-react';
 import OnboardingModal from '@/components/ui/OnboardingModal';
 import type { OnboardingStep } from '@/components/ui/OnboardingModal';
 
 const steps: OnboardingStep[] = [
   {
-    icon: Vault,
-    title: 'Deploy Budget',
-    description: 'Deposit funds into the protocol treasury. Principal is protected in tokenized T-Bills.',
+    icon: Activity,
+    title: 'Select a Metric',
+    description: 'Pick a health metric — HbA1c, VO₂ max, cholesterol — and HealthID matches policyholders who share verified proof.',
   },
   {
     icon: TrendingUp,
-    title: 'Earn Yield',
-    description: 'Idle funds generate 4-5% APY from US Treasury Bills while waiting for distribution.',
+    title: 'Model Morbidity Shift',
+    description: 'Evidence-graded projections show claims reduction rate and basis-point morbidity improvement in actuarial pricing language.',
   },
   {
-    icon: Coins,
-    title: 'Amplify Value',
-    description: 'Wholesale procurement and yield combine to create a 1.50x+ value multiplier on every dollar.',
+    icon: Layers,
+    title: 'Stack Metrics',
+    description: 'Combine up to 3 metrics. A 0.75× correlation dampener keeps the combined estimate conservative and credible.',
   },
   {
-    icon: DollarSign,
-    title: 'Reduce Claims',
-    description: 'Verified, incentivized health behavior drives measurable claims reduction — the real ROI.',
+    icon: BookOpen,
+    title: 'Scale to Your Book',
+    description: 'Enter your book size and average premium to see total VNB impact and projected annual savings across your portfolio.',
   },
 ];
 
@@ -33,12 +33,12 @@ export default function TreasuryOnboarding({ onDismiss }: TreasuryOnboardingProp
   return (
     <OnboardingModal
       storageKey="healthid_treasury_onboarded"
-      headerTitle="How the Treasury Works"
-      headerDescription="Your budget works while it waits. Here's the economic engine:"
+      headerTitle="The Actuarial Impact Engine"
+      headerDescription="From metric selection to morbidity shift — model claims reduction at any scale."
       steps={steps}
-      punchline="Your budget works while it waits. Your users get more than you spend."
-      primaryAction={{ label: 'View ROI Calculator', action: '/treasury#roi-calculator' }}
-      ghostLabel="Explore Treasury"
+      punchline="Real actuarial language. Real claims reduction. Modeled by metric, use case, and book size."
+      primaryAction={{ label: 'View Actuarial Model', action: '/treasury#actuarial-roi' }}
+      ghostLabel="How Rewards Are Funded"
       onDismiss={onDismiss}
     />
   );

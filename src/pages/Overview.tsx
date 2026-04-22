@@ -7,7 +7,7 @@ import {
   Heart,
   Shield,
   CheckCircle,
-  Scale,
+
   Layers,
   AlertTriangle,
   Unplug,
@@ -17,7 +17,7 @@ import {
   Vault,
   Sparkles,
   Brain,
-  Plane,
+
   Lock,
   Users,
   Plug,
@@ -32,6 +32,10 @@ import { industryContexts } from '@/data/partnerContext';
 import DemoButton from '@/components/walkthrough/DemoButton';
 import LiveProofButton from '@/components/proof/LiveProofButton';
 import ComparisonWidget from '@/components/proof/ComparisonWidget';
+import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
+import { getMetricsGroupedByCategory } from '@/utils/constants';
+import { USE_CASE_CONFIG } from '@/utils/actuarial';
+import type { HealthMetric, CampaignUseCase } from '@/types';
 
 // ── Center Panel: Infrastructure Pipeline (Framer Motion) ────────
 
@@ -269,6 +273,19 @@ export default function Overview() {
   const proofsGenerated = verifications.filter((v) => v.status === 'verified').length;
   const piiEvents = complianceRecords.filter((r) => r.piiAccessed).length;
 
+  const [roiMetric, setRoiMetric] = useState<HealthMetric>('hba1c');
+  const [roiUseCase, setRoiUseCase] = useState<CampaignUseCase>('underwriting');
+  const [roiParticipants, setRoiParticipants] = useState(5000);
+
+  const metricGroups = getMetricsGroupedByCategory();
+  const useCaseLabels: Record<CampaignUseCase, string> = {
+    underwriting: 'Underwriting',
+    dynamic_premium: 'Dynamic Premium',
+    claims_reduction: 'Claims Reduction',
+    renewal: 'Renewal',
+    acquisition: 'Acquisition',
+  };
+
   if (loading) {
     return (
       <div className="h-full overflow-auto scrollbar-thin">
@@ -420,36 +437,13 @@ export default function Overview() {
             </div>
           </div>
 
-          {/* ─── RIGHT: Economic Yield Engine ────────────────── */}
+          {/* ─── RIGHT: Actuarial Impact ──────────────────────── */}
           <div className="rounded-xl bg-accent-muted/30 border border-accent/10 p-5 shadow-sm flex flex-col">
             <div className="text-2xs text-accent uppercase tracking-wider font-semibold mb-4">
-              The Economic Yield Engine
+              Actuarial Impact
             </div>
 
-            {/* Value Arbitrage — links to Treasury value multiplier */}
-            <button onClick={() => navigate('/treasury#value-multiplier')} className="flex items-center gap-3 mb-3 w-full text-left hover:bg-accent/5 rounded-lg p-1 -m-1 transition-colors group">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 border border-accent/15 flex items-center justify-center flex-shrink-0">
-                <Scale size={18} className="text-accent" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-semibold text-primary group-hover:text-accent transition-colors">Value Arbitrage</div>
-                <div className="text-2xs text-tertiary leading-relaxed">
-                  Protocol wholesale cost vs. perceived retail value
-                </div>
-              </div>
-              <ArrowRight size={10} className="text-tertiary opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-            </button>
-
-            {/* Multiplier callout — links to Treasury */}
-            <button onClick={() => navigate('/treasury#value-multiplier')} className="rounded-lg bg-surface border border-accent/15 p-3 text-center mb-3 shadow-sm w-full hover:shadow-md transition-shadow cursor-pointer">
-              <div className="text-2xs text-tertiary uppercase tracking-wider mb-1">High-Value Multiplier</div>
-              <div className="font-mono text-2xl font-bold text-accent">1.50x+</div>
-              <div className="text-2xs text-secondary mt-0.5">
-                Every dollar of budget creates &gt;$1.50 of user value
-              </div>
-            </button>
-
-            {/* Actuarial Risk Model — links to Campaign Builder */}
+            {/* Featured: Actuarial Risk Model — primary CTA */}
             <button
               onClick={() => navigate('/campaigns/new')}
               className="rounded-lg bg-surface border border-accent/15 p-3 text-left w-full hover:shadow-md transition-shadow cursor-pointer mb-3"
@@ -462,61 +456,155 @@ export default function Overview() {
                 <span className="font-mono text-xl font-bold text-accent">22%</span>
                 <span className="text-2xs text-secondary">avg. claims reduction · HbA1c</span>
               </div>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className="font-mono text-base font-bold text-primary">20 bps</span>
+                <span className="text-2xs text-tertiary">morbidity assumption shift</span>
+              </div>
               <div className="text-2xs text-tertiary leading-relaxed mb-2">
-                Live per-metric model with evidence-graded projections and HP reward back-out.
+                Evidence-graded per-metric projections with morbidity shift, payback period, and VNB impact.
               </div>
               <span className="text-2xs text-accent flex items-center gap-1">
                 Build a campaign <ArrowRight size={10} />
               </span>
             </button>
 
-            {/* Yield layers — clickable to Treasury sections */}
+            {/* Actuarial-focused list items */}
             <div className="space-y-1 flex-1">
-              <button onClick={() => navigate('/treasury#sankey')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
-                <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Vault size={13} className="text-accent" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Yield-Subsidized Rewards</div>
-                  <div className="text-2xs text-tertiary">T-Bill yield (BUIDL/USDY) generates returns while funds await distribution</div>
-                </div>
-              </button>
-              <button onClick={() => navigate('/treasury#roi-calculator')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
-                <div className="w-7 h-7 rounded bg-success/10 flex items-center justify-center flex-shrink-0">
-                  <Activity size={13} className="text-success" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Sustained Claims Reduction</div>
-                  <div className="text-2xs text-tertiary">Engaged, verified members drive measurable reduction in healthcare spend</div>
-                </div>
-              </button>
-              <button onClick={() => navigate('/treasury#roi-calculator')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
-                <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
-                  <Layers size={13} className="text-accent" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Enterprise Buying Power</div>
-                  <div className="text-2xs text-tertiary">Wholesale procurement amplifies value beyond raw budget</div>
-                </div>
-              </button>
-              <button onClick={() => navigate('/treasury#behavioral-economics')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
-                <div className="w-7 h-7 rounded bg-accent-secondary/10 flex items-center justify-center flex-shrink-0">
-                  <Plane size={13} className="text-accent-secondary" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Behavioral Economics</div>
-                  <div className="text-2xs text-tertiary">Aspirational rewards (flights, experiences) drive <span className="font-semibold text-accent">1.5–2.5x</span> more sustained habit formation than instant cash</div>
-                </div>
-              </button>
-              <button onClick={() => navigate('/campaigns/new')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
+              <button onClick={() => navigate('/treasury#actuarial-roi')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
                 <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
                   <TrendingUp size={13} className="text-accent" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Actuarial Risk Model</div>
-                  <div className="text-2xs text-tertiary">Per-metric claims projections with evidence grading and HP back-out</div>
+                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Morbidity Shift Modeling</div>
+                  <div className="text-2xs text-tertiary">Basis-point morbidity improvement by metric and use case</div>
                 </div>
               </button>
+              <button onClick={() => navigate('/treasury#portfolio-book')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
+                <div className="w-7 h-7 rounded bg-success/10 flex items-center justify-center flex-shrink-0">
+                  <Activity size={13} className="text-success" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Portfolio Book Analysis</div>
+                  <div className="text-2xs text-tertiary">Total VNB impact and annual savings scaled to your full book</div>
+                </div>
+              </button>
+              <button onClick={() => navigate('/treasury#actuarial-roi')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
+                <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Layers size={13} className="text-accent" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-2xs font-semibold text-primary group-hover:text-accent transition-colors">Multi-Metric Stacking</div>
+                  <div className="text-2xs text-tertiary">Combine up to 3 metrics with correlation dampening for blended morbidity impact</div>
+                </div>
+              </button>
+
+              {/* Yield — de-emphasized footnote */}
+              <div className="pt-1 mt-1 border-t border-accent/8">
+                <button onClick={() => navigate('/treasury#yield-mechanics')} className="flex items-center gap-2.5 w-full text-left hover:bg-accent/5 rounded p-1 -m-1 transition-colors group">
+                  <div className="w-7 h-7 rounded bg-border flex items-center justify-center flex-shrink-0">
+                    <Vault size={13} className="text-tertiary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-2xs font-medium text-tertiary group-hover:text-secondary transition-colors">Yield-Subsidized Rewards</div>
+                    <div className="text-2xs text-tertiary/70">T-Bill yield covers reward cost; 4–5% APY on idle funds</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Model Your Actuarial ROI ────────────────────────── */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-primary font-display">Model Your Actuarial ROI</h2>
+              <p className="text-2xs text-tertiary mt-0.5">
+                Evidence-graded per-metric projections · adjust inputs to see live numbers
+              </p>
+            </div>
+            <button
+              onClick={() => navigate('/campaigns/new')}
+              className="btn-primary text-xs px-4 py-1.5 flex items-center gap-1.5"
+            >
+              Build a Campaign <ArrowRight size={12} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Left: controls */}
+            <div className="rounded-xl bg-surface border border-border p-5 shadow-sm flex flex-col gap-4">
+              {/* Metric selector */}
+              <div>
+                <label className="text-2xs text-tertiary block mb-1.5 uppercase tracking-wider font-medium">Health Metric</label>
+                <select
+                  value={roiMetric}
+                  onChange={(e) => setRoiMetric(e.target.value as HealthMetric)}
+                  className="input-field text-xs w-full"
+                >
+                  {metricGroups.map((group) => (
+                    <optgroup key={group.category} label={group.label}>
+                      {group.metrics.map((m) => (
+                        <option key={m.key} value={m.key}>{m.label}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {/* Use-case toggles */}
+              <div>
+                <label className="text-2xs text-tertiary block mb-1.5 uppercase tracking-wider font-medium">Use Case</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(useCaseLabels) as CampaignUseCase[]).map((uc) => (
+                    <button
+                      key={uc}
+                      onClick={() => setRoiUseCase(uc)}
+                      className={`badge cursor-pointer transition-colors ${
+                        roiUseCase === uc ? 'badge-accent' : 'badge-default hover:bg-accent/10'
+                      }`}
+                    >
+                      {useCaseLabels[uc]}
+                    </button>
+                  ))}
+                </div>
+                {USE_CASE_CONFIG[roiUseCase]?.additionalNote && (
+                  <p className="text-2xs text-tertiary mt-1.5">
+                    {USE_CASE_CONFIG[roiUseCase].additionalNote}
+                  </p>
+                )}
+              </div>
+
+              {/* Participant count */}
+              <div>
+                <label className="text-2xs text-tertiary block mb-1.5 uppercase tracking-wider font-medium">
+                  Participant Count
+                </label>
+                <input
+                  type="number"
+                  value={roiParticipants}
+                  min={100}
+                  max={500000}
+                  step={500}
+                  onChange={(e) => setRoiParticipants(Math.max(100, Number(e.target.value)))}
+                  className="input-field text-xs font-mono w-full"
+                />
+                <p className="text-2xs text-tertiary mt-1">
+                  Projected policyholders in campaign cohort
+                </p>
+              </div>
+            </div>
+
+            {/* Right: calculator output */}
+            <div className="flex flex-col justify-center">
+              <ActuarialROICalculator
+                metric={roiMetric}
+                type="snapshot"
+                useCase={roiUseCase}
+                maxParticipants={roiParticipants}
+                budgetCeiling={roiParticipants * 5}
+                showVNB={true}
+              />
             </div>
           </div>
         </section>

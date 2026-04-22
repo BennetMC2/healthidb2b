@@ -49,7 +49,7 @@ const navItems = [
   { path: '/overview', label: 'Overview', icon: BookOpen, tourId: 'overview-nav' },
   { path: '/explorer', label: 'Network Explorer', icon: Globe, tourId: 'explorer-nav' },
   { path: '/campaigns', label: 'Campaigns', icon: Target, tourId: 'campaigns-nav' },
-  { path: '/treasury', label: 'Treasury', icon: Vault, tourId: 'treasury-nav' },
+  { path: '/treasury', label: 'Actuarial Impact', icon: Vault, tourId: 'treasury-nav' },
   { path: '/compliance', label: 'Audit & Risk', icon: ShieldCheck, tourId: 'compliance-nav' },
   { path: '/settings', label: 'Settings', icon: Settings, tourId: undefined },
 ];
