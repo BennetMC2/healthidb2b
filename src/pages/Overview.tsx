@@ -273,8 +273,8 @@ export default function Overview() {
   const proofsGenerated = verifications.filter((v) => v.status === 'verified').length;
   const piiEvents = complianceRecords.filter((r) => r.piiAccessed).length;
 
-  const [roiMetric, setRoiMetric] = useState<HealthMetric>('hba1c');
-  const [roiUseCase, setRoiUseCase] = useState<CampaignUseCase>('underwriting');
+  const [roiMetric, setRoiMetric] = useState<HealthMetric>('vo2_max');
+  const [roiUseCase, setRoiUseCase] = useState<CampaignUseCase>('dynamic_premium');
   const [roiParticipants, setRoiParticipants] = useState(5000);
 
   const metricGroups = getMetricsGroupedByCategory();

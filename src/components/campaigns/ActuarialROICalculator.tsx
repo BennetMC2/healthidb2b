@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { TrendingUp, Info } from 'lucide-react';
-import { formatCurrency } from '@/utils/format';
+import { formatCurrency, formatCurrencyCompact } from '@/utils/format';
 import { calculateActuarialROI, getMetricComparisons } from '@/utils/actuarial';
 import type { HealthMetric, CampaignType, CampaignUseCase } from '@/types';
 
@@ -106,7 +106,7 @@ export default function ActuarialROICalculator({
         <div>
           <span className="text-2xs text-tertiary block">Projected Savings</span>
           <span className={`font-mono text-sm font-semibold ${roi.isReady && roi.totalProjectedSavings > 0 ? 'text-accent' : 'text-tertiary'}`}>
-            {roi.isReady ? formatCurrency(roi.totalProjectedSavings) : '—'}
+            {roi.isReady ? formatCurrencyCompact(roi.totalProjectedSavings) : '—'}
           </span>
           {roi.isReady && <span className="text-2xs text-tertiary/60 block">over 18 mo</span>}
         </div>
@@ -123,10 +123,9 @@ export default function ActuarialROICalculator({
             {roi.isReady ? `${roi.budgetROI.toFixed(1)}×` : '—'}
           </span>
           {roi.isReady && (
-            <>
-              <span className="text-2xs text-tertiary/70 block">{pPositive} P(+ROI)</span>
-              <span className="text-2xs text-tertiary/50 block">90% CI: {ciRange}</span>
-            </>
+            <span className="text-2xs text-tertiary/60 block leading-tight mt-0.5">
+              {pPositive} · CI: {ciRange}
+            </span>
           )}
         </div>
 
