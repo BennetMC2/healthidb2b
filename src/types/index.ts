@@ -93,6 +93,66 @@ export interface CampaignFunnelData {
   rewarded: number;
 }
 
+export interface CampaignB2CSyncState {
+  externalCampaignId: string;
+  consumerCampaignId?: string;
+  consumerAppUrl: string;
+  dispatchStatus: 'pending' | 'dispatched' | 'partial' | 'error';
+  eligibleUsers?: number;
+  inviteCount?: number;
+  acceptedCount?: number;
+  verifiedCount?: number;
+  rewardedCount?: number;
+  proofOpportunityCreated?: boolean;
+  lastDispatchAt?: string;
+  lastSyncedAt?: string;
+  lastError?: string;
+  memberSummaries?: CampaignMemberSummary[];
+  timeline?: CampaignActivityEvent[];
+  redemptionCount?: number;
+  channels?: {
+    telegram: number;
+    push: number;
+    none: number;
+  };
+}
+
+export interface CampaignRedemption {
+  partner: string;
+  item: string;
+  hpCost: number;
+  requestedAt: string;
+  status: 'requested' | 'completed';
+}
+
+export interface CampaignMemberSummary {
+  memberId: string;
+  anonymizedId: string;
+  memberType: 'policyholder' | 'dependent' | 'applicant';
+  market: string;
+  challengeStatus: 'invited' | 'accepted' | 'verified' | 'rewarded';
+  proofStatus: 'none' | 'verified';
+  rewardStatus: 'none' | 'earned' | 'redeemed';
+  trend: 'improving' | 'stable' | 'watch';
+  connectedSources: string[];
+  fidelity: 'low' | 'medium' | 'high';
+  healthBand: 'emerging' | 'steady' | 'strong';
+  healthScore?: number;
+  latestProofAt?: string;
+  latestRewardAt?: string;
+  latestRedemption?: CampaignRedemption;
+}
+
+export interface CampaignActivityEvent {
+  id: string;
+  memberId: string;
+  anonymizedId: string;
+  type: 'invited' | 'accepted' | 'proof_verified' | 'reward_issued' | 'reward_redeemed';
+  title: string;
+  detail: string;
+  timestamp: string;
+}
+
 export interface Campaign {
   id: string;
   name: string;
@@ -107,6 +167,7 @@ export interface Campaign {
   targeting: CohortTargeting;
   rewards: CampaignRewards;
   funnel: CampaignFunnelData;
+  b2cSync?: CampaignB2CSyncState;
   startDate: string;
   endDate: string | null;
   createdAt: string;

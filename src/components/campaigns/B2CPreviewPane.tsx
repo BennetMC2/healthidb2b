@@ -1,4 +1,7 @@
 import { Bell, Moon } from 'lucide-react';
+import { HEALTH_METRIC_LABELS } from '@/utils/constants';
+import { buildConsumerCampaignPayload, buildConsumerChallengeUrl } from '@/lib/consumerCampaigns';
+import type { Campaign, Partner } from '@/types';
 
 const sparklineData = [
   { x: 0, y: 72 }, { x: 1, y: 68 }, { x: 2, y: 75 },
@@ -56,11 +59,21 @@ function MiniSparkline() {
   );
 }
 
-export default function B2CPreviewPane() {
+interface B2CPreviewPaneProps {
+  campaign: Campaign;
+  partner: Partner;
+}
+
+export default function B2CPreviewPane({ campaign, partner }: B2CPreviewPaneProps) {
+  const payload = buildConsumerCampaignPayload(campaign, partner);
+  const memberAppInviteUrl = campaign.b2cSync?.consumerAppUrl || buildConsumerChallengeUrl(payload);
+  const metricLabel = HEALTH_METRIC_LABELS[campaign.challenge.metric];
+  const sync = campaign.b2cSync;
+
   return (
-    <div className="card w-[260px] flex-shrink-0">
+    <div className="card w-full 2xl:w-[260px] flex-shrink-0">
       <div className="text-2xs text-tertiary uppercase tracking-wider font-medium mb-3">
-        B2C User Preview
+        Member Experience
       </div>
 
       {/* Phone mockup frame */}
@@ -78,10 +91,10 @@ export default function B2CPreviewPane() {
         <div className="rounded-lg border border-accent/20 bg-accent-muted p-2 mb-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Bell size={10} className="text-accent" />
-            <span className="text-2xs font-semibold text-primary">Predictive Guidance</span>
+            <span className="text-2xs font-semibold text-primary">{campaign.name}</span>
           </div>
           <p className="text-2xs text-secondary leading-relaxed">
-            I noticed your sleep quality drops when you have high-intensity workouts after 8 PM.
+            {partner.label} invited eligible members into a {metricLabel.toLowerCase()} challenge. The consumer app turns the insurer rule into a guided, privacy-preserving proof flow.
           </p>
         </div>
 
@@ -89,17 +102,50 @@ export default function B2CPreviewPane() {
         <div className="rounded-lg border border-border bg-surface p-2">
           <div className="flex items-center gap-1 mb-1">
             <Moon size={10} className="text-accent" />
-            <span className="text-2xs font-medium text-primary">Sleep vs. Workout Time</span>
+            <span className="text-2xs font-medium text-primary">Recovery Trend</span>
           </div>
           <MiniSparkline />
           <div className="flex justify-between mt-1">
-            <span className="text-2xs text-tertiary">6 PM</span>
-            <span className="text-2xs text-tertiary">10 PM</span>
+            <span className="text-2xs text-tertiary">Week 1</span>
+            <span className="text-2xs text-tertiary">Week 12</span>
           </div>
         </div>
 
         {/* Home bar */}
         <div className="w-12 h-1 bg-border-light rounded-full mx-auto mt-3" />
+      </div>
+
+      <div className="mt-3 space-y-2">
+        <p className="text-[11px] leading-relaxed text-tertiary">
+          Opens the consumer app on the challenge route used for dispatched member invites.
+        </p>
+        {sync && (
+          <div className="rounded-xl border border-border bg-surface/80 px-3 py-2 text-[11px] leading-relaxed text-tertiary">
+            <div className="text-secondary">
+              {sync.inviteCount ?? 0} invited · {sync.acceptedCount ?? 0} accepted · {sync.verifiedCount ?? 0} verified
+            </div>
+            <div className="mt-1">
+              {sync.dispatchStatus === 'error'
+                ? sync.lastError || 'Consumer dispatch did not complete cleanly.'
+                : sync.proofOpportunityCreated
+                  ? 'Proof opportunity created in longevity-guide.'
+                  : 'Invite path is live, but proof generation is not mapped for this metric yet.'}
+            </div>
+            {(sync.redemptionCount ?? 0) > 0 && (
+              <div className="mt-1 text-secondary">
+                {sync.redemptionCount} premium reward redemption{sync.redemptionCount === 1 ? '' : 's'} already observed in HealthID.
+              </div>
+            )}
+          </div>
+        )}
+        <a
+          href={memberAppInviteUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex w-full items-center justify-center rounded-xl bg-accent px-3 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-accent/90"
+        >
+          Open member app
+        </a>
       </div>
     </div>
   );
