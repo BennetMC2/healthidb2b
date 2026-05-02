@@ -20,18 +20,18 @@ export default function MetricCard({
   children,
 }: MetricCardProps) {
   return (
-    <div className={`card flex flex-col gap-1.5 transition-shadow duration-150 hover:shadow-md ${className}`}>
+    <div className={`card flex flex-col gap-2 transition-all duration-150 hover:-translate-y-[1px] hover:shadow-lg ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <span className="metric-label">{label}</span>
           {children}
         </div>
-        {icon && <span className="text-tertiary">{icon}</span>}
+        {icon && <span className="text-tertiary rounded-lg bg-hover px-2 py-2">{icon}</span>}
       </div>
       <div className="flex items-baseline gap-2">
         <span className="metric-value font-display">{value}</span>
         {subValue && (
-          <span className="text-xs text-tertiary">{subValue}</span>
+          <span className="text-xs text-tertiary leading-snug">{subValue}</span>
         )}
       </div>
       {trend && (

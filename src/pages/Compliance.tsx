@@ -179,35 +179,35 @@ export default function Compliance() {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4">
       {showOnboarding && <ComplianceOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader title="Audit & Risk Dashboard" description="Executive risk overview with estimated liability avoidance. Complete audit trail proving zero PII exposure across all protocol operations." icon={<ShieldCheck size={16} />} />
+      <SectionHeader title="Verification Trail" description="A clean record of verification requests, proof generation, and receipt delivery for buyer diligence and pilot readiness conversations." icon={<ShieldCheck size={16} />} />
 
       {/* Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <MetricCard
-          label="Audit Records"
+          label="Verification Events"
           value={formatCompact(stats.totalRecords)}
           icon={<FileText size={14} />}
         />
         <MetricCard
-          label="ZK Proofs Generated"
+          label="Receipts Generated"
           value={formatCompact(stats.totalProofs)}
           icon={<ShieldCheck size={14} />}
         />
         <MetricCard
-          label="PII Access Events"
+          label="Raw Data Access"
           value="0"
-          subValue="Zero-knowledge architecture"
+          subValue="Receipt-only operating model"
           icon={<ShieldOff size={14} />}
         />
         <div id="liability-avoided">
           <MetricCard
-            label="Estimated Liability Avoided"
-            value={`$${((9.77 * stats.totalProofs) / 1000).toFixed(1)}M`}
-            subValue="Based on $9.77M avg breach cost"
-            icon={<ShieldCheck size={14} />}
+          label="Illustrative Liability Avoided"
+          value={`$${((9.77 * stats.totalProofs) / 1000).toFixed(1)}M`}
+          subValue="Based on $9.77M avg breach cost"
+          icon={<ShieldCheck size={14} />}
           />
         </div>
         <MetricCard
@@ -217,25 +217,24 @@ export default function Compliance() {
         />
       </div>
 
-      {/* Zero PII Banner */}
       <div id="zero-pii" className="card-elevated flex items-center gap-3 border-accent/10">
         <div className="w-8 h-8 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
           <ShieldCheck size={16} className="text-accent" />
         </div>
         <div className="flex-1">
-          <span className="text-sm font-medium text-primary">Zero PII Exposure Verified</span>
+          <span className="text-sm font-medium text-primary">Binary outcome receipts only</span>
           <p className="text-xs text-tertiary">
-            All verifications processed through zero-knowledge proofs. No personally identifiable information has been accessed, stored, or transmitted. 296-day average breach containment window completely bypassed.
+            This view is designed for diligence conversations: partners see verification events, proof receipts, and processing evidence instead of raw member health data.
           </p>
         </div>
         <div className="flex-shrink-0 text-right">
           <div className="font-mono text-2xl font-bold text-accent">0</div>
-          <div className="text-2xs text-tertiary">PII Access Events</div>
+          <div className="text-2xs text-tertiary">Raw Data Exposures</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={eventFilter}
           onChange={(e) => setEventFilter(e.target.value as ComplianceEventType | 'all')}
@@ -271,7 +270,7 @@ export default function Compliance() {
       </div>
 
       {/* Tabs + Export */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Tabs tabs={tabs} activeTab={tab} onChange={(id) => setTab(id as 'audit' | 'processing')} />
         <div className="flex items-center gap-1">
           <button onClick={() => handleExport('csv')} className="btn-ghost text-xs">
@@ -284,20 +283,20 @@ export default function Compliance() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-h-0">
+      <div>
         {tab === 'audit' && (
-          <div className="card p-0 h-full overflow-hidden">
+          <div className="card p-0 overflow-hidden">
             <DataTable data={filteredRecords} columns={auditColumns} pageSize={20} />
           </div>
         )}
 
         {tab === 'processing' && (
-          <div className="space-y-3 overflow-auto scrollbar-thin h-full">
+          <div className="space-y-3">
             {partnerProcessingSummaries.map((summary) => (
               <div key={summary.period} className="card">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm font-medium text-primary">{summary.period}</span>
-                  <Badge variant="success">PII Events: 0</Badge>
+                  <Badge variant="success">Raw exposures: 0</Badge>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <div>

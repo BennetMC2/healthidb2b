@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  BookOpen,
   Globe,
   Target,
-  Vault,
   ShieldCheck,
   Settings,
   ChevronLeft,
@@ -46,11 +44,9 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
 }
 
 const navItems = [
-  { path: '/overview', label: 'Overview', icon: BookOpen, tourId: 'overview-nav' },
-  { path: '/explorer', label: 'Network Explorer', icon: Globe, tourId: 'explorer-nav' },
-  { path: '/campaigns', label: 'Campaigns', icon: Target, tourId: 'campaigns-nav' },
-  { path: '/treasury', label: 'Actuarial Impact', icon: Vault, tourId: 'treasury-nav' },
-  { path: '/compliance', label: 'Audit & Risk', icon: ShieldCheck, tourId: 'compliance-nav' },
+  { path: '/campaigns', label: 'Campaign Engine', icon: Target, tourId: 'campaigns-nav' },
+  { path: '/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
+  { path: '/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
   { path: '/settings', label: 'Settings', icon: Settings, tourId: undefined },
 ];
 
@@ -89,7 +85,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {(isMobile || expanded) && (
           <div className="ml-2 flex flex-col leading-tight">
             <span className="text-sm font-semibold font-display text-primary">HealthID</span>
-            <span className="text-2xs font-mono text-accent/70">ZK</span>
+            <span className="text-2xs font-mono text-accent/70">Campaign Engine</span>
           </div>
         )}
         {isMobile && (
@@ -146,7 +142,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
           <Lock size={12} className="text-accent flex-shrink-0" />
           {(isMobile || expanded) && (
             <span className="text-2xs text-accent font-medium">
-              ZK Verification Active
+              Verified Outcomes Mode
             </span>
           )}
         </div>

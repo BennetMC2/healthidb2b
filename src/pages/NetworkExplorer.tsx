@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ExplorerOnboarding from '@/components/onboarding/ExplorerOnboarding';
-import { Globe, Users, Activity, Database, SearchX, Download } from 'lucide-react';
+import { Globe, Users, Activity, Database, SearchX, Download, ArrowUpRight, Shield } from 'lucide-react';
 import IdentityDetailDrawer from '@/components/explorer/IdentityDetailDrawer';
 import { exportToCSV } from '@/utils/export';
 import { useToastStore } from '@/stores/useToastStore';
@@ -21,6 +22,7 @@ import {
   AGE_RANGES,
 } from '@/utils/constants';
 import { useDemoStore } from '@/stores/useDemoStore';
+import { useCampaignStore } from '@/stores/useCampaignStore';
 import type { HealthIdentity, ReputationTier, DataSource, FilterState } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -39,16 +41,26 @@ const presets = [
 ];
 
 export default function NetworkExplorer() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [showFilters, setShowFilters] = useState(true);
   const [selectedIdentity, setSelectedIdentity] = useState<HealthIdentity | null>(null);
   const demoActive = useDemoStore((s) => s.isActive);
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
   const addToast = useToastStore((s) => s.addToast);
+  const campaigns = useCampaignStore((s) => s.campaigns);
   const loading = useSimulatedLoading(600);
   const [showOnboarding, setShowOnboarding] = useState(
     () => !localStorage.getItem('healthid_explorer_onboarded')
   );
+
+  const campaignId = new URLSearchParams(location.search).get('campaignId');
+  const scopedCampaign = useMemo(
+    () => campaigns.find((campaign) => campaign.id === campaignId),
+    [campaignId, campaigns],
+  );
+  const scopedMembers = scopedCampaign?.b2cSync?.memberSummaries ?? [];
 
   const filtered = useMemo(() => {
     return identities.filter((id) => {
@@ -127,15 +139,70 @@ export default function NetworkExplorer() {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4">
       {showOnboarding && <ExplorerOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader title="Open Pool" description="Anonymized health identities reachable through the protocol. No personal data is stored or transmitted." icon={<Globe size={16} />} />
+      <SectionHeader title="Member Pool" description="Reachable members available for campaign enrollment. Teams target cohorts using consented signals and trust tiers, never raw health records." icon={<Globe size={16} />} />
+
+      {scopedCampaign && (
+        <div className="card-elevated border-accent/15">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="max-w-[760px]">
+              <div className="inline-flex items-center gap-2 rounded-full bg-accent-muted px-3 py-1 text-2xs font-medium uppercase tracking-wide text-accent">
+                <Shield size={12} />
+                Campaign-linked member view
+              </div>
+              <h2 className="mt-3 text-xl font-semibold text-primary">{scopedCampaign.name}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-secondary">
+                This section links the campaign funnel to the broader member pool. It surfaces the anonymized members already progressing through the programme while keeping the wider pool available for cohort discovery.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate(`/campaigns/${scopedCampaign.id}`)}
+              className="btn-ghost text-xs"
+            >
+              Back to campaign
+            </button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-2">
+            {scopedMembers.length > 0 ? scopedMembers.map((member) => (
+              <button
+                key={member.memberId}
+                onClick={() => navigate(`/campaigns/${scopedCampaign.id}/members/${member.memberId}`)}
+                className="rounded-xl border border-border bg-surface/80 px-4 py-3 text-left transition-colors hover:bg-hover"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-primary">{member.anonymizedId}</span>
+                      <span className="rounded-full bg-hover px-2 py-0.5 text-2xs text-secondary capitalize">
+                        {member.memberType}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-secondary capitalize">
+                      {member.challengeStatus} · {member.rewardStatus} · {member.fidelity} fidelity
+                    </p>
+                    <p className="mt-1 text-2xs text-tertiary">
+                      {member.connectedSources.length} sources · {member.market} · health band {member.healthBand}
+                    </p>
+                  </div>
+                  <ArrowUpRight size={14} className="text-tertiary" />
+                </div>
+              </button>
+            )) : (
+              <div className="rounded-xl border border-border bg-surface/80 px-4 py-4 text-xs text-tertiary">
+                No campaign-linked member states are available in this view yet.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Top metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-tour="explorer-metrics">
         <MetricCard
-          label="Reachable Identities"
+          label="Reachable Members"
           value={formatCompact(filtered.length)}
           subValue={`of ${formatCompact(identities.length)}`}
           icon={<Globe size={14} />}
@@ -146,7 +213,7 @@ export default function NetworkExplorer() {
           icon={<Activity size={14} />}
         />
         <MetricCard
-          label="Verified Identities"
+          label="Verification-Ready"
           value={formatNumber(filtered.filter((i) => i.verificationCount > 0).length)}
           subValue={`${((filtered.filter((i) => i.verificationCount > 0).length / Math.max(filtered.length, 1)) * 100).toFixed(1)}%`}
           icon={<Users size={14} />}
@@ -187,11 +254,11 @@ export default function NetworkExplorer() {
         </button>
       </div>
 
-      <div className="flex gap-4 flex-1 min-h-0">
+      <div className="flex flex-col gap-4 xl:flex-row">
         {/* Filter Panel */}
         {showFilters && (
-          <div className="hidden md:block w-[220px] flex-shrink-0 card overflow-auto scrollbar-thin space-y-4" data-tour="explorer-filters">
-            <div className="text-xs text-tertiary mb-2">Narrow the pool to target specific cohorts for campaigns.</div>
+          <div className="hidden xl:block w-[220px] flex-shrink-0 card space-y-4 self-start" data-tour="explorer-filters">
+            <div className="text-xs text-tertiary mb-2">Narrow the pool to target specific cohorts for outcome-led insurer programmes.</div>
             {/* Health Score Range */}
             <div>
               <label className="metric-label block mb-1.5">Health Score</label>
@@ -408,7 +475,7 @@ export default function NetworkExplorer() {
           </div>
 
           {/* Identity Table */}
-          <div className="card flex-1 min-h-0 p-0 overflow-hidden">
+          <div className="card p-0 overflow-hidden">
             {filtered.length > 0 ? (
               <DataTable
                 data={filtered}

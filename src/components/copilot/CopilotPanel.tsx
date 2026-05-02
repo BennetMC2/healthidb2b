@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { Sparkles, X } from 'lucide-react';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useCopilotKeyboard, COPILOT_INPUT_ID } from '@/hooks/useCopilotKeyboard';
@@ -43,18 +43,15 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
 
   return (
     <div className="h-full bg-surface flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="flex h-5 w-5 items-center justify-center rounded bg-accent/20">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-accent/12">
+            <Sparkles size={13} className="text-accent" />
           </div>
-          <span className="text-xs font-semibold text-primary">Copilot</span>
-          <span className="text-2xs text-tertiary">
-            {partner.label}
-          </span>
+          <div>
+            <div className="text-xs font-semibold text-primary">Campaign Strategy Agent</div>
+            <div className="text-2xs text-tertiary">{partner.label}</div>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           {onClose && (
@@ -83,26 +80,26 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto scrollbar-thin px-4 py-3">
         {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4">
-            <div className="text-center">
+          <div className="flex h-full flex-col gap-4">
+            <div className="rounded-xl border border-border bg-hover/60 px-3 py-3">
               <p className="text-xs font-medium text-primary">
-                Ask about your data
+                Use this rail as a claims strategist, not a generic copilot
               </p>
-              <p className="mt-1 text-2xs text-tertiary">
-                Explore campaigns, identities, verifications, treasury, and compliance.
+              <p className="mt-1 text-2xs text-tertiary leading-relaxed">
+                Ask for claims-reduction ideas, underwriting support options, weak assumptions, or buyer-ready summaries.
               </p>
             </div>
-            <div className="flex flex-wrap justify-center gap-1.5">
+            <div className="grid grid-cols-1 gap-2">
               {suggestions.map((s) => (
                 <button
                   key={s.label}
                   onClick={() => handleSuggestionClick(s.prompt)}
-                  className="rounded-full border border-border px-2.5 py-1 text-2xs text-secondary transition-colors hover:border-accent/40 hover:text-primary"
+                  className="rounded-xl border border-border bg-surface px-3 py-2 text-left text-2xs text-secondary transition-colors hover:border-accent/30 hover:bg-hover/70 hover:text-primary"
                 >
-                  {s.label}
+                  <span className="block text-xs font-medium text-primary">{s.label}</span>
+                  <span className="block mt-0.5 text-2xs text-tertiary">{s.prompt}</span>
                 </button>
               ))}
             </div>
@@ -126,7 +123,6 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
         )}
       </div>
 
-      {/* Input */}
       <form onSubmit={handleSubmit} className="border-t border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <input
@@ -135,7 +131,7 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isStreaming ? 'Responding...' : 'Ask a question...'}
+            placeholder={isStreaming ? 'Responding...' : 'Ask for claims strategy or campaign analysis...'}
             disabled={isStreaming}
             className="flex-1 bg-transparent text-xs text-primary placeholder:text-tertiary outline-none disabled:opacity-50"
           />

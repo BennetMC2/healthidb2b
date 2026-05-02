@@ -87,10 +87,10 @@ export default function CopilotMessage({ message }: CopilotMessageProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] rounded-lg px-3 py-2 text-xs leading-relaxed ${
+        className={`max-w-[90%] rounded-xl px-3 py-2.5 text-xs leading-relaxed shadow-sm ${
           isUser
-            ? 'bg-accent/15 text-primary'
-            : 'bg-elevated text-secondary'
+            ? 'bg-accent/12 text-primary border border-accent/15'
+            : 'bg-elevated text-secondary border border-border'
         }`}
       >
         {isUser ? message.content : renderMarkdown(message.content)}

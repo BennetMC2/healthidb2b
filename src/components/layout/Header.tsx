@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, HelpCircle, CheckCircle, Sun, Moon, Menu } from 'lucide-react';
+import { Search, HelpCircle, Sun, Moon, Menu } from 'lucide-react';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useThemeStore } from '@/stores/useThemeStore';
 import CommandPalette from '@/components/ui/CommandPalette';
@@ -43,7 +43,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
         {/* Breadcrumb area */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-2xs text-tertiary font-medium uppercase tracking-wider hidden sm:inline">
-            Universal Infrastructure
+            Life Campaign Engine
           </span>
           <span className="text-tertiary hidden sm:inline">/</span>
           <span className="text-2xs text-secondary font-medium">
@@ -64,7 +64,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
             <div
               className="w-full h-[30px] pl-7 pr-3 bg-base border border-border rounded text-xs text-tertiary flex items-center cursor-pointer hover:border-accent/30 transition-colors"
             >
-              Search identities, campaigns, proofs...
+              Search campaigns, cohorts, receipts...
             </div>
             <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-tertiary bg-elevated px-1 rounded-sm border border-border">
               /
@@ -82,13 +82,9 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           >
             <Search size={14} />
           </button>
-          {/* Uptime/Status Badge */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2 h-[30px] rounded border border-border bg-base mr-1 group relative">
-            <CheckCircle size={10} className="text-success" />
-            <span className="text-2xs text-tertiary font-mono">99.97%</span>
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded bg-elevated border border-border text-2xs text-secondary whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-              All Systems Operational
-            </span>
+          <div className="hidden sm:flex items-center gap-1.5 px-2 h-[30px] rounded border border-border bg-base mr-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+            <span className="text-2xs text-secondary font-medium">HK / JP</span>
           </div>
 
           {/* Partner Selector */}
@@ -117,7 +113,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           {onTourStart && (
             <button
               onClick={onTourStart}
-              className="w-[30px] h-[30px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors"
+              className="w-[30px] h-[30px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors opacity-80"
               title="Start guided tour"
             >
               <HelpCircle size={14} />

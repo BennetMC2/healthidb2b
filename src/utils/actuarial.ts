@@ -1,67 +1,70 @@
-import type { HealthMetric, CampaignUseCase, CampaignType } from '@/types';
+import type { CampaignType, CampaignUseCase, HealthMetric } from '@/types';
 import { HEALTH_METRIC_LABELS } from '@/utils/constants';
 
-// ── Metric Actuarial Config ────────────────────────────────────────
-
 interface MetricActuarialConfig {
-  claimsReductionRate: number;
   baselineClaimCostPerMember: number;
+  riskSignalRate: number;
   evidenceLevel: 'high' | 'medium' | 'low';
   evidenceNote: string;
   inferredUseCase: CampaignUseCase;
   suggestedHPBase: number;
+  realizationFactor: number;
+  expectedImprovementRate: number;
+  outcomeLatencyMonths: number;
 }
 
 export const METRIC_ACTUARIAL_CONFIG: Record<HealthMetric, MetricActuarialConfig> = {
-  hba1c:              { claimsReductionRate: 0.22, baselineClaimCostPerMember: 580,  evidenceLevel: 'high',   evidenceNote: 'Strong link to diabetes-related claims cost',               inferredUseCase: 'underwriting',    suggestedHPBase: 150 },
-  blood_glucose:      { claimsReductionRate: 0.14, baselineClaimCostPerMember: 2671, evidenceLevel: 'high',   evidenceNote: 'Fasting glucose predicts metabolic syndrome onset',         inferredUseCase: 'underwriting',    suggestedHPBase: 120 },
-  cholesterol:        { claimsReductionRate: 0.13, baselineClaimCostPerMember: 696,  evidenceLevel: 'high',   evidenceNote: 'Lipid panels correlate with cardiovascular event risk',     inferredUseCase: 'underwriting',    suggestedHPBase: 130 },
-  blood_pressure:     { claimsReductionRate: 0.11, baselineClaimCostPerMember: 662,  evidenceLevel: 'high',   evidenceNote: 'Hypertension management reduces ER & cardiac claims',       inferredUseCase: 'claims_reduction', suggestedHPBase: 120 },
-  bmi:                { claimsReductionRate: 0.08, baselineClaimCostPerMember: 670,  evidenceLevel: 'medium', evidenceNote: 'BMI is a broad risk proxy; less predictive in isolation',    inferredUseCase: 'underwriting',    suggestedHPBase: 90  },
-  vo2_max:            { claimsReductionRate: 0.18, baselineClaimCostPerMember: 1388, evidenceLevel: 'high',   evidenceNote: 'VO₂ max is a top predictor of all-cause mortality',        inferredUseCase: 'dynamic_premium', suggestedHPBase: 110 },
-  hrv:                { claimsReductionRate: 0.15, baselineClaimCostPerMember: 1900, evidenceLevel: 'medium', evidenceNote: 'HRV reflects autonomic health; growing actuarial evidence', inferredUseCase: 'claims_reduction', suggestedHPBase: 100 },
-  heart_rate_resting: { claimsReductionRate: 0.08, baselineClaimCostPerMember: 1700, evidenceLevel: 'medium', evidenceNote: 'Resting HR tracks cardiovascular fitness over time',        inferredUseCase: 'dynamic_premium', suggestedHPBase: 80  },
-  respiratory_rate:   { claimsReductionRate: 0.07, baselineClaimCostPerMember: 1600, evidenceLevel: 'medium', evidenceNote: 'Respiratory rate signals early illness onset',              inferredUseCase: 'dynamic_premium', suggestedHPBase: 70  },
-  spo2:               { claimsReductionRate: 0.05, baselineClaimCostPerMember: 1400, evidenceLevel: 'medium', evidenceNote: 'SpO₂ dips useful for sleep apnea screening',               inferredUseCase: 'acquisition',     suggestedHPBase: 50  },
-  sleep_hours:        { claimsReductionRate: 0.07, baselineClaimCostPerMember: 1500, evidenceLevel: 'medium', evidenceNote: 'Short sleep linked to higher chronic disease claims',        inferredUseCase: 'renewal',         suggestedHPBase: 70  },
-  sleep_quality:      { claimsReductionRate: 0.06, baselineClaimCostPerMember: 1500, evidenceLevel: 'medium', evidenceNote: 'Sleep quality scores complement duration data',             inferredUseCase: 'renewal',         suggestedHPBase: 65  },
-  active_minutes:     { claimsReductionRate: 0.10, baselineClaimCostPerMember: 1600, evidenceLevel: 'medium', evidenceNote: 'WHO activity guidelines reduce all-cause risk ~15%',        inferredUseCase: 'acquisition',     suggestedHPBase: 65  },
-  steps:              { claimsReductionRate: 0.05, baselineClaimCostPerMember: 778,  evidenceLevel: 'low',    evidenceNote: 'Step counts are directional; low clinical specificity',     inferredUseCase: 'acquisition',     suggestedHPBase: 45  },
-  stress_score:       { claimsReductionRate: 0.07, baselineClaimCostPerMember: 1600, evidenceLevel: 'medium', evidenceNote: 'Chronic stress increases behavioral health claims',          inferredUseCase: 'claims_reduction', suggestedHPBase: 65  },
-  body_composition:   { claimsReductionRate: 0.05, baselineClaimCostPerMember: 1500, evidenceLevel: 'low',    evidenceNote: 'Body fat % adds context beyond BMI alone',                 inferredUseCase: 'underwriting',    suggestedHPBase: 60  },
-  hydration:          { claimsReductionRate: 0.03, baselineClaimCostPerMember: 1300, evidenceLevel: 'low',    evidenceNote: 'Hydration data is engagement-focused; limited claims link', inferredUseCase: 'renewal',         suggestedHPBase: 40  },
-  body_temp_deviation:{ claimsReductionRate: 0.04, baselineClaimCostPerMember: 1400, evidenceLevel: 'low',    evidenceNote: 'Temp variation useful for illness detection, not pricing',  inferredUseCase: 'acquisition',     suggestedHPBase: 45  },
+  hba1c:               { baselineClaimCostPerMember: 580,  riskSignalRate: 0.22, evidenceLevel: 'high',   evidenceNote: 'Strong literature link to metabolic and diabetes-related cost', inferredUseCase: 'underwriting',    suggestedHPBase: 150, realizationFactor: 0.67, expectedImprovementRate: 0.23, outcomeLatencyMonths: 9 },
+  blood_glucose:       { baselineClaimCostPerMember: 2671, riskSignalRate: 0.14, evidenceLevel: 'high',   evidenceNote: 'Fasting glucose is a strong metabolic risk discriminator',       inferredUseCase: 'underwriting',    suggestedHPBase: 120, realizationFactor: 0.58, expectedImprovementRate: 0.16, outcomeLatencyMonths: 8 },
+  cholesterol:         { baselineClaimCostPerMember: 696,  riskSignalRate: 0.13, evidenceLevel: 'high',   evidenceNote: 'Lipid panels remain a strong cardiovascular underwriting signal', inferredUseCase: 'underwriting',    suggestedHPBase: 130, realizationFactor: 0.56, expectedImprovementRate: 0.15, outcomeLatencyMonths: 10 },
+  blood_pressure:      { baselineClaimCostPerMember: 662,  riskSignalRate: 0.11, evidenceLevel: 'high',   evidenceNote: 'Blood pressure improvement has mature intervention evidence',     inferredUseCase: 'claims_reduction', suggestedHPBase: 120, realizationFactor: 0.63, expectedImprovementRate: 0.14, outcomeLatencyMonths: 7 },
+  bmi:                 { baselineClaimCostPerMember: 670,  riskSignalRate: 0.08, evidenceLevel: 'medium', evidenceNote: 'BMI is broad and directionally useful, but blunt in isolation',   inferredUseCase: 'underwriting',    suggestedHPBase: 90,  realizationFactor: 0.43, expectedImprovementRate: 0.09, outcomeLatencyMonths: 11 },
+  vo2_max:             { baselineClaimCostPerMember: 1388, riskSignalRate: 0.18, evidenceLevel: 'high',   evidenceNote: 'VO₂ max is one of the strongest fitness-linked mortality signals', inferredUseCase: 'dynamic_premium', suggestedHPBase: 110, realizationFactor: 0.61, expectedImprovementRate: 0.17, outcomeLatencyMonths: 8 },
+  hrv:                 { baselineClaimCostPerMember: 1900, riskSignalRate: 0.15, evidenceLevel: 'medium', evidenceNote: 'HRV is promising but still more emerging than settled actuarial input', inferredUseCase: 'claims_reduction', suggestedHPBase: 100, realizationFactor: 0.46, expectedImprovementRate: 0.13, outcomeLatencyMonths: 6 },
+  heart_rate_resting:  { baselineClaimCostPerMember: 1700, riskSignalRate: 0.08, evidenceLevel: 'medium', evidenceNote: 'Resting heart rate is a good longitudinal fitness proxy',         inferredUseCase: 'dynamic_premium', suggestedHPBase: 80,  realizationFactor: 0.41, expectedImprovementRate: 0.08, outcomeLatencyMonths: 6 },
+  respiratory_rate:    { baselineClaimCostPerMember: 1600, riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Respiratory rate is useful but not yet a mainstream pricing input', inferredUseCase: 'dynamic_premium', suggestedHPBase: 70,  realizationFactor: 0.38, expectedImprovementRate: 0.07, outcomeLatencyMonths: 6 },
+  spo2:                { baselineClaimCostPerMember: 1400, riskSignalRate: 0.05, evidenceLevel: 'medium', evidenceNote: 'SpO₂ is useful as a screening gate more than a long-run outcome driver', inferredUseCase: 'acquisition', suggestedHPBase: 50, realizationFactor: 0.34, expectedImprovementRate: 0.05, outcomeLatencyMonths: 4 },
+  sleep_hours:         { baselineClaimCostPerMember: 1500, riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Sleep duration is commercially relevant but causality is noisy', inferredUseCase: 'renewal', suggestedHPBase: 70, realizationFactor: 0.36, expectedImprovementRate: 0.08, outcomeLatencyMonths: 7 },
+  sleep_quality:       { baselineClaimCostPerMember: 1500, riskSignalRate: 0.06, evidenceLevel: 'medium', evidenceNote: 'Sleep quality is useful as a behavioral trend and engagement input', inferredUseCase: 'renewal', suggestedHPBase: 65, realizationFactor: 0.33, expectedImprovementRate: 0.07, outcomeLatencyMonths: 7 },
+  active_minutes:      { baselineClaimCostPerMember: 1600, riskSignalRate: 0.10, evidenceLevel: 'medium', evidenceNote: 'Activity adherence is credible but still indirect for claims impact', inferredUseCase: 'acquisition', suggestedHPBase: 65, realizationFactor: 0.42, expectedImprovementRate: 0.11, outcomeLatencyMonths: 6 },
+  steps:               { baselineClaimCostPerMember: 778,  riskSignalRate: 0.05, evidenceLevel: 'low',    evidenceNote: 'Step counts are easy to explain but weak as a standalone claims signal', inferredUseCase: 'acquisition', suggestedHPBase: 45, realizationFactor: 0.26, expectedImprovementRate: 0.05, outcomeLatencyMonths: 5 },
+  stress_score:        { baselineClaimCostPerMember: 1600, riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Stress scores may support intervention targeting more than direct pricing', inferredUseCase: 'claims_reduction', suggestedHPBase: 65, realizationFactor: 0.37, expectedImprovementRate: 0.08, outcomeLatencyMonths: 6 },
+  body_composition:    { baselineClaimCostPerMember: 1500, riskSignalRate: 0.05, evidenceLevel: 'low',    evidenceNote: 'Body composition adds context, but usually needs supporting signals', inferredUseCase: 'underwriting', suggestedHPBase: 60, realizationFactor: 0.24, expectedImprovementRate: 0.05, outcomeLatencyMonths: 10 },
+  hydration:           { baselineClaimCostPerMember: 1300, riskSignalRate: 0.03, evidenceLevel: 'low',    evidenceNote: 'Hydration is mainly an engagement signal at this stage', inferredUseCase: 'renewal', suggestedHPBase: 40, realizationFactor: 0.18, expectedImprovementRate: 0.03, outcomeLatencyMonths: 4 },
+  body_temp_deviation: { baselineClaimCostPerMember: 1400, riskSignalRate: 0.04, evidenceLevel: 'low',    evidenceNote: 'Temperature variation is operationally interesting but commercially immature', inferredUseCase: 'acquisition', suggestedHPBase: 45, realizationFactor: 0.2, expectedImprovementRate: 0.04, outcomeLatencyMonths: 4 },
 };
-
-// ── Use Case Config ────────────────────────────────────────────────
 
 interface UseCaseConfig {
   savingsFraming: string;
-  savingsMultiplier: number;
+  realizationMultiplier: number;
+  scenarioHorizonMonths: number;
+  expectedVerificationRate: number;
   additionalNote: string | null;
 }
 
 export const USE_CASE_CONFIG: Record<CampaignUseCase, UseCaseConfig> = {
-  underwriting:     { savingsFraming: 'Adverse selection avoidance',  savingsMultiplier: 1.1,  additionalNote: 'Replaces medical exam (~$150/applicant)' },
-  dynamic_premium:  { savingsFraming: 'Ongoing behaviour pricing',    savingsMultiplier: 1.0,  additionalNote: 'Value accrues over policy lifetime' },
-  claims_reduction: { savingsFraming: 'Claims event avoidance',       savingsMultiplier: 1.2,  additionalNote: 'Highest direct per-member savings' },
-  renewal:          { savingsFraming: 'Renewal friction reduction',   savingsMultiplier: 0.9,  additionalNote: 'Includes ~$45 lapse prevention per policy' },
-  acquisition:      { savingsFraming: 'Risk-adjusted acquisition',    savingsMultiplier: 0.85, additionalNote: 'Savings offset by lower CAC' },
+  underwriting:     { savingsFraming: 'Exam avoidance and faster risk selection', realizationMultiplier: 0.96, scenarioHorizonMonths: 12, expectedVerificationRate: 0.31, additionalNote: 'Best for cycle-time and acquisition friction, not long-tail claims proof.' },
+  dynamic_premium:  { savingsFraming: 'Behavior-linked renewal and pricing discipline', realizationMultiplier: 0.92, scenarioHorizonMonths: 18, expectedVerificationRate: 0.27, additionalNote: 'Value compounds if longitudinal signals stay stable over time.' },
+  claims_reduction: { savingsFraming: 'Avoidable claims event reduction', realizationMultiplier: 1.08, scenarioHorizonMonths: 18, expectedVerificationRate: 0.29, additionalNote: 'Most strategic upside, but also the highest proof burden.' },
+  renewal:          { savingsFraming: 'Retention and renewal operating efficiency', realizationMultiplier: 0.84, scenarioHorizonMonths: 12, expectedVerificationRate: 0.24, additionalNote: 'Often strongest as a friction-reduction and engagement motion.' },
+  acquisition:      { savingsFraming: 'Risk-adjusted acquisition and pre-qualification', realizationMultiplier: 0.78, scenarioHorizonMonths: 9, expectedVerificationRate: 0.22, additionalNote: 'Easiest commercial wedge because integration and proof burden are lower.' },
 };
 
-// ── Constants ──────────────────────────────────────────────────────
+const STREAM_REALIZATION_MULTIPLIER = 1.12;
+const SNAPSHOT_REALIZATION_MULTIPLIER = 0.96;
+const STREAM_HP_FACTOR = 0.72;
 
-const STREAM_MULTIPLIER = 1.75;
-const STREAM_HP_FACTOR = 0.7;
+const EVIDENCE_CONFIDENCE: Record<'high' | 'medium' | 'low', number> = {
+  high: 0.72,
+  medium: 0.54,
+  low: 0.34,
+};
 
-const P_VERIFIED_DEFAULT = 0.25;      // 25% verification uptake (spec §4 default)
-const BENEFIT_DURATION_FACTOR = 1.41; // 18-month benefit × v=0.94 discount (18/12 × 0.94)
-const ALPHA_S = 0.30;                 // selection bias discount (spec §7)
-const ALPHA_R = 0.15;                 // regression-to-mean (spec §7)
-export const CAUSAL_ADJUSTMENT_FACTOR =
-  P_VERIFIED_DEFAULT * BENEFIT_DURATION_FACTOR * (1 - ALPHA_S) * (1 - ALPHA_R);
-
-// ── Calculator ─────────────────────────────────────────────────────
+const EVIDENCE_RANGE: Record<'high' | 'medium' | 'low', [number, number]> = {
+  high: [0.78, 1.28],
+  medium: [0.55, 1.4],
+  low: [0.35, 1.55],
+};
 
 export interface ActuarialROIParams {
   metric: HealthMetric | '';
@@ -88,6 +91,80 @@ export interface ActuarialROIResult {
   morbidityShiftBps: number;
   paybackMonths: number;
   vnbImpactPer1MMAPE: number;
+  modeledImprovementRate: number;
+  expectedVerifiedLives: number;
+  scenarioRangeLow: number;
+  scenarioRangeHigh: number;
+  modelConfidence: number;
+  scenarioHorizonMonths: number;
+  confidenceLabel: string;
+}
+
+function confidenceLabel(value: number): string {
+  if (value >= 0.68) return 'higher confidence';
+  if (value >= 0.48) return 'directional confidence';
+  return 'exploratory confidence';
+}
+
+function scenarioValues(
+  metric: HealthMetric,
+  type: CampaignType | '',
+  useCase: CampaignUseCase | '',
+  maxParticipants: number,
+  applyAdjustments: boolean,
+) {
+  const metricConfig = METRIC_ACTUARIAL_CONFIG[metric];
+  const useCaseConfig = useCase ? USE_CASE_CONFIG[useCase] : null;
+  const streamMultiplier = type === 'stream' ? STREAM_REALIZATION_MULTIPLIER : SNAPSHOT_REALIZATION_MULTIPLIER;
+  const participantCount = Math.max(0, maxParticipants);
+  const scenarioHorizonMonths = useCaseConfig?.scenarioHorizonMonths ?? 12;
+  const verificationRateBase = useCaseConfig?.expectedVerificationRate ?? 0.24;
+  const evidenceMultiplier = EVIDENCE_CONFIDENCE[metricConfig.evidenceLevel];
+  const adjustedVerificationRate = Math.min(
+    0.58,
+    verificationRateBase * (type === 'stream' ? 1.1 : 1) * (applyAdjustments ? 0.86 : 1) * (0.92 + evidenceMultiplier * 0.16),
+  );
+  const expectedVerifiedLives = Math.round(participantCount * adjustedVerificationRate);
+  const modeledImprovementRate =
+    metricConfig.expectedImprovementRate *
+    metricConfig.realizationFactor *
+    streamMultiplier *
+    (useCaseConfig?.realizationMultiplier ?? 1) *
+    (applyAdjustments ? 0.78 : 1);
+  const attributedImpactRate = metricConfig.riskSignalRate * metricConfig.realizationFactor * (applyAdjustments ? 0.72 : 1);
+  const savingsPerVerifiedMember =
+    metricConfig.baselineClaimCostPerMember *
+    modeledImprovementRate *
+    Math.max(scenarioHorizonMonths - metricConfig.outcomeLatencyMonths, 3) /
+    12;
+  const savingsPerMember = savingsPerVerifiedMember * adjustedVerificationRate;
+  const totalProjectedSavings = savingsPerMember * participantCount;
+  const [lowFactor, highFactor] = EVIDENCE_RANGE[metricConfig.evidenceLevel];
+  const scenarioRangeLow = totalProjectedSavings * lowFactor * (applyAdjustments ? 0.9 : 1);
+  const scenarioRangeHigh = totalProjectedSavings * highFactor;
+  const modelConfidence = clampConfidence(
+    EVIDENCE_CONFIDENCE[metricConfig.evidenceLevel] *
+      (type === 'stream' ? 1.05 : 0.97) *
+      (useCase === 'claims_reduction' ? 0.9 : 1),
+  );
+
+  return {
+    metricConfig,
+    useCaseConfig,
+    scenarioHorizonMonths,
+    expectedVerifiedLives,
+    modeledImprovementRate,
+    attributedImpactRate,
+    savingsPerMember,
+    totalProjectedSavings,
+    scenarioRangeLow,
+    scenarioRangeHigh,
+    modelConfidence,
+  };
+}
+
+function clampConfidence(value: number): number {
+  return Math.max(0.2, Math.min(0.88, value));
 }
 
 export function calculateActuarialROI(params: ActuarialROIParams): ActuarialROIResult {
@@ -110,43 +187,39 @@ export function calculateActuarialROI(params: ActuarialROIParams): ActuarialROIR
       morbidityShiftBps: 0,
       paybackMonths: 0,
       vnbImpactPer1MMAPE: 0,
+      modeledImprovementRate: 0,
+      expectedVerifiedLives: 0,
+      scenarioRangeLow: 0,
+      scenarioRangeHigh: 0,
+      modelConfidence: 0,
+      scenarioHorizonMonths: 0,
+      confidenceLabel: '',
     };
   }
 
-  const metricConfig = METRIC_ACTUARIAL_CONFIG[metric];
-  const useCaseConfig = useCase ? USE_CASE_CONFIG[useCase] : null;
+  const {
+    metricConfig,
+    useCaseConfig,
+    scenarioHorizonMonths,
+    expectedVerifiedLives,
+    modeledImprovementRate,
+    attributedImpactRate,
+    savingsPerMember,
+    totalProjectedSavings,
+    scenarioRangeLow,
+    scenarioRangeHigh,
+    modelConfidence,
+  } = scenarioValues(metric, type, useCase, maxParticipants, applyAdjustments);
 
-  const typeMultiplier = type === 'stream' ? STREAM_MULTIPLIER : 1.0;
-  const useCaseMultiplier = useCaseConfig?.savingsMultiplier ?? 1.0;
-
-  const causalFactor = applyAdjustments ? CAUSAL_ADJUSTMENT_FACTOR : 1.0;
-
-  const savingsPerMember =
-    metricConfig.baselineClaimCostPerMember *
-    metricConfig.claimsReductionRate *
-    typeMultiplier *
-    useCaseMultiplier *
-    causalFactor;
-
-  const displayClaimsReductionRate = applyAdjustments
-    ? metricConfig.claimsReductionRate * P_VERIFIED_DEFAULT * (1 - ALPHA_S) * (1 - ALPHA_R)
-    : metricConfig.claimsReductionRate;
-
-  const totalProjectedSavings = savingsPerMember * maxParticipants;
   const budgetROI = budgetCeiling > 0 ? totalProjectedSavings / budgetCeiling : 0;
-
   const streamFactor = type === 'stream' ? STREAM_HP_FACTOR : 1.0;
-  const rawHP = metricConfig.suggestedHPBase * streamFactor;
-  const suggestedHP = Math.round(Math.min(500, Math.max(25, rawHP)) / 5) * 5;
-
-  const morbidityShiftBps = Math.round(metricConfig.claimsReductionRate * 80 / 5) * 5;
-  const paybackMonths = totalProjectedSavings > 0
-    ? Math.min(36, Math.round(budgetCeiling / (totalProjectedSavings / 12)))
-    : 36;
-  const vnbImpactPer1MMAPE = morbidityShiftBps * 4500;
+  const suggestedHP = Math.round(Math.min(500, Math.max(25, metricConfig.suggestedHPBase * streamFactor)) / 5) * 5;
+  const morbidityShiftBps = Math.round(modeledImprovementRate * 10000 * 0.35 / 5) * 5;
+  const paybackMonths = totalProjectedSavings > 0 ? Math.min(36, Math.round((budgetCeiling / totalProjectedSavings) * scenarioHorizonMonths)) : 36;
+  const vnbImpactPer1MMAPE = Math.round(morbidityShiftBps * 3400);
 
   return {
-    claimsReductionRate: displayClaimsReductionRate,
+    claimsReductionRate: attributedImpactRate,
     baselineCostPerMember: metricConfig.baselineClaimCostPerMember,
     savingsPerMember,
     totalProjectedSavings,
@@ -161,10 +234,15 @@ export function calculateActuarialROI(params: ActuarialROIParams): ActuarialROIR
     morbidityShiftBps,
     paybackMonths,
     vnbImpactPer1MMAPE,
+    modeledImprovementRate,
+    expectedVerifiedLives,
+    scenarioRangeLow,
+    scenarioRangeHigh,
+    modelConfidence,
+    scenarioHorizonMonths,
+    confidenceLabel: confidenceLabel(modelConfidence),
   };
 }
-
-// ── Metric Comparison ─────────────────────────────────────────────
 
 export interface MetricComparison {
   metric: HealthMetric;
@@ -179,39 +257,35 @@ export function getMetricComparisons(
   selectedMetric: HealthMetric | '',
   count = 5,
 ): MetricComparison[] {
-  const useCaseConfig = useCase ? USE_CASE_CONFIG[useCase] : null;
-  const typeMultiplier = type === 'stream' ? STREAM_MULTIPLIER : 1.0;
-  const useCaseMultiplier = useCaseConfig?.savingsMultiplier ?? 1.0;
-
-  const all: MetricComparison[] = (Object.keys(METRIC_ACTUARIAL_CONFIG) as HealthMetric[]).map((m) => {
-    const cfg = METRIC_ACTUARIAL_CONFIG[m];
+  const all = (Object.keys(METRIC_ACTUARIAL_CONFIG) as HealthMetric[]).map((metric) => {
+    const result = calculateActuarialROI({
+      metric,
+      type,
+      useCase,
+      maxParticipants: 1000,
+      budgetCeiling: 1,
+      applyAdjustments: true,
+    });
     return {
-      metric: m,
-      label: HEALTH_METRIC_LABELS[m],
-      savingsPerMember: cfg.baselineClaimCostPerMember * cfg.claimsReductionRate * typeMultiplier * useCaseMultiplier,
-      isSelected: m === selectedMetric,
+      metric,
+      label: HEALTH_METRIC_LABELS[metric],
+      savingsPerMember: result.savingsPerMember,
+      isSelected: metric === selectedMetric,
     };
   });
 
   all.sort((a, b) => b.savingsPerMember - a.savingsPerMember);
-
-  // Always include the selected metric in the top N
   const top = all.slice(0, count);
-  if (selectedMetric && !top.some((m) => m.isSelected)) {
-    const selected = all.find((m) => m.isSelected);
+  if (selectedMetric && !top.some((item) => item.isSelected)) {
+    const selected = all.find((item) => item.isSelected);
     if (selected) top[count - 1] = selected;
   }
-
   return top;
 }
-
-// ── Use Case Suggestion ────────────────────────────────────────────
 
 export function suggestUseCase(metric: HealthMetric): CampaignUseCase {
   return METRIC_ACTUARIAL_CONFIG[metric].inferredUseCase;
 }
-
-// ── Multi-Metric ROI ───────────────────────────────────────────────
 
 export interface MultiMetricROIResult extends ActuarialROIResult {
   metrics: HealthMetric[];
@@ -224,8 +298,7 @@ export function calculateMultiMetricROI(
   participants: number,
   budget: number,
 ): MultiMetricROIResult {
-  const validMetrics = metrics.filter((m) => m in METRIC_ACTUARIAL_CONFIG);
-
+  const validMetrics = metrics.filter((metric) => metric in METRIC_ACTUARIAL_CONFIG);
   if (!validMetrics.length || participants <= 0) {
     return {
       claimsReductionRate: 0,
@@ -243,66 +316,70 @@ export function calculateMultiMetricROI(
       morbidityShiftBps: 0,
       paybackMonths: 0,
       vnbImpactPer1MMAPE: 0,
+      modeledImprovementRate: 0,
+      expectedVerifiedLives: 0,
+      scenarioRangeLow: 0,
+      scenarioRangeHigh: 0,
+      modelConfidence: 0,
+      scenarioHorizonMonths: 0,
+      confidenceLabel: '',
       metrics: validMetrics,
     };
   }
 
-  // Combined claims reduction: 1 - product(1 - ri), dampened for 2+ metrics
-  let combinedRate = 1 - validMetrics.reduce(
-    (acc, m) => acc * (1 - METRIC_ACTUARIAL_CONFIG[m].claimsReductionRate),
-    1,
+  const metricResults = validMetrics.map((metric) =>
+    calculateActuarialROI({
+      metric,
+      type,
+      useCase,
+      maxParticipants: participants,
+      budgetCeiling: budget,
+      applyAdjustments: true,
+    }),
   );
-  if (validMetrics.length >= 2) combinedRate *= 0.75;
-
-  const avgBaselineCost =
-    validMetrics.reduce((sum, m) => sum + METRIC_ACTUARIAL_CONFIG[m].baselineClaimCostPerMember, 0) /
-    validMetrics.length;
-
-  const useCaseConfig = useCase ? USE_CASE_CONFIG[useCase] : null;
-  const typeMultiplier = type === 'stream' ? STREAM_MULTIPLIER : 1.0;
-  const useCaseMultiplier = useCaseConfig?.savingsMultiplier ?? 1.0;
-
-  const savingsPerMember = avgBaselineCost * combinedRate * typeMultiplier * useCaseMultiplier;
+  const weightedSavingsPerMember = metricResults.reduce((sum, result) => sum + result.savingsPerMember, 0) / metricResults.length;
+  const overlapDiscount = validMetrics.length === 1 ? 1 : Math.max(0.58, 1 - (validMetrics.length - 1) * 0.16);
+  const savingsPerMember = weightedSavingsPerMember * overlapDiscount;
   const totalProjectedSavings = savingsPerMember * participants;
   const budgetROI = budget > 0 ? totalProjectedSavings / budget : 0;
-
-  const streamFactor = type === 'stream' ? STREAM_HP_FACTOR : 1.0;
-  const rawAvgHP =
-    validMetrics.reduce((sum, m) => {
-      const raw = METRIC_ACTUARIAL_CONFIG[m].suggestedHPBase * streamFactor;
-      return sum + Math.round(Math.min(500, Math.max(25, raw)) / 5) * 5;
-    }, 0) / validMetrics.length;
-  const suggestedHP = Math.round(rawAvgHP / 5) * 5;
-
-  const evidenceLevels = validMetrics.map((m) => METRIC_ACTUARIAL_CONFIG[m].evidenceLevel);
-  const evidenceLevel: 'high' | 'medium' | 'low' = evidenceLevels.includes('high')
-    ? 'high'
-    : evidenceLevels.includes('medium')
-    ? 'medium'
-    : 'low';
-
-  const morbidityShiftBps = Math.round(combinedRate * 80 / 5) * 5;
-  const paybackMonths = totalProjectedSavings > 0
-    ? Math.min(36, Math.round(budget / (totalProjectedSavings / 12)))
-    : 36;
-  const vnbImpactPer1MMAPE = morbidityShiftBps * 4500;
+  const averageImpactRate = metricResults.reduce((sum, result) => sum + result.claimsReductionRate, 0) / metricResults.length;
+  const averageBaselineCost = metricResults.reduce((sum, result) => sum + result.baselineCostPerMember, 0) / metricResults.length;
+  const avgHP = metricResults.reduce((sum, result) => sum + result.suggestedHP, 0) / metricResults.length;
+  const modelConfidence = clampConfidence(metricResults.reduce((sum, result) => sum + result.modelConfidence, 0) / metricResults.length * overlapDiscount);
+  const scenarioRangeLow = metricResults.reduce((sum, result) => sum + result.scenarioRangeLow, 0) / metricResults.length * overlapDiscount;
+  const scenarioRangeHigh = metricResults.reduce((sum, result) => sum + result.scenarioRangeHigh, 0) / metricResults.length * overlapDiscount;
+  const horizon = Math.round(metricResults.reduce((sum, result) => sum + result.scenarioHorizonMonths, 0) / metricResults.length);
+  const evidenceLevel: 'high' | 'medium' | 'low' =
+    metricResults.some((result) => result.evidenceLevel === 'high')
+      ? 'high'
+      : metricResults.some((result) => result.evidenceLevel === 'medium')
+        ? 'medium'
+        : 'low';
+  const expectedVerifiedLives = Math.round(metricResults.reduce((sum, result) => sum + result.expectedVerifiedLives, 0) / metricResults.length);
 
   return {
-    claimsReductionRate: combinedRate,
-    baselineCostPerMember: avgBaselineCost,
+    claimsReductionRate: averageImpactRate,
+    baselineCostPerMember: averageBaselineCost,
     savingsPerMember,
     totalProjectedSavings,
     budgetROI,
-    suggestedHP,
-    evidenceNote: `Combined ${validMetrics.length}-metric model`,
+    suggestedHP: Math.round(avgHP / 5) * 5,
+    evidenceNote: `Combined ${validMetrics.length}-metric scenario with overlap discount`,
     evidenceLevel,
-    savingsFraming: useCaseConfig?.savingsFraming ?? '',
-    additionalNote: useCaseConfig?.additionalNote ?? null,
+    savingsFraming: USE_CASE_CONFIG[useCase || 'claims_reduction'].savingsFraming,
+    additionalNote: 'Combined scenarios should be treated as directional because of interaction and overlap effects.',
     isReady: true,
-    adjustmentsApplied: false,
-    morbidityShiftBps,
-    paybackMonths,
-    vnbImpactPer1MMAPE,
+    adjustmentsApplied: true,
+    morbidityShiftBps: Math.round(averageImpactRate * 10000 * 0.3 / 5) * 5,
+    paybackMonths: totalProjectedSavings > 0 ? Math.min(36, Math.round((budget / totalProjectedSavings) * horizon)) : 36,
+    vnbImpactPer1MMAPE: Math.round(averageImpactRate * 10000 * 1200),
+    modeledImprovementRate: metricResults.reduce((sum, result) => sum + result.modeledImprovementRate, 0) / metricResults.length * overlapDiscount,
+    expectedVerifiedLives,
+    scenarioRangeLow,
+    scenarioRangeHigh,
+    modelConfidence,
+    scenarioHorizonMonths: horizon,
+    confidenceLabel: confidenceLabel(modelConfidence),
     metrics: validMetrics,
   };
 }

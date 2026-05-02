@@ -98,7 +98,7 @@ export default function CampaignMemberDetail() {
             </div>
             <h1 className="mt-4 text-2xl font-semibold text-primary">{member.anonymizedId}</h1>
             <p className="mt-2 max-w-[760px] text-sm leading-relaxed text-secondary">
-              Insurer-safe member progression view. No raw health records are exposed here, only challenge status, trend direction, proof state, and reward delivery.
+              Insurer-safe member progression view. Only programme status, verification state, and reward delivery are shown here.
             </p>
           </div>
           <div className="card bg-surface/80 lg:w-[280px]">
@@ -149,7 +149,7 @@ export default function CampaignMemberDetail() {
         <div className="card">
           <SectionHeader
             title="Member progression"
-            description="The insurer sees progression states and proof movement, not biometric exhaust."
+            description="The insurer sees progression states and verification movement, not biometric exhaust."
           />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="rounded-xl border border-border bg-surface/80 px-4 py-3">
@@ -183,7 +183,7 @@ export default function CampaignMemberDetail() {
                     {source}
                   </span>
                 )) : (
-                  <span className="text-xs text-tertiary">No connected sources are visible to the insurer-safe view yet.</span>
+                  <span className="text-xs text-tertiary">No connected sources are visible in the insurer-safe view yet.</span>
                 )}
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function CampaignMemberDetail() {
         <div className="card">
           <div className="flex items-center gap-2 border-b border-border pb-3">
             <Sparkles size={13} className="text-accent" />
-            <span className="text-xs font-medium text-secondary">Member activity receipt trail</span>
+            <span className="text-xs font-medium text-secondary">Member activity record</span>
             <InfoTooltip content="Every event shown here is an insurer-safe state change originating in the member app." />
           </div>
           <div className="mt-3 space-y-3">
@@ -208,7 +208,7 @@ export default function CampaignMemberDetail() {
                 </div>
               </div>
             )) : (
-              <div className="text-xs text-tertiary">No activity synced back for this member yet.</div>
+              <div className="text-xs text-tertiary">No activity has synced back for this member yet.</div>
             )}
           </div>
         </div>
@@ -217,10 +217,10 @@ export default function CampaignMemberDetail() {
       <div className="card">
         <SectionHeader
           title="Privacy receipt"
-          description="This is the insurer-safe contract that makes the member story credible."
+          description="This is the insurer-safe contract behind the member record."
         />
         <div className="rounded-xl bg-hover px-4 py-4 text-sm leading-relaxed text-secondary">
-          HealthID shares state transitions, proof verification, and reward delivery while keeping raw sleep, recovery, heart rate, and device-level records inside the member context.
+          HealthID shares state transitions, verification status, and reward delivery while keeping raw sleep, recovery, heart rate, and device-level records inside the member context.
         </div>
       </div>
     </div>

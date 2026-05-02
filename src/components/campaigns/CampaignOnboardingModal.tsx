@@ -5,23 +5,23 @@ import type { OnboardingStep } from '@/components/ui/OnboardingModal';
 const steps: OnboardingStep[] = [
   {
     icon: Target,
-    title: 'Define Challenge',
-    description: 'Pick a health metric and set the threshold. e.g., 8,000 steps/day for 30 days.',
+    title: 'Define Outcome',
+    description: 'Choose the insurer business outcome, then translate it into a measurable health programme.',
   },
   {
     icon: Users,
-    title: 'Target a Cohort',
-    description: 'Filter by health score, reputation tier, data sources, demographics — all without accessing personal data.',
+    title: 'Target the Cohort',
+    description: 'Shape the reachable member cohort by market, trust tier, data sources, and eligibility profile.',
   },
   {
     icon: Gift,
-    title: 'Set Rewards',
-    description: 'Allocate Health Points per verified proof. Budget earns yield while waiting.',
+    title: 'Set Incentives',
+    description: 'Keep incentives visible but secondary to the underlying business case and actuarial value.',
   },
   {
     icon: ShieldCheck,
-    title: 'Collect Proofs',
-    description: 'Users verify on-device via ZK proofs. You receive cryptographic receipts — never raw data.',
+    title: 'Review Receipts',
+    description: 'The insurer reviews receipt-level outcomes and campaign performance without taking custody of raw health data.',
   },
 ];
 
@@ -33,11 +33,11 @@ export default function CampaignOnboardingModal({ onDismiss }: CampaignOnboardin
   return (
     <OnboardingModal
       storageKey="healthid_campaigns_onboarded"
-      headerTitle="How Campaigns Work"
-      headerDescription="Campaigns are privacy-preserving verification challenges. Here's the lifecycle:"
+      headerTitle="How the Campaign Engine Works"
+      headerDescription="This is the operating center of the product. Configure one programme and reuse the same engine across multiple insurer motions."
       steps={steps}
-      punchline="Zero data liability. Full verification certainty."
-      primaryAction={{ label: 'Create a Campaign', action: '/campaigns/new' }}
+      punchline="One insurer workflow. Multiple downstream commercial outcomes."
+      primaryAction={{ label: 'Design a Campaign', action: '/campaigns/new' }}
       ghostLabel="Explore Campaigns"
       onDismiss={onDismiss}
     />

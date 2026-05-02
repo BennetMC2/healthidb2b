@@ -6,16 +6,17 @@ export interface Suggestion {
 }
 
 const shared: Suggestion[] = [
-  { label: 'Campaign overview', prompt: 'Give me an overview of my campaigns' },
-  { label: 'Verification stats', prompt: 'How are my verifications performing?' },
-  { label: 'Treasury balance', prompt: "What's my treasury balance and yield?" },
-  { label: 'Compliance status', prompt: 'Show me my compliance status' },
+  { label: 'Next best campaign', prompt: 'Recommend the next best claims-reduction campaign to launch for this insurer and explain why' },
+  { label: 'Outcome posture', prompt: 'How are my claims-oriented campaigns performing against business expectations?' },
+  { label: 'Launch risk scan', prompt: 'Flag the main launch risks in my claims-reduction portfolio' },
+  { label: 'Verification trail', prompt: 'Summarize the verification trail in executive language for an insurer' },
 ];
 
 const industrySpecific: Record<PartnerIndustry, Suggestion[]> = {
   insurance: [
-    { label: 'Underwriting proofs', prompt: 'How are zero-knowledge proofs reducing underwriting costs?' },
-    { label: 'PHI exposure', prompt: 'What is my PII/PHI exposure risk?' },
+    { label: 'Claims posture', prompt: 'How does this campaign support claims reduction and where is the model weakest?' },
+    { label: 'Underwriting angle', prompt: 'How does the same engine support underwriting and pre-policy verification without changing the platform story?' },
+    { label: 'Life insurer angle', prompt: 'Brief this platform for a Hong Kong or Japan life insurer executive with claims reduction as the lead story' },
   ],
   pharma: [
     { label: 'Cohort recruitment', prompt: 'How is cohort recruitment progressing across my campaigns?' },
@@ -45,22 +46,18 @@ const pageSuggestions: Record<string, Suggestion[]> = {
     { label: 'Source penetration', prompt: 'Which data sources have the highest penetration?' },
   ],
   '/campaigns': [
-    { label: 'Active campaigns', prompt: 'How are my active campaigns performing?' },
-    { label: 'Campaign ROI', prompt: 'Which campaign has the best verification rate?' },
-  ],
-  '/treasury': [
-    { label: 'Yield update', prompt: 'How much yield has been generated?' },
-    { label: 'Value multiplier', prompt: 'Explain the value multiplier mechanism' },
+    { label: 'Active campaigns', prompt: 'Which live claims-reduction campaigns deserve more budget or attention right now?' },
+    { label: 'Campaign ROI', prompt: 'Which campaign has the strongest modeled claims-impact case and why?' },
   ],
   '/compliance': [
-    { label: 'Audit summary', prompt: 'Show me my compliance audit summary' },
+    { label: 'Trail summary', prompt: 'Show me the latest verification trail summary' },
     { label: 'Proof failures', prompt: 'Are there any recent proof failures?' },
   ],
 };
 
 export function getPageSuggestions(route: string, industry: PartnerIndustry): Suggestion[] {
   // Match page route (strip hash, params)
-  const basePath = '/' + (route.split('/')[1] || 'overview');
+  const basePath = '/' + (route.split('/')[1] || 'campaigns');
   const pageSpecific = pageSuggestions[basePath] || [];
   return [...pageSpecific, ...industrySpecific[industry], ...shared].slice(0, 6);
 }

@@ -190,7 +190,7 @@ export default function CampaignDetail() {
                   ? `${(campaign as StreamCampaign).streamDuration} day programme`
                   : 'Single verification event'}
               </span>
-              <span>{campaign.targeting.regions?.join(' / ') || 'Open market targeting'}</span>
+              <span>{campaign.targeting.regions?.join(' / ') || 'Broad market targeting'}</span>
             </div>
           </div>
           <div className="flex flex-col items-stretch gap-2 lg:w-[270px]">
@@ -201,7 +201,7 @@ export default function CampaignDetail() {
                 <ArrowUpRight size={16} className="text-success" />
               </div>
               <p className="mt-1 text-xs leading-relaxed text-tertiary">
-                Verified outcome rate across the enrolled cohort. This is the number that anchors the commercial conversation.
+                Verified outcome rate across the enrolled cohort. This is the primary conversion signal for the programme.
               </p>
             </div>
             {(campaign.status === 'active' || campaign.status === 'paused') && (
@@ -293,17 +293,17 @@ export default function CampaignDetail() {
         <div className="card">
           <SectionHeader
             title="How this campaign works"
-            description="Short commercial framing for live insurer conversations."
+            description="Operating summary of how the programme runs."
           />
           <div className="space-y-3 text-xs text-secondary leading-relaxed">
             <p>
-              Members go about daily life, keep connected sources active, and only generate a receipt when the campaign threshold is met.
+              Members continue using their connected sources as normal. Verification is only produced when the campaign condition is met.
             </p>
             <p>
-              The insurer sees cohort movement, receipt evidence, and modeled claims-impact framing without holding raw health data.
+              The insurer receives cohort movement, verification evidence, and reward status without taking custody of raw health data.
             </p>
             <p className="rounded-xl bg-hover px-3 py-3 text-tertiary">
-              Default narrative: a Hong Kong or Japan life insurer running a claims-reduction campaign with underwriting support available from the same engine.
+              The same operating model can support claims reduction, underwriting review, and renewal programmes.
             </p>
           </div>
         </div>
@@ -412,6 +412,14 @@ export default function CampaignDetail() {
             title="Anonymized member statuses"
             description="Insurer-safe view of who has progressed, verified, and redeemed value."
           />
+          <div className="mb-3 flex justify-end">
+            <button
+              onClick={() => navigate(`/explorer?campaignId=${campaign.id}`)}
+              className="btn-ghost text-xs"
+            >
+              Open in Member Pool
+            </button>
+          </div>
           <div className="space-y-3">
             {syncedMembers.length > 0 ? syncedMembers.map((member) => (
               <button
@@ -446,17 +454,17 @@ export default function CampaignDetail() {
         <div className="card">
           <SectionHeader
             title="Campaign analyst"
-            description="Commercial framing generated from live member-side movement."
+            description="Summary generated from live member-side movement."
           />
           <div className="space-y-3 text-xs leading-relaxed text-secondary">
             <p>
-              {syncedMembers.filter((member) => member.challengeStatus !== 'invited').length} members have moved beyond invite, with {syncedMembers.filter((member) => member.proofStatus === 'verified').length} already producing proof-backed outcomes.
+              {syncedMembers.filter((member) => member.challengeStatus !== 'invited').length} members have moved beyond invitation, with {syncedMembers.filter((member) => member.proofStatus === 'verified').length} already producing verification-backed outcomes.
             </p>
             <p>
-              {campaign.b2cSync?.redemptionCount ?? 0} redemptions have been observed so far, which helps demonstrate member value delivery beyond simple point issuance.
+              {campaign.b2cSync?.redemptionCount ?? 0} redemptions have been recorded so far, showing value delivery beyond point issuance alone.
             </p>
             <p className="rounded-xl bg-hover px-3 py-3 text-tertiary">
-              Suggested Loom line: members are guided privately in HealthID, the insurer sees only verified movement, and rewards can be delivered all the way through to redemption.
+              Members are guided privately in HealthID, the insurer sees verified movement only, and rewards can be traced through to redemption.
             </p>
           </div>
         </div>

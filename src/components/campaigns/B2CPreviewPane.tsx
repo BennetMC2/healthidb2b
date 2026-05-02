@@ -94,7 +94,7 @@ export default function B2CPreviewPane({ campaign, partner }: B2CPreviewPaneProp
             <span className="text-2xs font-semibold text-primary">{campaign.name}</span>
           </div>
           <p className="text-2xs text-secondary leading-relaxed">
-            {partner.label} invited eligible members into a {metricLabel.toLowerCase()} challenge. The consumer app turns the insurer rule into a guided, privacy-preserving proof flow.
+            {partner.label} invited eligible members into a {metricLabel.toLowerCase()} challenge. The member experience converts the insurer rule into a guided verification flow.
           </p>
         </div>
 
@@ -117,7 +117,7 @@ export default function B2CPreviewPane({ campaign, partner }: B2CPreviewPaneProp
 
       <div className="mt-3 space-y-2">
         <p className="text-[11px] leading-relaxed text-tertiary">
-          Opens the consumer app on the challenge route used for dispatched member invites.
+          Opens the member experience at the route used for campaign delivery.
         </p>
         {sync && (
           <div className="rounded-xl border border-border bg-surface/80 px-3 py-2 text-[11px] leading-relaxed text-tertiary">
@@ -128,12 +128,12 @@ export default function B2CPreviewPane({ campaign, partner }: B2CPreviewPaneProp
               {sync.dispatchStatus === 'error'
                 ? sync.lastError || 'Consumer dispatch did not complete cleanly.'
                 : sync.proofOpportunityCreated
-                  ? 'Proof opportunity created in longevity-guide.'
-                  : 'Invite path is live, but proof generation is not mapped for this metric yet.'}
+                  ? 'Verification opportunity created in HealthID.'
+                  : 'Invite delivery is live, but verification is not yet mapped for this metric.'}
             </div>
             {(sync.redemptionCount ?? 0) > 0 && (
               <div className="mt-1 text-secondary">
-                {sync.redemptionCount} premium reward redemption{sync.redemptionCount === 1 ? '' : 's'} already observed in HealthID.
+                {sync.redemptionCount} premium reward redemption{sync.redemptionCount === 1 ? '' : 's'} recorded in HealthID.
               </div>
             )}
           </div>
@@ -144,7 +144,7 @@ export default function B2CPreviewPane({ campaign, partner }: B2CPreviewPaneProp
           rel="noreferrer"
           className="inline-flex w-full items-center justify-center rounded-xl bg-accent px-3 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-accent/90"
         >
-          Open member app
+          Open member experience
         </a>
       </div>
     </div>

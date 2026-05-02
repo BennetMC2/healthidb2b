@@ -98,7 +98,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     <div className="fixed inset-0 z-[9800] flex items-start justify-center pt-[15vh]" onClick={onClose}>
       <div className="absolute inset-0 bg-base/60 backdrop-blur-sm" />
       <div
-        className="relative w-[520px] bg-surface border border-border rounded-lg shadow-2xl animate-fade-in overflow-hidden"
+        className="relative w-[min(520px,92vw)] bg-surface border border-border rounded-lg shadow-2xl animate-fade-in overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search input */}

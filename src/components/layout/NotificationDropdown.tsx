@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Target, Vault, ShieldCheck, AlertCircle, TrendingUp } from 'lucide-react';
-import { treasuryState } from '@/data';
+import { Bell, Target, ShieldCheck, AlertCircle, TrendingUp, Users } from 'lucide-react';
 import { useCampaignStore } from '@/stores/useCampaignStore';
-import { formatCurrency } from '@/utils/format';
 
 interface Notification {
   id: string;
@@ -35,12 +33,12 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
 
   items.push({
     id: 'n2',
-    icon: Vault,
+    icon: Users,
     iconColor: 'text-accent',
-    title: 'Treasury yield credited',
-    description: `${formatCurrency(treasuryState.yieldGenerated)} total yield accrued`,
+    title: 'Cohort readiness update',
+    description: `${activeCampaigns.length} active programmes currently sourcing verification-ready members`,
     time: '4h ago',
-    route: '/treasury',
+    route: '/explorer',
   });
 
   if (completedCampaigns[0]) {
@@ -59,10 +57,10 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
     id: 'n4',
     icon: TrendingUp,
     iconColor: 'text-accent',
-    title: 'Value multiplier update',
-    description: `Current multiplier: ${treasuryState.valueMultiplier.toFixed(2)}x`,
+    title: 'Business impact refresh',
+    description: 'Campaign ROI projections updated for the latest configured cohort sizes',
     time: '1d ago',
-    route: '/treasury',
+    route: '/campaigns',
   });
 
   items.push({
@@ -79,8 +77,8 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
     id: 'n6',
     icon: ShieldCheck,
     iconColor: 'text-success',
-    title: 'Compliance audit passed',
-    description: 'Monthly audit completed — zero PII events confirmed',
+    title: 'Verification review passed',
+    description: 'Receipt trail ready for buyer diligence and pilot-readiness conversations',
     time: '3d ago',
     route: '/compliance',
   });

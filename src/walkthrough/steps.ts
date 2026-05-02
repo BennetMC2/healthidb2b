@@ -1,135 +1,93 @@
 import type { WalkthroughStep } from './types';
 
 export const walkthroughSteps: WalkthroughStep[] = [
-  // ── HOOK: Start with the cost ──────────────────────────────────────
   {
-    id: 'overview-story',
-    route: '/overview',
-    title: 'The Cost of Custodial Data',
+    id: 'campaign-engine-entry',
+    route: '/campaigns',
+    title: 'The Campaign Engine',
     narration:
-      'Every health record your organization stores is an open liability — regulatory fines, breach costs, compliance overhead. HealthID eliminates the liability entirely. Watch how.',
-    targetSelector: '[data-tour="overview-hero"]',
+      'This is the heart of the product. A life insurer configures a measurable health programme, targets a consented cohort, and models the business case before launch.',
+    targetSelector: null,
     actionType: 'auto',
   },
-
-  // ── PAIN: Let the red flow sink in ─────────────────────────────────
   {
-    id: 'overview-pain',
-    route: '/overview',
-    title: 'Choose Your Perspective',
+    id: 'create-programme',
+    route: '/campaigns/new',
+    title: 'Design the Programme',
     narration:
-      'HealthID solves different problems for different stakeholders. Whether you\'re focused on compliance risk, actuarial savings, or user engagement — click a persona to see the value proposition tailored to your role.',
-    targetSelector: '[data-tour="overview-personas"]',
+      'The workflow starts with a campaign, not an abstract protocol. Outcome, signal, cohort, incentives, and modeled commercial impact are configured in one place.',
+    targetSelector: null,
     actionType: 'auto',
-    delayMs: 500,
+    delayMs: 400,
   },
-
-  // ── SOLUTION: The pool ─────────────────────────────────────────────
   {
     id: 'explore-pool',
     route: '/explorer',
-    title: '5,000 Identities — Zero Liability',
+    title: 'Shape the Reachable Cohort',
     narration:
-      'These are real, verifiable health identities — reachable right now, without ingesting a single byte of their data. In a traditional system, every one of these would be a liability row in your database. Here, they\'re just proof endpoints.',
+      'The member pool is where campaign targeting becomes commercially real. Teams filter for trust, markets, signal quality, and cohort fit before launching.',
     targetSelector: '[data-tour="explorer-metrics"]',
     actionType: 'auto',
     delayMs: 400,
   },
-
-  // ── PROVE IT: Targeting works without data access ──────────────────
   {
     id: 'filter-cohort',
     route: '/explorer',
-    title: 'Target a Cohort in Seconds',
+    title: 'Target with Precision',
     narration:
-      'You can segment by health score, reputation, data sources, and demographics — all without accessing personal data. Click "High-Value Cohort" to see identities with health scores 75+ and top-tier reputation.',
+      'Segmentation happens at the cohort level, not through raw data review. Use the filters to simulate a high-signal life insurance audience.',
     targetSelector: '[data-tour="explorer-filters"]',
     actionType: 'click-target',
     actionHint: 'Click "High-Value Cohort" preset',
   },
-
-  // ── ACTIVATE: Campaigns ────────────────────────────────────────────
   {
     id: 'view-campaigns',
     route: '/campaigns',
-    title: 'Turn Cohorts into Campaigns',
+    title: 'Move to a Live Programme',
     narration:
-      'Each campaign defines a health metric challenge and collects zero-knowledge proof receipts — not data files. Click into any active campaign to see the conversion funnel.',
+      'Campaigns operationalize the cohort and signal logic into an insurer-controlled programme. Open any active campaign to see the analytical workspace.',
     targetSelector: null,
     actionType: 'click-any-in',
     actionHint: 'Click any campaign card',
     delayMs: 300,
   },
-
-  // ── FUNNEL: Show conversion ────────────────────────────────────────
   {
     id: 'campaign-detail',
     route: null,
-    title: 'From Pool to Proof',
+    title: 'Review the Workspace',
     narration:
-      'The funnel shows conversion from eligible pool through to verified proofs. Every "verified" entry is a cryptographic receipt — the underlying health data never left the user\'s device. No new liability was created.',
+      'This is the buyer-grade workspace: KPI strip, business framing, momentum, activation funnel, and receipt timeline in one view.',
     targetSelector: null,
     actionType: 'auto',
     delayMs: 400,
   },
-
-  // ── MAGIC MOMENT: The proof ────────────────────────────────────────
   {
     id: 'proof-animation',
     route: null,
-    title: 'Watch the Impossible',
+    title: 'Open a Receipt',
     narration:
-      'In a traditional system, this verification would require ingesting the patient\'s data, storing it, and running a compliance check — creating a new liability record. Click any verification row and watch what happens instead.',
+      'Receipt-level evidence is the technical credibility layer. Open any row to show how a campaign translates into a verifiable insurer-facing outcome.',
     targetSelector: '[data-walkthrough="verification-feed"]',
     actionType: 'click-any-in',
     actionHint: 'Click a verification row',
     autoScrollTo: '[data-walkthrough="verification-feed"]',
   },
-
-  // ── ECONOMICS: Treasury ────────────────────────────────────────────
-  {
-    id: 'treasury-economics',
-    route: '/treasury',
-    title: 'Your Budget Works While You Wait',
-    narration:
-      'Idle funds earn yield from T-Bills at 4–5% APY. Combined with enterprise buying power, every $1.00 of budget creates $1.50+ of user value. Compare that to traditional claims processing where every dollar is a sunk cost.',
-    targetSelector: null,
-    actionType: 'auto',
-    delayMs: 400,
-  },
-
-  // ── ROI: Make it tangible ──────────────────────────────────────────
-  {
-    id: 'roi-calculator',
-    route: '/treasury',
-    title: 'Model Your ROI',
-    narration:
-      'Drag the budget slider to see the projection. At $100K over 12 months, you\'ll generate yield, amplify buying power, and bring cost-per-verification down to a fraction of traditional processing. Try it.',
-    targetSelector: '[data-walkthrough="roi-calculator"]',
-    actionType: 'interact',
-    actionHint: 'Try adjusting the budget slider',
-    autoScrollTo: '[data-walkthrough="roi-calculator"]',
-  },
-
-  // ── TRUST: Compliance ──────────────────────────────────────────────
   {
     id: 'compliance-audit',
     route: '/compliance',
-    title: 'Your Audit Trail — Zero PII',
+    title: 'Show Buyer Diligence',
     narration:
-      'Every operation is logged as a cryptographic receipt. Zero PII access events — the protocol never touches raw health data. This is what you show your regulator: a complete audit trail proving you never handled the data at all.',
+      'The verification trail supports diligence conversations with buyers, security stakeholders, and pilot sponsors. It is evidence, not security theater.',
     targetSelector: null,
     actionType: 'auto',
     delayMs: 400,
   },
-
-  // ── CLOSE: CTA ─────────────────────────────────────────────────────
   {
     id: 'summary',
-    route: '/overview',
-    title: 'Ready to Run a Pilot?',
+    route: '/campaigns',
+    title: 'Ready for a Pilot Conversation?',
     narration:
-      'You\'ve seen the full loop: pool exploration, cohort targeting, zero-knowledge verification, treasury yield, and compliance proof. Every step replaced data liability with cryptographic certainty. Let\'s talk about a pilot deployment.',
+      'You have now seen the core product loop: design the programme, target the cohort, review verified outcomes, and support the pilot conversation with analytical evidence.',
     targetSelector: null,
     actionType: 'auto',
   },
