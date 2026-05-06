@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
+  LayoutDashboard,
   Globe,
   Target,
   ShieldCheck,
@@ -44,6 +45,7 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
 }
 
 const navItems = [
+  { path: '/overview', label: 'Overview', icon: LayoutDashboard, tourId: 'overview-nav' },
   { path: '/campaigns', label: 'Campaign Engine', icon: Target, tourId: 'campaigns-nav' },
   { path: '/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
   { path: '/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
