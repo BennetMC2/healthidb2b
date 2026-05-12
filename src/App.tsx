@@ -10,7 +10,6 @@ import CampaignCreate from '@/pages/CampaignCreate';
 import Treasury from '@/pages/Treasury';
 import Compliance from '@/pages/Compliance';
 import Settings from '@/pages/Settings';
-import Overview from '@/pages/Overview';
 import DemoWalkthrough from '@/components/walkthrough/DemoWalkthrough';
 import ToastContainer from '@/components/ui/Toast';
 import { useDemoStore } from '@/stores/useDemoStore';
@@ -95,6 +94,8 @@ export default function App() {
       />
       <ErrorBoundary fallbackTitle="Page failed to load">
         <Routes>
+          <Route path="/" element={<Navigate to="/campaigns" replace />} />
+          <Route path="/overview" element={<Navigate to="/campaigns" replace />} />
           <Route path="/future" element={<FutureLayout />}>
             <Route index element={<Navigate to="/future/strategy" replace />} />
             <Route path="strategy" element={<FutureStrategy />} />
@@ -104,8 +105,6 @@ export default function App() {
             <Route path="trust" element={<FutureTrust />} />
           </Route>
           <Route element={<Layout onTourStart={handleTourStart} />}>
-            <Route path="/" element={<Navigate to="/overview" replace />} />
-            <Route path="/overview" element={<Overview />} />
             <Route path="/explorer" element={<NetworkExplorer />} />
             <Route path="/campaigns" element={<Campaigns />} />
             <Route path="/campaigns/new" element={<CampaignCreate />} />

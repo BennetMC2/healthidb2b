@@ -58,7 +58,6 @@ const INTENT_PATTERNS: [RegExp, Intent][] = [
 
 // Page route → intent boosting: prefer intents relevant to current page
 const PAGE_INTENT_BOOST: Record<string, Intent[]> = {
-  '/overview': ['campaigns_overview', 'treasury_balance', 'compliance_overview'],
   '/explorer': ['identities_overview', 'identities_tiers', 'identities_demographics'],
   '/campaigns': ['campaigns_overview', 'campaigns_performance'],
   '/treasury': ['treasury_balance', 'treasury_yield'],
