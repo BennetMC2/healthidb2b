@@ -17,6 +17,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const location = useLocation();
+  const isOverview = location.pathname === '/overview';
 
   return (
     <div className="relative flex h-screen w-screen bg-base overflow-hidden">
@@ -40,12 +41,12 @@ export default function Layout({ onTourStart }: LayoutProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className={`flex-1 overflow-auto scrollbar-thin px-3 py-4 sm:p-4 ${demoActive ? 'pb-[148px]' : ''}`}
+            className={`flex-1 ${isOverview ? 'overflow-hidden px-0 py-0' : 'overflow-auto scrollbar-thin px-3 py-4 sm:p-4'} ${demoActive && !isOverview ? 'pb-[148px]' : ''}`}
           >
             <Outlet />
           </motion.main>
         </AnimatePresence>
-        <Footer />
+        {!isOverview && <Footer />}
       </div>
 
       {copilotOpen && (
@@ -60,7 +61,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
         </div>
       )}
 
-      {!copilotOpen && (
+      {!copilotOpen && !isOverview && (
         <button
           onClick={() => setCopilotOpen(true)}
           className="fixed bottom-5 right-4 z-30 flex h-11 items-center gap-2 rounded-full bg-accent px-3 text-base text-base shadow-lg transition-transform hover:scale-[1.02]"

@@ -145,35 +145,35 @@ export default function Overview() {
 
   if (loading) {
     return (
-      <div className="h-full overflow-hidden px-4 py-4 sm:px-6">
-        <div className="grid h-full gap-4 rounded-[28px] border border-border/60 bg-surface/80 p-4 shadow-[0_20px_60px_rgb(var(--n-shadow)/0.08)]">
-          <div className="skeleton h-16 rounded-2xl" />
-          <div className="grid flex-1 gap-4 xl:grid-cols-[1.1fr_0.34fr_1.1fr]">
+      <div className="h-full overflow-hidden p-3">
+        <div className="grid h-full gap-3 rounded-[24px] border border-border/60 bg-surface/80 p-3 shadow-[0_20px_60px_rgb(var(--n-shadow)/0.08)]">
+          <div className="skeleton h-12 rounded-2xl" />
+          <div className="grid flex-1 gap-3 xl:grid-cols-[1.1fr_0.34fr_1.1fr]">
             <div className="skeleton rounded-[28px]" />
             <div className="skeleton rounded-[28px]" />
             <div className="skeleton rounded-[28px]" />
           </div>
-          <div className="skeleton h-24 rounded-2xl" />
+          <div className="skeleton h-20 rounded-2xl" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full overflow-hidden px-2 py-2 sm:px-3 sm:py-3">
-      <div className="relative grid h-full gap-3 overflow-hidden rounded-[30px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,249,252,0.92))] p-3 shadow-[0_24px_80px_rgb(var(--n-shadow)/0.08)] lg:gap-4 lg:p-5">
+    <div className="h-full overflow-hidden p-3">
+      <div className="relative grid h-full grid-rows-[auto_minmax(0,1fr)_auto] gap-2.5 overflow-hidden rounded-[28px] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(247,249,252,0.92))] p-3 shadow-[0_24px_80px_rgb(var(--n-shadow)/0.08)] lg:gap-3 lg:p-4">
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute left-[-8%] top-[-8%] h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
           <div className="absolute right-[-10%] top-[14%] h-56 w-56 rounded-full bg-accent-secondary/10 blur-3xl" />
           <div className="absolute bottom-[-14%] left-[34%] h-48 w-48 rounded-full bg-accent/8 blur-3xl" />
         </div>
 
-        <header className="relative grid gap-3 lg:grid-cols-[auto_1fr] lg:items-start">
+        <header className="relative grid gap-2 lg:grid-cols-[auto_1fr] lg:items-start">
           <div>
-            <div className="text-[1.9rem] font-semibold tracking-[-0.03em] text-primary">HealthID</div>
+            <div className="text-[1.7rem] font-semibold tracking-[-0.03em] text-primary">HealthID</div>
           </div>
           <div className="flex flex-col gap-2 lg:items-center lg:text-center">
-            <h1 className="max-w-[980px] text-[1.3rem] font-semibold leading-[1.12] text-primary sm:text-[1.55rem] lg:text-[2rem]">
+            <h1 className="max-w-[980px] text-[1.12rem] font-semibold leading-[1.08] text-primary sm:text-[1.4rem] lg:text-[1.8rem] xl:text-[1.95rem]">
               HealthID connects users and enterprises through verified health data in a privacy-preserving way that creates value for both.
             </h1>
             <div className="flex flex-wrap gap-2 lg:justify-center">
@@ -187,42 +187,42 @@ export default function Overview() {
           </div>
         </header>
 
-        <section className="relative grid min-h-0 flex-1 gap-3 xl:grid-cols-[1.08fr_0.34fr_1.08fr] xl:gap-4">
-          <div className="grid min-h-0 rounded-[28px] border border-accent-secondary/18 bg-white/82 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] xl:grid-rows-[auto_1fr_auto]">
-            <div className="grid gap-1 xl:grid-cols-[210px_1fr] xl:gap-5">
+        <section className="relative grid min-h-0 flex-1 gap-2.5 xl:grid-cols-[1.02fr_0.28fr_1.02fr] xl:gap-3">
+          <div className="grid min-h-0 rounded-[24px] border border-accent-secondary/18 bg-white/82 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] xl:grid-rows-[auto_1fr_auto]">
+            <div className="grid gap-1 xl:grid-cols-[165px_1fr] xl:gap-4">
               <div className="order-2 xl:order-1 xl:self-end">
-                <div className="mx-auto mt-1 w-[170px] rounded-[30px] border border-slate-300/80 bg-white p-3 shadow-[0_20px_40px_rgba(15,23,42,0.12)] xl:mt-0 xl:w-[190px]">
+                <div className="mx-auto mt-1 w-[148px] rounded-[26px] border border-slate-300/80 bg-white p-2.5 shadow-[0_20px_40px_rgba(15,23,42,0.12)] xl:mt-0 xl:w-[162px]">
                   <div className="flex items-center justify-between text-[0.58rem] font-semibold text-primary/70">
                     <span>9:21</span>
-                    <div className="h-4 w-10 rounded-full bg-slate-950" />
+                    <div className="h-3.5 w-8 rounded-full bg-slate-950" />
                     <span>AI</span>
                   </div>
-                  <div className="mt-3 text-[0.72rem] text-secondary">Good morning,</div>
-                  <div className="text-[1.1rem] font-semibold leading-none text-primary">Alex</div>
-                  <div className="mt-4 grid grid-cols-[1fr_72px] items-center gap-2">
+                  <div className="mt-2.5 text-[0.68rem] text-secondary">Good morning,</div>
+                  <div className="text-[1rem] font-semibold leading-none text-primary">Alex</div>
+                  <div className="mt-3 grid grid-cols-[1fr_58px] items-center gap-2">
                     <div>
                       <div className="text-[0.58rem] uppercase tracking-[0.18em] text-tertiary">Health Score</div>
-                      <div className="mt-1 text-[2rem] font-semibold leading-none text-primary">82</div>
+                      <div className="mt-1 text-[1.8rem] font-semibold leading-none text-primary">82</div>
                       <div className="mt-1 text-[0.58rem] font-medium text-success">Great</div>
                       <div className="text-[0.54rem] text-tertiary">+5 this week</div>
                     </div>
-                    <div className="relative h-[72px] w-[72px] rounded-full bg-[conic-gradient(rgb(var(--a-accent-secondary))_0_72%,rgb(var(--n-border))_72%_100%)] p-[7px]">
+                    <div className="relative h-[58px] w-[58px] rounded-full bg-[conic-gradient(rgb(var(--a-accent-secondary))_0_72%,rgb(var(--n-border))_72%_100%)] p-[6px]">
                       <div className="h-full w-full rounded-full bg-white" />
                     </div>
                   </div>
-                  <div className="mt-4 rounded-2xl bg-accent-dim/55 p-2.5">
+                  <div className="mt-3 rounded-2xl bg-accent-dim/55 p-2">
                     <div className="text-[0.56rem] text-tertiary">Today&apos;s focus</div>
                     <div className="mt-1 text-[0.68rem] font-medium leading-snug text-primary">Improve sleep quality</div>
                   </div>
-                  <div className="mt-3 rounded-2xl border border-border/80 p-2.5">
+                  <div className="mt-2.5 rounded-2xl border border-border/80 p-2">
                     <div className="text-[0.56rem] text-tertiary">Health Points</div>
-                    <div className="mt-1 text-[1rem] font-semibold text-primary">1,250 HP</div>
+                    <div className="mt-1 text-[0.92rem] font-semibold text-primary">1,250 HP</div>
                     <div className="mt-1 inline-flex items-center gap-1 text-[0.56rem] font-medium text-accent-secondary">
                       View wallet
                       <ArrowRight size={9} />
                     </div>
                   </div>
-                  <div className="mt-4 flex items-center justify-between text-[0.54rem] text-tertiary">
+                  <div className="mt-3 flex items-center justify-between text-[0.5rem] text-tertiary">
                     <span>Home</span>
                     <span>Insights</span>
                     <span>Track</span>
@@ -234,22 +234,22 @@ export default function Overview() {
 
               <div className="order-1 xl:order-2">
                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-secondary">User App</div>
-                <h2 className="mt-2 max-w-[420px] text-[1.65rem] font-semibold leading-[1.08] text-primary lg:text-[2.15rem]">
+                <h2 className="mt-1.5 max-w-[380px] text-[1.35rem] font-semibold leading-[1.02] text-primary lg:text-[1.75rem] xl:text-[1.9rem]">
                   The most rewarding AI health companion.
                 </h2>
-                <p className="mt-2 max-w-[420px] text-sm leading-relaxed text-secondary">
+                <p className="mt-1.5 max-w-[400px] text-[0.92rem] leading-relaxed text-secondary">
                   Private health record, personalised guidance and Health Points in one place.
                 </p>
-                <div className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-accent-secondary">
+                <div className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-accent-secondary">
                   What users get
                 </div>
-                <div className="mt-2 grid gap-1.5">
+                <div className="mt-1.5 grid gap-1">
                   {userBenefits.map((benefit) => (
-                    <div key={benefit.text} className="grid grid-cols-[40px_1fr] items-start gap-3 rounded-2xl border border-transparent px-1 py-1.5">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-secondary-muted text-accent-secondary">
+                    <div key={benefit.text} className="grid grid-cols-[34px_1fr] items-start gap-2.5 rounded-2xl border border-transparent px-1 py-1">
+                      <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-accent-secondary-muted text-accent-secondary">
                         {benefit.icon}
                       </div>
-                      <div className={`border-b border-border/60 pb-2 text-[0.96rem] leading-snug ${benefit.strong ? 'font-semibold text-primary' : 'text-secondary'}`}>
+                      <div className={`border-b border-border/60 pb-1.5 text-[0.84rem] leading-snug ${benefit.strong ? 'font-semibold text-primary' : 'text-secondary'}`}>
                         {benefit.text}
                       </div>
                     </div>
@@ -258,25 +258,25 @@ export default function Overview() {
               </div>
             </div>
 
-            <div className="mt-3 grid gap-2 lg:grid-cols-2">
-              <div className="rounded-2xl border border-accent-secondary/20 bg-white/88 p-3">
+            <div className="mt-2.5 grid gap-2 lg:grid-cols-2">
+              <div className="rounded-2xl border border-accent-secondary/20 bg-white/88 p-2.5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,rgb(var(--a-accent-secondary)),rgb(var(--a-accent)))] text-white shadow-sm">
-                    <Sparkles size={20} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,rgb(var(--a-accent-secondary)),rgb(var(--a-accent)))] text-white shadow-sm">
+                    <Sparkles size={17} />
                   </div>
                   <div>
-                    <div className="text-[1.08rem] font-semibold leading-tight text-primary">AI Companion &amp; Tracker</div>
+                    <div className="text-[0.96rem] font-semibold leading-tight text-primary">AI Companion &amp; Tracker</div>
                     <div className="mt-1 text-xs text-secondary">Guidance loop informed by user-controlled health history.</div>
                   </div>
                 </div>
               </div>
-              <div className="rounded-2xl border border-accent-secondary/20 bg-white/88 p-3">
+              <div className="rounded-2xl border border-accent-secondary/20 bg-white/88 p-2.5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,rgb(var(--a-accent-secondary)),rgb(var(--a-accent)))] text-white shadow-sm">
-                    <CreditCard size={20} />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,rgb(var(--a-accent-secondary)),rgb(var(--a-accent)))] text-white shadow-sm">
+                    <CreditCard size={17} />
                   </div>
                   <div>
-                    <div className="text-[1.08rem] font-semibold leading-tight text-primary">Health Points Wallet</div>
+                    <div className="text-[0.96rem] font-semibold leading-tight text-primary">Health Points Wallet</div>
                     <div className="mt-1 text-xs text-secondary">{formatNumber(overview.redemptionCount)} redemptions tied to verified progress.</div>
                   </div>
                 </div>
@@ -284,51 +284,51 @@ export default function Overview() {
             </div>
           </div>
 
-          <div className="grid min-h-0 grid-rows-[1fr_auto] items-center gap-3">
-            <div className="relative flex h-full min-h-[260px] flex-col items-center justify-center rounded-[28px] border border-border/70 bg-white/76 px-3 py-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
+          <div className="grid min-h-0 grid-rows-[1fr_auto] items-center gap-2">
+            <div className="relative flex h-full min-h-[220px] flex-col items-center justify-center rounded-[24px] border border-border/70 bg-white/76 px-2.5 py-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]">
               <div className="absolute left-0 top-1/2 hidden h-px w-[18%] -translate-y-1/2 border-t-2 border-dashed border-accent-secondary/70 xl:block" />
               <div className="absolute right-0 top-1/2 hidden h-px w-[18%] -translate-y-1/2 border-t-2 border-dashed border-accent-secondary/70 xl:block" />
-              <div className="mb-4 text-[1.05rem] font-semibold uppercase tracking-[0.1em] text-accent-secondary">
+              <div className="mb-3 text-[0.88rem] font-semibold uppercase tracking-[0.1em] text-accent-secondary">
                 Verified.
                 <br />
                 Private.
                 <br />
                 Valuable.
               </div>
-              <div className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-[linear-gradient(145deg,rgb(var(--a-accent-secondary))/0.9,rgb(var(--a-accent))/0.9)] text-white shadow-lg">
-                <ShieldCheck size={34} />
+              <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[linear-gradient(145deg,rgb(var(--a-accent-secondary))/0.9,rgb(var(--a-accent))/0.9)] text-white shadow-lg">
+                <ShieldCheck size={28} />
               </div>
-              <div className="mt-5 text-[1.65rem] font-semibold text-primary">ZK Bridge</div>
-              <p className="mt-3 max-w-[180px] text-sm leading-relaxed text-secondary">
+              <div className="mt-4 text-[1.35rem] font-semibold text-primary">ZK Bridge</div>
+              <p className="mt-2 max-w-[170px] text-[0.88rem] leading-relaxed text-secondary">
                 Zero-knowledge proofs ensure only verified signals pass between apps.
               </p>
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-1.5">
               {bridgeChips.map((chip) => (
-                <div key={chip} className="rounded-full border border-border/80 bg-white/92 px-3 py-2 text-center text-[0.78rem] font-medium uppercase tracking-[0.08em] text-secondary shadow-sm">
+                <div key={chip} className="rounded-full border border-border/80 bg-white/92 px-2.5 py-1.5 text-center text-[0.68rem] font-medium uppercase tracking-[0.08em] text-secondary shadow-sm">
                   {chip}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="grid min-h-0 rounded-[28px] border border-accent/18 bg-white/82 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] xl:grid-rows-[auto_1fr_auto]">
+          <div className="grid min-h-0 rounded-[24px] border border-accent/18 bg-white/82 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)] xl:grid-rows-[auto_1fr_auto]">
             <div>
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[rgb(var(--a-accent))]">Enterprise App</div>
-              <h2 className="mt-2 max-w-[480px] text-[1.65rem] font-semibold leading-[1.08] text-primary lg:text-[2.15rem]">
+              <h2 className="mt-1.5 max-w-[440px] text-[1.35rem] font-semibold leading-[1.02] text-primary lg:text-[1.75rem] xl:text-[1.9rem]">
                 {partnerCopy.headline}
               </h2>
-              <p className="mt-2 max-w-[470px] text-sm leading-relaxed text-secondary">
+              <p className="mt-1.5 max-w-[460px] text-[0.92rem] leading-relaxed text-secondary">
                 {partnerCopy.subheadline}
               </p>
             </div>
 
-            <div className="mt-4 grid min-h-0 gap-4 xl:grid-cols-[1.18fr_0.82fr]">
-              <div className="overflow-hidden rounded-[24px] border border-accent/18 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,245,249,0.92))] shadow-[0_18px_36px_rgba(15,23,42,0.08)]">
-                <div className="grid h-full min-h-[250px] grid-cols-[92px_1fr]">
-                  <div className="bg-[linear-gradient(180deg,#0f1b52,#121b3f)] p-3 text-white">
-                    <div className="text-[1.5rem] font-semibold leading-none">H</div>
-                    <div className="mt-4 grid gap-3 text-[0.62rem] text-white/80">
+            <div className="mt-3 grid min-h-0 gap-3 xl:grid-cols-[1.14fr_0.86fr]">
+              <div className="overflow-hidden rounded-[22px] border border-accent/18 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(241,245,249,0.92))] shadow-[0_18px_36px_rgba(15,23,42,0.08)]">
+                <div className="grid h-full min-h-[216px] grid-cols-[84px_1fr]">
+                  <div className="bg-[linear-gradient(180deg,#0f1b52,#121b3f)] p-2.5 text-white">
+                    <div className="text-[1.35rem] font-semibold leading-none">H</div>
+                    <div className="mt-3 grid gap-2.5 text-[0.58rem] text-white/80">
                       <div className="rounded-lg bg-white/10 px-2 py-1.5">Overview</div>
                       <div>Users</div>
                       <div>Segments</div>
@@ -338,7 +338,7 @@ export default function Overview() {
                       <div>Settings</div>
                     </div>
                   </div>
-                  <div className="grid grid-rows-[auto_1fr] p-3">
+                  <div className="grid grid-rows-[auto_1fr] p-2.5">
                     <div className="grid grid-cols-2 gap-2 2xl:grid-cols-4">
                       {[
                         { label: 'Active users', value: formatNumber(overview.enrolledMembers) },
@@ -346,16 +346,16 @@ export default function Overview() {
                         { label: 'Verification rate', value: formatPercent(overview.verificationRate) },
                         { label: 'Rewards budget', value: formatCurrency(overview.rewardsBudget) },
                       ].map((stat) => (
-                        <div key={stat.label} className="rounded-2xl border border-border/70 bg-white/90 p-2.5">
+                        <div key={stat.label} className="rounded-2xl border border-border/70 bg-white/90 p-2">
                           <div className="text-[0.58rem] uppercase tracking-[0.14em] text-tertiary">{stat.label}</div>
-                          <div className="mt-2 text-[1.1rem] font-semibold leading-none text-primary">{stat.value}</div>
+                          <div className="mt-1.5 text-[0.98rem] font-semibold leading-none text-primary">{stat.value}</div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-3 grid gap-3 xl:grid-cols-[1.05fr_0.95fr]">
-                      <div className="rounded-2xl border border-border/70 bg-white/90 p-3">
+                    <div className="mt-2.5 grid gap-2.5 xl:grid-cols-[1.05fr_0.95fr]">
+                      <div className="rounded-2xl border border-border/70 bg-white/90 p-2.5">
                         <div className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-secondary">Health Score Distribution</div>
-                        <div className="mt-4 flex h-[120px] items-end gap-2">
+                        <div className="mt-3 flex h-[92px] items-end gap-1.5">
                           {[22, 36, 58, 84, 52, 28].map((height, index) => (
                             <div key={height} className="flex flex-1 flex-col items-center gap-2">
                               <div
@@ -367,9 +367,9 @@ export default function Overview() {
                           ))}
                         </div>
                       </div>
-                      <div className="rounded-2xl border border-border/70 bg-white/90 p-3">
+                      <div className="rounded-2xl border border-border/70 bg-white/90 p-2.5">
                         <div className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-secondary">Top Campaign Performance</div>
-                        <div className="mt-4 grid gap-3">
+                        <div className="mt-3 grid gap-2.5">
                           {[
                             { name: 'Move More', value: 72 },
                             { name: 'Sleep Better', value: 64 },
@@ -393,11 +393,11 @@ export default function Overview() {
               <div className="grid gap-2.5 self-start">
                 <div className="text-xs font-semibold uppercase tracking-[0.14em] text-[rgb(var(--a-accent))]">What enterprises get</div>
                 {enterpriseBenefits.map((benefit) => (
-                  <div key={benefit.text} className="grid grid-cols-[38px_1fr] items-start gap-3 rounded-2xl border border-transparent px-1 py-1">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-muted text-accent">
+                  <div key={benefit.text} className="grid grid-cols-[34px_1fr] items-start gap-2.5 rounded-2xl border border-transparent px-1 py-0.5">
+                    <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-accent-muted text-accent">
                       {benefit.icon}
                     </div>
-                    <div className={`border-b border-border/60 pb-2 text-[0.92rem] leading-snug ${benefit.strong ? 'font-semibold text-primary' : 'text-secondary'}`}>
+                    <div className={`border-b border-border/60 pb-1.5 text-[0.82rem] leading-snug ${benefit.strong ? 'font-semibold text-primary' : 'text-secondary'}`}>
                       {benefit.text}
                     </div>
                   </div>
@@ -405,7 +405,7 @@ export default function Overview() {
               </div>
             </div>
 
-            <div className="mt-3 grid gap-2 xl:grid-cols-3">
+            <div className="mt-2.5 grid gap-2 xl:grid-cols-3">
               {[
                 {
                   icon: <Stethoscope size={20} />,
@@ -423,13 +423,13 @@ export default function Overview() {
                   caption: `${formatNumber(overview.highTrustMembers)} high-trust members`,
                 },
               ].map((module) => (
-                <div key={module.title} className="rounded-2xl border border-accent/18 bg-white/88 p-3">
+                <div key={module.title} className="rounded-2xl border border-accent/18 bg-white/88 p-2.5">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,rgb(var(--a-accent)),rgb(var(--a-accent-secondary)))] text-white shadow-sm">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,rgb(var(--a-accent)),rgb(var(--a-accent-secondary)))] text-white shadow-sm">
                       {module.icon}
                     </div>
                     <div>
-                      <div className="text-[1.02rem] font-semibold leading-tight text-primary">{module.title}</div>
+                      <div className="text-[0.9rem] font-semibold leading-tight text-primary">{module.title}</div>
                       <div className="mt-1 text-xs text-secondary">{module.caption}</div>
                     </div>
                   </div>
@@ -439,16 +439,16 @@ export default function Overview() {
           </div>
         </section>
 
-        <footer className="relative rounded-[26px] border border-border/80 bg-white/88 px-4 py-3 shadow-[0_12px_24px_rgba(15,23,42,0.06)]">
+        <footer className="relative rounded-[24px] border border-border/80 bg-white/88 px-4 py-2.5 shadow-[0_12px_24px_rgba(15,23,42,0.06)]">
           <div className="grid gap-3 lg:grid-cols-[auto_1fr_auto] lg:items-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-secondary-muted text-accent-secondary">
-              <Users size={26} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-secondary-muted text-accent-secondary">
+              <Users size={20} />
             </div>
             <div>
-              <div className="text-[1.15rem] font-semibold leading-tight text-primary">
+              <div className="text-[1rem] font-semibold leading-tight text-primary">
                 Over time, every campaign grows an open network of opt-in, verified health users.
               </div>
-              <div className="mt-1 text-sm text-secondary">
+              <div className="mt-0.5 text-[0.88rem] text-secondary">
                 More users. More signals. More value for {currentPartner.label} and every member who chooses to participate.
               </div>
             </div>
