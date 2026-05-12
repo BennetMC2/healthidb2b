@@ -248,11 +248,11 @@ export default function CampaignCreate() {
 
   const handleLaunchComplete = useCallback(() => {
     if (!launchingState) {
-      navigate('/campaigns');
+      navigate('/app/campaigns');
       return;
     }
 
-    navigate(`/campaigns/${launchingState.campaignId}`);
+    navigate(`/app/campaigns/${launchingState.campaignId}`);
     addToast({
       message:
         launchingState.status === 'success'
@@ -276,7 +276,7 @@ export default function CampaignCreate() {
   return (
     <div className="flex flex-col gap-4 max-w-[1120px]">
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/campaigns')} className="btn-ghost p-1">
+        <button onClick={() => navigate('/app/campaigns')} className="btn-ghost p-1">
           <ArrowLeft size={16} />
         </button>
         <div>

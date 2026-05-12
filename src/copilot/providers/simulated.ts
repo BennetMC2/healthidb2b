@@ -58,10 +58,10 @@ const INTENT_PATTERNS: [RegExp, Intent][] = [
 
 // Page route → intent boosting: prefer intents relevant to current page
 const PAGE_INTENT_BOOST: Record<string, Intent[]> = {
-  '/explorer': ['identities_overview', 'identities_tiers', 'identities_demographics'],
-  '/campaigns': ['campaigns_overview', 'campaigns_performance'],
-  '/treasury': ['treasury_balance', 'treasury_yield'],
-  '/compliance': ['compliance_overview', 'compliance_failures'],
+  '/app/explorer': ['identities_overview', 'identities_tiers', 'identities_demographics'],
+  '/app/campaigns': ['campaigns_overview', 'campaigns_performance'],
+  '/app/treasury': ['treasury_balance', 'treasury_yield'],
+  '/app/compliance': ['compliance_overview', 'compliance_failures'],
 };
 
 function classifyIntent(text: string, currentPage?: string): Intent {

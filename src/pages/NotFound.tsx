@@ -15,7 +15,7 @@ export default function NotFound() {
         The page you're looking for doesn't exist or has been moved.
       </p>
       <button
-        onClick={() => navigate('/campaigns')}
+        onClick={() => navigate('/app/campaigns')}
         className="btn-primary text-xs mt-2"
       >
         <ArrowLeft size={13} />

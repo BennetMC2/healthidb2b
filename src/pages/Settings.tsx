@@ -12,9 +12,7 @@ export default function Settings() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => !localStorage.getItem('healthid_settings_onboarded')
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Controlled form state
   const [label, setLabel] = useState(currentPartner.label);
@@ -101,7 +99,7 @@ export default function Settings() {
     <div className="flex flex-col gap-6 max-w-[720px]">
       {showOnboarding && <SettingsOnboarding onDismiss={() => setShowOnboarding(false)} />}
       <div className="flex items-center justify-between">
-        <SectionHeader title="Settings" description="Partner configuration and API access management." />
+        <SectionHeader as="h1" title="Settings" description="Partner configuration and API access management." />
         {isDirty && (
           <button onClick={handleSave} disabled={saving} className="btn-primary text-xs flex-shrink-0">
             {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}

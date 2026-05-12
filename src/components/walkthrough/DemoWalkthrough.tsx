@@ -40,11 +40,11 @@ export default function DemoWalkthrough() {
     const step = steps[currentStepIndex];
     if (!step) return;
 
-    // Step 3 (view-campaigns) → user clicked a campaign card → navigated to /campaigns/:id
+    // Step 3 (view-campaigns): user clicked a campaign card and navigated to /app/campaigns/:id.
     if (
       step.id === 'view-campaigns' &&
-      /^\/campaigns\/[^/]+$/.test(location.pathname) &&
-      location.pathname !== '/campaigns/new'
+      new RegExp('^/app/campaigns/[^/]+$').test(location.pathname) &&
+      location.pathname !== '/app/campaigns/new'
     ) {
       const timer = setTimeout(() => nextStep(), 500);
       return () => clearTimeout(timer);

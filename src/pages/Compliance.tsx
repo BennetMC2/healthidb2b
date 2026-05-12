@@ -85,9 +85,7 @@ export default function Compliance() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const loading = useSimulatedLoading(500);
   const location = useLocation();
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => !localStorage.getItem('healthid_compliance_onboarded')
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // ── Partner-scoped compliance data ────────────────────────────────
   const partnerRecords = useMemo(
@@ -182,7 +180,7 @@ export default function Compliance() {
     <div className="flex flex-col gap-4">
       {showOnboarding && <ComplianceOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader title="Verification Trail" description="A clean record of verification requests, proof generation, and receipt delivery for buyer diligence and pilot readiness conversations." icon={<ShieldCheck size={16} />} />
+      <SectionHeader as="h1" title="Verification Trail" description="A clean record of verification requests, proof generation, and receipt delivery for buyer diligence and pilot readiness conversations." icon={<ShieldCheck size={16} />} />
 
       {/* Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">

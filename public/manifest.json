@@ -1,0 +1,20 @@
+{
+  "name": "HealthID for Insurers",
+  "short_name": "HealthID",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "rgb(232, 115, 74)",
+  "background_color": "rgb(237, 232, 224)",
+  "icons": [
+    {
+      "src": "/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

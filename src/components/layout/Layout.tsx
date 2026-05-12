@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { MessageSquare } from 'lucide-react';
+import { X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Footer from './Footer';
@@ -16,7 +16,9 @@ export default function Layout({ onTourStart }: LayoutProps) {
   const demoActive = useDemoStore((s) => s.isActive);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
+  const [widgetDismissed, setWidgetDismissed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <div className="relative flex h-screen w-screen bg-base overflow-hidden">
@@ -60,15 +62,30 @@ export default function Layout({ onTourStart }: LayoutProps) {
         </div>
       )}
 
-      {!copilotOpen && (
-        <button
-          onClick={() => setCopilotOpen(true)}
-          className="fixed bottom-5 right-4 z-30 flex h-11 items-center gap-2 rounded-full bg-accent px-3 text-base text-base shadow-lg transition-transform hover:scale-[1.02]"
-          aria-label="Open strategy agent"
-        >
-          <MessageSquare size={18} />
-          <span className="hidden md:inline text-xs font-medium text-white">Agent</span>
-        </button>
+      {!copilotOpen && !widgetDismissed && location.pathname !== '/app/actuary' && (
+        <div className="group fixed bottom-5 right-4 z-30 w-[min(420px,calc(100vw-32px))] rounded-xl border border-border bg-elevated px-4 py-3 shadow-none">
+          <button
+            onClick={() => setWidgetDismissed(true)}
+            className="absolute right-2 top-2 hidden h-5 w-5 items-center justify-center rounded text-tertiary hover:bg-hover hover:text-primary group-hover:flex"
+            aria-label="Dismiss AI Actuary widget"
+          >
+            <X size={12} />
+          </button>
+          <button
+            onClick={() => navigate('/app/actuary')}
+            className="block w-full pr-4 text-left"
+            aria-label="Open AI Actuary opportunities"
+          >
+            <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent">
+              <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+              AI Actuary · 3 new opportunities
+            </div>
+            <div className="mt-1 text-sm leading-snug text-secondary">
+              A $4.2M re-pricing signal surfaced in your cardio cohort.
+              <span className="ml-1 font-medium text-accent">View {'->'}</span>
+            </div>
+          </button>
+        </div>
       )}
     </div>
   );

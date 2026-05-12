@@ -3,7 +3,7 @@ import type { WalkthroughStep } from './types';
 export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'campaign-engine-entry',
-    route: '/campaigns',
+    route: '/app/campaigns',
     title: 'The Campaign Engine',
     narration:
       'This is the heart of the product. A life insurer configures a measurable health programme, targets a consented cohort, and models the business case before launch.',
@@ -12,7 +12,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'create-programme',
-    route: '/campaigns/new',
+    route: '/app/campaigns/new',
     title: 'Design the Programme',
     narration:
       'The workflow starts with a campaign, not an abstract protocol. Outcome, signal, cohort, incentives, and modeled commercial impact are configured in one place.',
@@ -22,7 +22,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'explore-pool',
-    route: '/explorer',
+    route: '/app/explorer',
     title: 'Shape the Reachable Cohort',
     narration:
       'The member pool is where campaign targeting becomes commercially real. Teams filter for trust, markets, signal quality, and cohort fit before launching.',
@@ -32,7 +32,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'filter-cohort',
-    route: '/explorer',
+    route: '/app/explorer',
     title: 'Target with Precision',
     narration:
       'Segmentation happens at the cohort level, not through raw data review. Use the filters to simulate a high-signal life insurance audience.',
@@ -42,7 +42,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'view-campaigns',
-    route: '/campaigns',
+    route: '/app/campaigns',
     title: 'Move to a Live Programme',
     narration:
       'Campaigns operationalize the cohort and signal logic into an insurer-controlled programme. Open any active campaign to see the analytical workspace.',
@@ -74,7 +74,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'compliance-audit',
-    route: '/compliance',
+    route: '/app/compliance',
     title: 'Show Buyer Diligence',
     narration:
       'The verification trail supports diligence conversations with buyers, security stakeholders, and pilot sponsors. It is evidence, not security theater.',
@@ -84,7 +84,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'summary',
-    route: '/campaigns',
+    route: '/app/campaigns',
     title: 'Ready for a Pilot Conversation?',
     narration:
       'You have now seen the core product loop: design the programme, target the cohort, review verified outcomes, and support the pilot conversation with analytical evidence.',

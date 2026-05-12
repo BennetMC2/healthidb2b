@@ -81,7 +81,7 @@ export default function CampaignMemberDetail() {
       <div className="card-elevated border-accent/15">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex-1">
-            <button onClick={() => navigate(`/campaigns/${campaign.id}`)} className="btn-ghost flex items-center gap-2 p-1">
+            <button onClick={() => navigate(`/app/campaigns/${campaign.id}`)} className="btn-ghost flex items-center gap-2 p-1">
               <ArrowLeft size={16} />
               Back to campaign
             </button>

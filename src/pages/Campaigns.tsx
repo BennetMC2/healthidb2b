@@ -71,9 +71,7 @@ export default function Campaigns() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const [typeFilter, setTypeFilter] = useState<'all' | CampaignType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | CampaignStatus>('all');
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => !localStorage.getItem('healthid_campaigns_onboarded')
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Partner-scoped campaigns
   const campaigns = useMemo(
@@ -137,14 +135,14 @@ export default function Campaigns() {
           </div>
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => navigate('/campaigns/new')}
+              onClick={() => navigate('/app/campaigns/new')}
               className="btn-primary text-xs"
             >
               <Plus size={13} />
               Design Campaign
             </button>
             <button
-              onClick={() => navigate('/explorer')}
+              onClick={() => navigate('/app/explorer')}
               className="btn-ghost text-xs"
             >
               View Member Pool
@@ -166,7 +164,7 @@ export default function Campaigns() {
           {campaignTemplates.map((template) => (
             <button
               key={template.id}
-              onClick={() => navigate('/campaigns/new', { state: { template } })}
+              onClick={() => navigate('/app/campaigns/new', { state: { template } })}
               className="card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
             >
               <div className="flex items-center gap-2 mb-2">
@@ -224,7 +222,7 @@ export default function Campaigns() {
             <option value="paused">Paused</option>
           </select>
           <button
-            onClick={() => navigate('/campaigns/new')}
+            onClick={() => navigate('/app/campaigns/new')}
             className="btn-primary text-xs"
           >
             <Plus size={13} />
@@ -245,7 +243,7 @@ export default function Campaigns() {
         {filtered.map((campaign) => (
           <CampaignPopover key={campaign.id} campaign={campaign}>
             <button
-              onClick={() => navigate(`/campaigns/${campaign.id}`)}
+              onClick={() => navigate(`/app/campaigns/${campaign.id}`)}
               className="w-full card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
