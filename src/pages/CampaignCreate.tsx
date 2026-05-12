@@ -297,10 +297,6 @@ export default function CampaignCreate() {
             <h2 className="mt-3 text-xl font-semibold text-primary">
               Configure the programme, verification signal, and modeled business outcome in one flow.
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-secondary">
-              This should feel like an operating surface for life insurers, not a toy campaign builder.
-              It defaults to Hong Kong and Japan, assumes the insurer is bringing the members, and leads with claims reduction as the primary commercial story.
-            </p>
           </div>
           <div className="grid grid-cols-1 gap-2 text-2xs text-tertiary md:w-[250px]">
             <div className="rounded-xl border border-border bg-surface/80 px-3 py-2">

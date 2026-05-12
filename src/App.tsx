@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Joyride, { STATUS } from 'react-joyride';
 import Layout from '@/components/layout/Layout';
-import Landing from '@/pages/Landing';
 import Actuary from '@/pages/Actuary';
 import NetworkExplorer from '@/pages/NetworkExplorer';
 import Campaigns from '@/pages/Campaigns';
@@ -34,8 +33,9 @@ export default function App() {
     const path = location.pathname;
     const meta: Record<string, { title: string; description: string; robots?: string }> = {
       '/': {
-        title: 'HealthID for Insurers · Zero-custody health intelligence',
-        description: 'Zero-custody health intelligence for life and health insurers. Verify outcomes without raw health data custody.',
+        title: 'Member Pool · HealthID',
+        description: 'Explore anonymized verified health cohorts and trust tiers.',
+        robots: 'noindex',
       },
       '/app/actuary': {
         title: 'AI Actuary · HealthID',
@@ -159,9 +159,9 @@ export default function App() {
       />
       <ErrorBoundary fallbackTitle="Page failed to load">
         <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/overview" element={<Navigate to="/" replace />} />
-          <Route path="/contact" element={<Landing />} />
+          <Route path="/" element={<Navigate to="/app/explorer" replace />} />
+          <Route path="/overview" element={<Navigate to="/app/explorer" replace />} />
+          <Route path="/contact" element={<Navigate to="/app/explorer" replace />} />
           <Route path="/future" element={<FutureLayout />}>
             <Route index element={<Navigate to="/future/strategy" replace />} />
             <Route path="strategy" element={<FutureStrategy />} />

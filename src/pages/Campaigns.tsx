@@ -124,9 +124,6 @@ export default function Campaigns() {
             <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary">
               Design claims-reduction campaigns around verified health outcomes.
             </h1>
-            <p className="mt-2 max-w-[640px] text-sm leading-relaxed text-secondary">
-              Configure the target outcome, define the cohort, and launch a programme that converts member-side health activity into verification-grade insurer evidence.
-            </p>
             <div className="mt-4 flex flex-wrap gap-2 text-2xs text-tertiary">
               <span className="badge bg-accent/10 border-accent/20 text-accent">Claims reduction</span>
               <span className="badge bg-elevated border-border text-secondary">Underwriting support</span>
