@@ -274,7 +274,7 @@ export default function CampaignCreate() {
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-[1120px]">
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate('/app/campaigns')} className="btn-ghost p-1">
           <ArrowLeft size={16} />
@@ -342,7 +342,7 @@ export default function CampaignCreate() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4">
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="card">
           {step === 0 && (
             <div className="space-y-4">

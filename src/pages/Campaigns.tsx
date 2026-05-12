@@ -115,13 +115,13 @@ export default function Campaigns() {
       )}
 
       <div className="card-elevated border-accent/15">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-[720px]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
               Hong Kong + Japan Life Insurance Scenario
             </div>
-            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary">
+            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary xl:whitespace-nowrap">
               Design claims-reduction campaigns around verified health outcomes.
             </h1>
             <div className="mt-4 flex flex-wrap gap-2 text-2xs text-tertiary">
@@ -130,7 +130,7 @@ export default function Campaigns() {
               <span className="badge bg-elevated border-border text-secondary">Member engagement</span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 xl:justify-end">
             <button
               onClick={() => navigate('/app/campaigns/new')}
               className="btn-primary text-xs"
