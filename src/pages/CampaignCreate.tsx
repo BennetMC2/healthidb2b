@@ -342,7 +342,7 @@ export default function CampaignCreate() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(560px,1fr)_minmax(480px,0.72fr)] 2xl:grid-cols-[minmax(680px,1fr)_560px]">
         <div className="card">
           {step === 0 && (
             <div className="space-y-4">
@@ -735,7 +735,7 @@ export default function CampaignCreate() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 min-h-0">
+        <aside className="flex min-h-0 flex-col gap-4 xl:sticky xl:top-20 xl:self-start">
           <ActuarialROICalculator
             metric={form.metric}
             type={form.type}
@@ -766,7 +766,7 @@ export default function CampaignCreate() {
               </div>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
