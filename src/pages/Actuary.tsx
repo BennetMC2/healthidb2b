@@ -145,91 +145,102 @@ export default function Actuary() {
             </div>
           </section>
 
-          <section className="card" data-walkthrough="actuary-ask">
-            <div className="flex items-center gap-2">
-              <BrainCircuit size={16} className="text-accent" />
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Book Copilot</h2>
+          <section className="card overflow-hidden p-0" data-walkthrough="actuary-ask">
+            <div className="border-b border-border px-4 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <BrainCircuit size={16} className="text-accent" />
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Book Copilot</h2>
+                </div>
+                <div className="rounded-full border border-accent/20 bg-accent/10 px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-accent">
+                  Live
+                </div>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed text-tertiary">
+                Portfolio analysis, campaign advice, and underwriting implications in one thread.
+              </p>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-tertiary">
-              Ask for portfolio analysis, campaign advice, or underwriting implications.
-            </p>
 
-            <div className="mt-4 min-h-[220px] rounded-2xl border border-border bg-base/75 p-3">
-              {chatPreview.length > 0 ? (
-                <div className="flex max-h-[280px] flex-col gap-3 overflow-y-auto pr-1">
-                  {chatPreview.map((message) => (
-                    <CopilotMessage key={message.id} message={message} />
-                  ))}
-                  {isStreaming && chatPreview[chatPreview.length - 1]?.content === '' && (
-                    <div className="flex justify-start">
-                      <div className="flex gap-1 rounded-lg border border-border bg-elevated px-3 py-2">
-                        <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" />
-                        <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '200ms' }} />
-                        <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '400ms' }} />
+            <div className="bg-base/70 px-4 py-4">
+              <div className="flex min-h-[280px] flex-col rounded-2xl border border-border bg-surface/70">
+                <div className="flex-1 space-y-3 overflow-y-auto px-3 py-3">
+                  {chatPreview.length > 0 ? (
+                    <>
+                      {chatPreview.map((message) => (
+                        <CopilotMessage key={message.id} message={message} />
+                      ))}
+                      {isStreaming && chatPreview[chatPreview.length - 1]?.content === '' && (
+                        <div className="flex justify-start">
+                          <div className="flex gap-1 rounded-lg border border-border bg-elevated px-3 py-2">
+                            <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" />
+                            <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '200ms' }} />
+                            <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '400ms' }} />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="rounded-xl border border-border bg-elevated px-3 py-3 text-xs leading-relaxed text-secondary">
+                        Start a conversation with Book Copilot. It uses the current partner context from this platform rather than a generic chatbot prompt.
                       </div>
-                    </div>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          'Which cohort is underpriced?',
+                          'What is my verification success rate?',
+                          'Where is the weakest campaign in the portfolio?',
+                        ].map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            onClick={() => {
+                              setQuery('');
+                              void sendMessage(suggestion);
+                            }}
+                            disabled={isStreaming}
+                            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-secondary transition-colors hover:border-accent/30 hover:text-primary disabled:opacity-40"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
-              ) : (
-                <div className="flex h-full flex-col justify-between gap-4">
-                  <div className="rounded-xl border border-border bg-surface/70 px-3 py-3 text-xs leading-relaxed text-secondary">
-                    Start a conversation with Book Copilot. It uses the current partner context from this platform, not a generic chatbot prompt.
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      'Which cohort is underpriced?',
-                      'What is my verification success rate?',
-                      'Where is the weakest campaign in the portfolio?',
-                    ].map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        onClick={() => {
-                          setQuery('');
-                          void sendMessage(suggestion);
-                        }}
-                        disabled={isStreaming}
-                        className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-secondary transition-colors hover:border-accent/30 hover:text-primary disabled:opacity-40"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
 
-            <div className="mt-4 rounded-2xl border border-border bg-surface/70 p-3">
-              <textarea
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    const text = query.trim();
-                    if (!text || isStreaming) return;
-                    setQuery('');
-                    void sendMessage(text);
-                  }
-                }}
-                placeholder="Ask about your portfolio..."
-                className="h-24 w-full resize-none bg-transparent text-sm text-primary outline-none placeholder:text-tertiary"
-              />
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <div className="text-2xs text-tertiary">
-                  Press Enter to send. Shift+Enter for a new line.
+                <div className="border-t border-border bg-surface px-3 py-3">
+                  <textarea
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        const text = query.trim();
+                        if (!text || isStreaming) return;
+                        setQuery('');
+                        void sendMessage(text);
+                      }
+                    }}
+                    placeholder="Ask about your portfolio..."
+                    className="h-20 w-full resize-none bg-transparent text-sm text-primary outline-none placeholder:text-tertiary"
+                  />
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="text-2xs text-tertiary">
+                      Enter sends. Shift+Enter adds a new line.
+                    </div>
+                    <button
+                      onClick={() => {
+                        const text = query.trim();
+                        if (!text || isStreaming) return;
+                        setQuery('');
+                        void sendMessage(text);
+                      }}
+                      disabled={isStreaming || query.trim().length === 0}
+                      className="btn-primary text-xs disabled:opacity-40"
+                    >
+                      {isStreaming ? 'Thinking...' : 'Send'}
+                    </button>
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    const text = query.trim();
-                    if (!text || isStreaming) return;
-                    setQuery('');
-                    void sendMessage(text);
-                  }}
-                  disabled={isStreaming || query.trim().length === 0}
-                  className="btn-primary text-xs disabled:opacity-40"
-                >
-                  {isStreaming ? 'Thinking...' : 'Send'}
-                </button>
               </div>
             </div>
           </section>
