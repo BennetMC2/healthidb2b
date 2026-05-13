@@ -119,13 +119,13 @@ export default function Campaigns() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Hong Kong + Japan Life Insurance Scenario
+              Insurer campaign operations
             </div>
             <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary xl:whitespace-nowrap">
-              Design claims-reduction campaigns around verified health outcomes.
+              Design insurer programmes around verified outcomes.
             </h1>
             <div className="mt-4 flex flex-wrap gap-2 text-2xs text-tertiary">
-              <span className="badge bg-accent/10 border-accent/20 text-accent">Claims reduction</span>
+              <span className="badge bg-accent/10 border-accent/20 text-accent">Portfolio performance</span>
               <span className="badge bg-elevated border-border text-secondary">Underwriting support</span>
               <span className="badge bg-elevated border-border text-secondary">Member engagement</span>
             </div>
@@ -189,7 +189,7 @@ export default function Campaigns() {
 
       <SectionHeader
         title="Campaign Portfolio"
-        description="Live campaigns and drafts for the current insurer environment across claims reduction, underwriting support, and adjacent member programmes."
+        description="Live campaigns and drafts for insurer execution across portfolio performance, underwriting support, and adjacent member programmes."
         icon={<Target size={16} />}
       />
 

@@ -282,7 +282,7 @@ export default function CampaignCreate() {
         <div>
           <h1 className="text-lg font-semibold text-primary">Design Campaign</h1>
           <p className="text-2xs text-tertiary mt-0.5">
-            Build a life insurance programme around claims reduction, verified outcomes, and modeled business impact.
+            Build a life insurance programme around verified outcomes, portfolio performance, and modeled business impact.
           </p>
         </div>
       </div>
@@ -428,7 +428,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">What buyers should understand here</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  The campaign is the operating center of the product. One configuration surface leads with claims reduction,
+                  The campaign is the operating center of the product. One configuration surface leads with portfolio performance,
                   supports underwriting and pre-policy moments, and still extends into engagement, renewal, lead gen, and long-term wellness infrastructure.
                 </p>
               </div>
@@ -637,7 +637,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">Cohort strategy</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  Reach, trust tier, source quality, and market availability combine into a targetable cohort with commercial relevance for claims reduction first and underwriting support second.
+                  Reach, trust tier, source quality, and market availability combine into a targetable cohort with commercial relevance for portfolio performance first and underwriting support second.
                 </p>
               </div>
             </div>
@@ -737,7 +737,7 @@ export default function CampaignCreate() {
                 <div className="text-2xs uppercase tracking-wider text-accent">Executive launch framing</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
                   This campaign gives the insurer a self-serve way to configure a measurable health programme, target a consented cohort,
-                  and model business value before launch. The operating model leads with claims reduction while remaining commercially credible for underwriting,
+                  and model business value before launch. The operating model leads with portfolio performance while remaining commercially credible for underwriting,
                   engagement, and lead-generation conversations.
                 </p>
               </div>
