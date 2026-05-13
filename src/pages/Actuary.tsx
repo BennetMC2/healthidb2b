@@ -8,7 +8,7 @@ import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
 import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
 import { getPartnerPortfolio } from '@/data/partnerPortfolios';
-import { ActuaryBrainMark, FDECard, PartnerPortfolioBand, ProofReceiptAnimation, ResearchFeed } from '@/components/enterprise/EnterpriseWidgets';
+import { ActuaryProofMark, FDECard, PartnerPortfolioBand, ProofReceiptAnimation, ResearchFeed } from '@/components/enterprise/EnterpriseWidgets';
 import { useScanClock } from '@/hooks/useScanClock';
 import type { CampaignTemplate, DataSource, HealthMetric } from '@/types';
 
@@ -365,7 +365,7 @@ export default function Actuary() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <ActuaryBrainMark />
+            <ActuaryProofMark />
             <button
               onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
               className="btn-primary text-xs"

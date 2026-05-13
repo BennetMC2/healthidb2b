@@ -1,4 +1,4 @@
-import { BrainCircuit, CalendarClock, Check, Hexagon, Radio, ShieldCheck, Sparkles } from 'lucide-react';
+import { CalendarClock, Check, Hexagon, Radio, ShieldCheck, Sparkles } from 'lucide-react';
 import { formatNumber } from '@/utils/format';
 import type { PartnerPortfolio } from '@/data/partnerPortfolios';
 
@@ -112,12 +112,18 @@ export function PartnerPortfolioBand({ portfolio }: { portfolio: PartnerPortfoli
   );
 }
 
-export function ActuaryBrainMark() {
+export function ActuaryProofMark() {
   return (
-    <div className="relative hidden h-24 w-24 items-center justify-center rounded-[28px] border border-accent/20 bg-accent/10 text-accent xl:flex">
-      <div className="absolute inset-3 rounded-[22px] border border-accent/15" />
-      <BrainCircuit size={38} strokeWidth={1.4} />
-      <span className="absolute right-4 top-4 h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+    <div className="relative hidden h-28 w-28 overflow-hidden rounded-[30px] border border-accent/25 bg-primary/80 text-accent xl:flex">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_18%,rgb(var(--a-accent)/0.28),transparent_18%),linear-gradient(145deg,rgb(var(--n-elevated)/0.16),transparent)]" />
+      <div className="absolute left-4 top-4 h-20 w-20 rounded-[24px] border border-accent/20" />
+      <div className="absolute left-8 top-8 h-12 w-12 rotate-45 rounded-xl border border-accent/35 bg-accent/10" />
+      <div className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-accent/25 bg-accent/15">
+        <ShieldCheck size={24} strokeWidth={1.6} />
+      </div>
+      <div className="absolute right-5 top-5 h-2.5 w-2.5 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+      <div className="absolute bottom-5 left-5 font-mono text-[9px] uppercase tracking-[0.16em] text-accent/80">ZK</div>
+      <div className="absolute bottom-5 right-5 font-mono text-[9px] uppercase tracking-[0.16em] text-accent/80">A+</div>
     </div>
   );
 }
