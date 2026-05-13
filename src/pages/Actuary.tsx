@@ -81,7 +81,7 @@ export default function Actuary() {
 
   return (
     <div className="space-y-4">
-      <section className="card bg-surface">
+      <section className="card bg-surface" data-walkthrough="actuary-hero">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-accent">
@@ -102,7 +102,7 @@ export default function Actuary() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <main className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between" data-walkthrough="actuary-opportunities">
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Today&apos;s opportunities</h2>
               <p className="mt-1 text-xs text-tertiary">{actuaryInsights.length} new signals requiring review.</p>
@@ -112,7 +112,7 @@ export default function Actuary() {
             <OpportunityCard key={insight.id} insight={insight} />
           ))}
 
-          <section className="card">
+          <section className="card" data-walkthrough="actuary-log">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">What the Actuary has been doing</h2>
             <div className="mt-4 space-y-2">
               {[
@@ -132,7 +132,7 @@ export default function Actuary() {
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
-          <section className="card">
+          <section className="card" data-walkthrough="actuary-ask">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
             <div className="mt-4 grid gap-2">
               <OutputTile label="Verified outcomes" value={formatNumber(portfolio.verifiedOutcomes)} />

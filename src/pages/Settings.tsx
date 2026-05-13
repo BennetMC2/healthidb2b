@@ -98,7 +98,7 @@ export default function Settings() {
   return (
     <div className="flex flex-col gap-6 max-w-[720px]">
       {showOnboarding && <SettingsOnboarding onDismiss={() => setShowOnboarding(false)} />}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" data-walkthrough="settings-header">
         <SectionHeader as="h1" title="Settings" description="Partner configuration and API access management." />
         {isDirty && (
           <button onClick={handleSave} disabled={saving} className="btn-primary text-xs flex-shrink-0">
@@ -109,7 +109,7 @@ export default function Settings() {
       </div>
 
       {/* Partner Profile */}
-      <section className="card space-y-4">
+      <section className="card space-y-4" data-walkthrough="settings-profile">
         <span className="metric-label block">Partner Profile</span>
         <div className="grid grid-cols-2 gap-4">
           <div>

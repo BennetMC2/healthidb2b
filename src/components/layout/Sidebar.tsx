@@ -49,7 +49,7 @@ const navItems = [
   { path: '/app/campaigns', label: 'Campaign Engine', icon: Target, tourId: 'campaigns-nav' },
   { path: '/app/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
   { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
-  { path: '/app/settings', label: 'Settings', icon: Settings, tourId: undefined },
+  { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
 ];
 
 interface SidebarProps {

@@ -114,7 +114,7 @@ export default function Campaigns() {
         <CampaignOnboardingModal onDismiss={() => setShowOnboarding(false)} />
       )}
 
-      <div className="card-elevated border-accent/15">
+      <div className="card-elevated border-accent/15" data-walkthrough="campaigns-hero">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
@@ -155,7 +155,7 @@ export default function Campaigns() {
         <MetricCard label="Verified Outcomes" value={formatNumber(stats.totalVerified)} subValue={formatCurrency(stats.totalBudget)} />
       </div>
 
-      <div>
+      <div data-walkthrough="campaigns-templates">
         <SectionHeader title="Starter templates" description="Use proven insurer programme structures, then adapt them to the portfolio." />
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
           {campaignTemplates.map((template) => (
@@ -228,7 +228,7 @@ export default function Campaigns() {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" data-walkthrough="campaigns-portfolio">
         {filtered.length === 0 && (
           <EmptyState
             icon={<Filter size={20} className="text-tertiary" />}

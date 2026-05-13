@@ -224,7 +224,7 @@ export default function NetworkExplorer() {
       </div>
 
       {/* Presets + filter toggle */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-walkthrough="explorer-presets">
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="btn-ghost text-xs"

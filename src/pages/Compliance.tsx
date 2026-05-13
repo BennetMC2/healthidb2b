@@ -183,7 +183,7 @@ export default function Compliance() {
       <SectionHeader as="h1" title="Verification Trail" description="A clean record of verification requests, proof generation, and receipt delivery for buyer diligence and pilot readiness conversations." icon={<ShieldCheck size={16} />} />
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-walkthrough="compliance-metrics">
         <MetricCard
           label="Verification Events"
           value={formatCompact(stats.totalRecords)}
@@ -215,7 +215,7 @@ export default function Compliance() {
         />
       </div>
 
-      <div id="zero-pii" className="card-elevated flex items-center gap-3 border-accent/10">
+      <div id="zero-pii" className="card-elevated flex items-center gap-3 border-accent/10" data-walkthrough="compliance-receipts">
         <div className="w-8 h-8 rounded bg-accent/10 flex items-center justify-center flex-shrink-0">
           <ShieldCheck size={16} className="text-accent" />
         </div>
