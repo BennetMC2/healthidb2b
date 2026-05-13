@@ -36,7 +36,7 @@ export const partnerPortfolios: PartnerPortfolio[] = [
     opportunityCount: 4,
     morningBrief:
       'Overnight, the VO2 Max activation cohort grew by 47 lives and tightened to 4.2x ROI. Sleep Regularity is drifting but remains a second-wave play until verification density improves.',
-    switcherNote: 'Mature multi-market book with cardio-fitness as the lead modifiable signal.',
+    switcherNote: 'Pacific has enough wearable density to price behaviour-change campaigns around VO2 Max, HRV, sleep, and resting heart rate.',
     fde: {
       name: 'Kenji Tanaka',
       role: 'Forward Deployed Engineer',

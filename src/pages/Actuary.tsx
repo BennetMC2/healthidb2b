@@ -329,7 +329,6 @@ export default function Actuary() {
   const playsRef = useRef<HTMLDivElement>(null);
   const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
   const scanClock = useScanClock();
-  const topInsight = actuaryInsights[0];
   const chatPreview = messages.slice(-4);
 
   useEffect(() => {
@@ -526,18 +525,6 @@ export default function Actuary() {
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section className="card">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Six-output model</h2>
-            <div className="mt-4 grid gap-2">
-              <OutputTile label="Claims reduction" value={formatPercent(topInsight.outputs.claimsReductionPct / 100)} />
-              <OutputTile label="Projected savings" value={formatCurrencyCompact(topInsight.outputs.projectedSavingsUsd)} />
-              <OutputTile label="Budget ROI" value={`${topInsight.outputs.budgetRoiMultiple.toFixed(1)}x`} />
-              <OutputTile label="Suggested HP" value={`${topInsight.outputs.suggestedHpYield} HP`} />
-              <OutputTile label="Morbidity shift" value={`${topInsight.outputs.morbidityShiftBps} bps`} />
-              <OutputTile label="Payback period" value={`${topInsight.outputs.paybackMonths} mo`} />
             </div>
           </section>
         </aside>

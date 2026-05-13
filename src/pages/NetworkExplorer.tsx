@@ -153,7 +153,13 @@ export default function NetworkExplorer() {
     <div className="flex flex-col gap-4">
       {showOnboarding && <ExplorerOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader as="h1" title="Member Pool" description="Reachable members available for campaign enrollment. Teams target cohorts using consented signals and trust tiers, never raw health records." icon={<Globe size={16} />} />
+      <SectionHeader
+        as="h1"
+        title="Member Pool"
+        description="Reachable members for Health Points campaigns, segmented by consented signals and trust tiers."
+        icon={<Globe size={16} />}
+        className="xl:[&_p]:max-w-none xl:[&_p]:whitespace-nowrap"
+      />
 
       <div className="command-surface p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
