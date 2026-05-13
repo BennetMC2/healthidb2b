@@ -282,7 +282,7 @@ export default function CampaignCreate() {
         <div>
           <h1 className="text-lg font-semibold text-primary">Design Campaign</h1>
           <p className="text-2xs text-tertiary mt-0.5">
-            Build a life insurance programme around verified outcomes, portfolio performance, and modeled business impact.
+            Launch high-trust health programmes with measurable insurer value.
           </p>
         </div>
       </div>
