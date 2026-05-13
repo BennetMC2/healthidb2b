@@ -116,7 +116,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
     route: '/app/settings',
     title: 'Settings',
     narration:
-      'Settings is where the partner controls configuration, retention, and integration posture. It completes the picture by showing this is a working operator surface, not a static demo.',
+      'Settings is where the partner controls configuration, retention, and integration posture.',
     targetSelector: '[data-tour="settings-nav"]',
     actionType: 'auto',
     delayMs: 300,
