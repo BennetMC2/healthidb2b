@@ -3,8 +3,8 @@ import type { Step } from 'react-joyride';
 export const tourSteps: Step[] = [
   {
     target: '[data-tour="campaigns-nav"]',
-    content: 'This branch is organized around the campaign engine. Start here: it is the clearest expression of what the product sells.',
-    title: 'Campaign Engine',
+    content: 'This branch is organized around Campaign Studio. Start here: it is the clearest expression of how Health Points campaigns get launched.',
+    title: 'Campaign Studio',
     disableBeacon: true,
     placement: 'right',
   },
@@ -29,7 +29,7 @@ export const tourSteps: Step[] = [
   },
   {
     target: '[data-tour="campaigns-nav"]',
-    content: 'Campaigns are the operating center: one configuration surface powers claims reduction, underwriting, acquisition, and renewal narratives.',
+    content: 'Campaigns are the operating center: one configuration surface powers signal improvement, acquisition, retention, and engagement.',
     title: 'Programme Design',
     placement: 'right',
   },

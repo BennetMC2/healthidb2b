@@ -96,12 +96,13 @@ export default function CampaignCreate() {
         name: template.name,
         description: template.description,
         type: template.type,
-        useCase: 'claims_reduction',
+        useCase: template.useCase ?? 'claims_reduction',
         metric: template.challenge.metric,
         operator: template.challenge.operator,
         target: String(template.challenge.target),
         budgetCeiling: String(template.suggestedBudget),
         pointsPerVerification: String(template.suggestedPoints),
+        maxParticipants: String(template.suggestedMaxParticipants ?? f.maxParticipants),
         healthScoreMin: String(template.targeting.healthScoreMin ?? 0),
         reputationTiers: template.targeting.reputationTiers ?? [],
         dataSources: template.targeting.dataSources ?? [],
@@ -147,7 +148,7 @@ export default function CampaignCreate() {
       id,
       name: form.name,
       description: form.description,
-      purpose: `Life insurer campaign focused on ${((form.useCase as CampaignUseCase) || 'claims_reduction').replace(/_/g, ' ')} through ${form.metric || 'verified health improvement'} in ${form.markets.join(' and ')} cohorts.`,
+      purpose: `Partner campaign focused on ${((form.useCase as CampaignUseCase) || 'claims_reduction').replace(/_/g, ' ')} through ${form.metric || 'verified health improvement'} in ${form.markets.join(' and ')} cohorts.`,
       useCase: (form.useCase as CampaignUseCase) || 'claims_reduction',
       type: form.type as CampaignType,
       status: 'active',
@@ -292,10 +293,10 @@ export default function CampaignCreate() {
           <div className="max-w-[560px]">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
               <Sparkles size={12} />
-              Self-Serve Insurer Workflow
+              Campaign Studio Workflow
             </div>
             <h2 className="mt-3 text-xl font-semibold text-primary">
-              Configure the programme, verification signal, and modeled business outcome in one flow.
+              Configure the campaign family, verified signal, Health Points price, and commercial outcome in one flow.
             </h2>
           </div>
           <div className="grid grid-cols-1 gap-2 text-2xs text-tertiary md:w-[250px]">
@@ -428,8 +429,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">What buyers should understand here</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  The campaign is the operating center of the product. One configuration surface leads with portfolio performance,
-                  supports underwriting and pre-policy moments, and still extends into engagement, renewal, lead gen, and long-term wellness infrastructure.
+                  Campaign Studio supports signal improvement, anonymous open-pool acquisition, retention, and engagement. Health Points are the pricing layer across every motion.
                 </p>
               </div>
             </div>
@@ -637,7 +637,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">Cohort strategy</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  Reach, trust tier, source quality, and market availability combine into a targetable cohort with commercial relevance for portfolio performance first and underwriting support second.
+                  Reach, trust tier, source quality, and market availability define the targetable cohort. Open-pool acquisition remains anonymous inside HealthID until the user consents to partner onboarding.
                 </p>
               </div>
             </div>
@@ -682,7 +682,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">Incentive posture</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  Rewards stay visible, but secondary. The primary commercial logic remains downstream insurer value, not gamified member engagement in isolation.
+                  Health Points are priced against the campaign objective: book value for signal improvement, verified signup economics for acquisition, renewal lift for retention, and receipt growth for engagement.
                 </p>
               </div>
             </div>
@@ -736,9 +736,8 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-accent/20 bg-accent-muted px-4 py-4">
                 <div className="text-2xs uppercase tracking-wider text-accent">Executive launch framing</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  This campaign gives the insurer a self-serve way to configure a measurable health programme, target a consented cohort,
-                  and model business value before launch. The operating model leads with portfolio performance while remaining commercially credible for underwriting,
-                  engagement, and lead-generation conversations.
+                  This campaign gives the partner a self-serve way to configure a measurable programme, target the right cohort or anonymous open-pool segment,
+                  and model commercial value before launch. The partner receives verification receipts, not raw member health data.
                 </p>
               </div>
             </div>

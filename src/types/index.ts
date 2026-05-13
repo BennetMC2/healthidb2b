@@ -190,11 +190,13 @@ export interface CampaignTemplate {
   name: string;
   description: string;
   type: CampaignType;
+  useCase?: CampaignUseCase;
   icon: string;
   challenge: ChallengeCriteria;
   targeting: Partial<CohortTargeting>;
   suggestedBudget: number;
   suggestedPoints: number;
+  suggestedMaxParticipants?: number;
 }
 
 // ── Verifications ───────────────────────────────────────────────────

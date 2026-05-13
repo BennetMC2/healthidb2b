@@ -40,8 +40,8 @@ export default function App() {
         robots: 'noindex',
       },
       '/app/campaigns': {
-        title: 'Campaign Engine · HealthID',
-        description: 'Design and launch privacy-preserving verified outcome campaigns.',
+        title: 'Campaign Studio · HealthID',
+        description: 'Create Health Points campaigns for signal improvement, acquisition, retention, and engagement.',
         robots: 'noindex',
       },
       '/app/explorer': {

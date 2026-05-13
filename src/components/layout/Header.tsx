@@ -44,7 +44,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
         {/* Breadcrumb area */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-2xs text-tertiary font-medium uppercase tracking-wider hidden sm:inline">
-            Life Campaign Engine
+            Campaign Studio
           </span>
           <span className="text-tertiary hidden sm:inline">/</span>
           <span className="text-2xs text-secondary font-medium">

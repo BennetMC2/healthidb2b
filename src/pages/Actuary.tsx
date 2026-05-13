@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BrainCircuit, ExternalLink, Sparkles, Target } from 'lucide-react';
 import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
+import type { CampaignTemplate, DataSource, HealthMetric } from '@/types';
 
 function confidenceLabel(confidence: ActuaryConfidence) {
   if (confidence === 'high') return 'HIGH CONFIDENCE';
@@ -27,7 +29,65 @@ function OutputTile({ label, value }: { label: string; value: string }) {
   );
 }
 
+function metricForInsight(insight: ActuaryInsight): HealthMetric {
+  if (insight.signal === 'VO2 Max') return 'vo2_max';
+  if (insight.signal === 'HRV') return 'hrv';
+  if (insight.signal === 'Sleep') return 'sleep_hours';
+  return 'heart_rate_resting';
+}
+
+function targetForInsight(insight: ActuaryInsight): number {
+  if (insight.signal === 'VO2 Max') return 2;
+  if (insight.signal === 'HRV') return 8;
+  if (insight.signal === 'Sleep') return 6.5;
+  return 3;
+}
+
+function unitForInsight(insight: ActuaryInsight): string {
+  if (insight.signal === 'VO2 Max') return 'mL/kg/min uplift';
+  if (insight.signal === 'HRV') return 'ms recovery';
+  if (insight.signal === 'Sleep') return 'hrs';
+  return 'bpm improvement';
+}
+
+function templateForInsight(insight: ActuaryInsight): CampaignTemplate {
+  return {
+    id: insight.id,
+    name: insight.campaignName,
+    description: insight.body,
+    type: 'stream',
+    useCase: 'claims_reduction',
+    icon: insight.signal === 'Sleep' ? 'moon' : insight.signal === 'VO2 Max' ? 'activity' : 'heart',
+    challenge: {
+      metric: metricForInsight(insight),
+      operator: 'gte',
+      target: targetForInsight(insight),
+      unit: unitForInsight(insight),
+    },
+    targeting: {
+      reputationTiers: ['medium', 'high'],
+      dataSources: insight.sourceBreakdown
+        .map((source): DataSource | null => {
+          if (source.source === 'Apple Health') return 'apple_health';
+          if (source.source === 'Garmin') return 'garmin';
+          if (source.source === 'Oura') return 'oura';
+          if (source.source === 'WHOOP') return 'whoop';
+          if (source.source === 'Fitbit') return 'fitbit';
+          return null;
+        })
+        .filter((source): source is DataSource => Boolean(source)),
+      ageRanges: ['35-44', '45-54'],
+      regions: ['Hong Kong', 'Japan'],
+    },
+    suggestedBudget: insight.healthPointsPricing.maxBudgetUsd,
+    suggestedPoints: insight.healthPointsPricing.suggestedHpPerMember,
+    suggestedMaxParticipants: insight.cohortSize,
+  };
+}
+
 function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
+  const navigate = useNavigate();
+
   return (
     <article className="group relative overflow-hidden rounded-lg border border-border bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/30">
       <div className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
@@ -75,9 +135,12 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <button className="btn-primary text-xs">
+        <button
+          onClick={() => navigate('/app/campaigns/new', { state: { template: templateForInsight(insight) } })}
+          className="btn-primary text-xs"
+        >
           <Target size={13} />
-          Create campaign
+          Create Campaign
         </button>
         <button className="btn-ghost text-xs">
           <ExternalLink size={13} />

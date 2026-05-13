@@ -19,7 +19,7 @@ export default function NotFound() {
         className="btn-primary text-xs mt-2"
       >
         <ArrowLeft size={13} />
-        Back to Campaign Engine
+        Back to Campaign Studio
       </button>
     </div>
   );

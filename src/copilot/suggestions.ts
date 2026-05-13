@@ -6,17 +6,17 @@ export interface Suggestion {
 }
 
 const shared: Suggestion[] = [
-  { label: 'Next best campaign', prompt: 'Recommend the next best claims-reduction campaign to launch for this insurer and explain why' },
-  { label: 'Outcome posture', prompt: 'How are my claims-oriented campaigns performing against business expectations?' },
-  { label: 'Launch risk scan', prompt: 'Flag the main launch risks in my claims-reduction portfolio' },
-  { label: 'Verification trail', prompt: 'Summarize the verification trail in executive language for an insurer' },
+  { label: 'Next best campaign', prompt: 'Recommend the next best Health Points campaign to launch and explain why' },
+  { label: 'Outcome posture', prompt: 'How are my campaigns performing against their commercial objectives?' },
+  { label: 'Launch risk scan', prompt: 'Flag the main launch risks across signal improvement, acquisition, and retention campaigns' },
+  { label: 'Verification trail', prompt: 'Summarize the verification trail in executive language for a partner' },
 ];
 
 const industrySpecific: Record<PartnerIndustry, Suggestion[]> = {
   insurance: [
-    { label: 'Claims posture', prompt: 'How does this campaign support claims reduction and where is the model weakest?' },
+    { label: 'Signal campaign', prompt: 'Which wearable signal campaign should absorb more Health Points budget?' },
     { label: 'Underwriting angle', prompt: 'How does the same engine support underwriting and pre-policy verification without changing the platform story?' },
-    { label: 'Life insurer angle', prompt: 'Brief this platform for a Hong Kong or Japan life insurer executive with claims reduction as the lead story' },
+    { label: 'Partner brief', prompt: 'Brief this platform for a partner executive with acquisition, retention, and signal improvement as the lead story' },
   ],
   pharma: [
     { label: 'Cohort recruitment', prompt: 'How is cohort recruitment progressing across my campaigns?' },
@@ -42,8 +42,8 @@ const pageSuggestions: Record<string, Suggestion[]> = {
     { label: 'Source penetration', prompt: 'Which data sources have the highest penetration?' },
   ],
   '/app/campaigns': [
-    { label: 'Active campaigns', prompt: 'Which live claims-reduction campaigns deserve more budget or attention right now?' },
-    { label: 'Campaign ROI', prompt: 'Which campaign has the strongest modeled claims-impact case and why?' },
+    { label: 'Active campaigns', prompt: 'Which live campaigns deserve more budget or attention right now?' },
+    { label: 'Campaign ROI', prompt: 'Which campaign has the strongest modeled commercial case and why?' },
   ],
   '/app/compliance': [
     { label: 'Trail summary', prompt: 'Show me the latest verification trail summary' },

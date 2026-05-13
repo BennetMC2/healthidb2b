@@ -46,7 +46,7 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
 
 const navItems = [
   { path: '/app/actuary', label: 'AI Actuary', icon: BrainCircuit, tourId: 'actuary-nav' },
-  { path: '/app/campaigns', label: 'Campaign Engine', icon: Target, tourId: 'campaigns-nav' },
+  { path: '/app/campaigns', label: 'Campaign Studio', icon: Target, tourId: 'campaigns-nav' },
   { path: '/app/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
   { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
   { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
@@ -87,7 +87,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {(isMobile || expanded) && (
           <div className="ml-2 flex flex-col leading-tight">
             <span className="text-sm font-semibold font-display text-primary">HealthID</span>
-            <span className="text-2xs font-mono text-accent/70">Campaign Engine</span>
+            <span className="text-2xs font-mono text-accent/70">Campaign Studio</span>
           </div>
         )}
         {isMobile && (

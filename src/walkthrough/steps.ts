@@ -64,9 +64,9 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'campaigns-nav',
     route: '/app/campaigns',
-    title: 'Campaign Engine',
+    title: 'Campaign Studio',
     narration:
-      'This is the execution surface. The partner turns verified signals and selected cohorts into a live programme with measurable commercial value.',
+      'This is the execution surface. Partners turn wearable signals, anonymous open-pool segments, and retention cohorts into Health Points campaigns.',
     targetSelector: '[data-tour="campaigns-nav"]',
     actionType: 'auto',
     delayMs: 300,
@@ -74,9 +74,9 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'campaigns-hero',
     route: '/app/campaigns',
-    title: 'Programme studio',
+    title: 'Campaign families',
     narration:
-      'The campaign layer packages the commercial story clearly: what gets launched, who it is for, and how the value case will be measured.',
+      'Campaign Studio separates signal improvement, acquisition, retention, and engagement so each campaign is measured against the right commercial outcome.',
     targetSelector: '[data-walkthrough="campaigns-hero"]',
     actionType: 'auto',
     delayMs: 350,

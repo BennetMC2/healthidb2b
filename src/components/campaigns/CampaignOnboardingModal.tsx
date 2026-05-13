@@ -33,11 +33,11 @@ export default function CampaignOnboardingModal({ onDismiss }: CampaignOnboardin
   return (
     <OnboardingModal
       storageKey="healthid_campaigns_onboarded"
-      headerTitle="How the Campaign Engine Works"
-      headerDescription="This is the operating center of the product. Configure one programme and reuse the same engine across multiple insurer motions."
+      headerTitle="How Campaign Studio Works"
+      headerDescription="Configure one Health Points campaign and reuse the same engine across signal improvement, acquisition, retention, and engagement."
       steps={steps}
-      punchline="One insurer workflow. Multiple downstream commercial outcomes."
-      primaryAction={{ label: 'Design a Campaign', action: '/app/campaigns/new' }}
+      punchline="One campaign workflow. Multiple downstream commercial outcomes."
+      primaryAction={{ label: 'Create a Campaign', action: '/app/campaigns/new' }}
       ghostLabel="Explore Campaigns"
       onDismiss={onDismiss}
     />
