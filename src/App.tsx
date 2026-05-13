@@ -30,8 +30,8 @@ export default function App() {
     const path = location.pathname;
     const meta: Record<string, { title: string; description: string; robots?: string }> = {
       '/': {
-        title: 'Member Pool · HealthID',
-        description: 'Explore anonymized verified health cohorts and trust tiers.',
+        title: 'AI Actuary · HealthID',
+        description: 'AI Actuary cockpit for wearable signal campaigns priced with Health Points and measured against expected book value.',
         robots: 'noindex',
       },
       '/app/actuary': {
@@ -99,8 +99,8 @@ export default function App() {
       <ToastContainer />
       <ErrorBoundary fallbackTitle="Page failed to load">
         <Routes>
-          <Route path="/" element={<Navigate to="/app/explorer" replace />} />
-          <Route path="/overview" element={<Navigate to="/app/explorer" replace />} />
+          <Route path="/" element={<Navigate to="/app/actuary" replace />} />
+          <Route path="/overview" element={<Navigate to="/app/actuary" replace />} />
           <Route path="/contact" element={<Navigate to="/app/explorer" replace />} />
           <Route path="/future" element={<FutureLayout />}>
             <Route index element={<Navigate to="/future/strategy" replace />} />
