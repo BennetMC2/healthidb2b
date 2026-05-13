@@ -1,11 +1,17 @@
 export function formatNumber(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  if (n >= 1_000_000) {
+    const value = n / 1_000_000;
+    return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}M`;
+  }
+  if (n >= 10_000) {
+    const value = n / 1_000;
+    return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}K`;
+  }
   return n.toLocaleString();
 }
 
 export function formatCompact(n: number): string {
-  return n.toLocaleString('en-US');
+  return formatNumber(n);
 }
 
 export function formatCurrency(n: number): string {
@@ -18,8 +24,14 @@ export function formatCurrency(n: number): string {
 }
 
 export function formatCurrencyCompact(n: number): string {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  if (n >= 1_000_000) {
+    const value = n / 1_000_000;
+    return `$${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}M`;
+  }
+  if (n >= 1_000) {
+    const value = n / 1_000;
+    return `$${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}K`;
+  }
   return formatCurrency(n);
 }
 

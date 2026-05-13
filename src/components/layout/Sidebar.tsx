@@ -87,7 +87,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {(isMobile || expanded) && (
           <div className="ml-2 flex flex-col leading-tight">
             <span className="text-sm font-semibold font-display text-primary">HealthID</span>
-            <span className="text-2xs font-mono text-accent/70">Campaign Studio</span>
+            <span className="text-2xs font-mono text-accent/70">Insurer Cockpit</span>
           </div>
         )}
         {isMobile && (

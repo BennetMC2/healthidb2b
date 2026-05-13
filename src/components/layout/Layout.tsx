@@ -64,10 +64,10 @@ export default function Layout({ onTourStart }: LayoutProps) {
       )}
 
       {!copilotOpen && !widgetDismissed && !hideActuaryWidget && (
-        <div className="group fixed bottom-5 right-4 z-30 w-[min(420px,calc(100vw-32px))] rounded-xl border border-border bg-elevated px-4 py-3 shadow-none">
+        <div className="group fixed bottom-4 right-3 z-30 w-[min(420px,calc(100vw-24px))] rounded-xl border border-border bg-elevated px-3 py-2 shadow-none sm:bottom-5 sm:right-4 sm:w-[min(420px,calc(100vw-32px))] sm:px-4 sm:py-3">
           <button
             onClick={() => setWidgetDismissed(true)}
-            className="absolute right-2 top-2 hidden h-5 w-5 items-center justify-center rounded text-tertiary hover:bg-hover hover:text-primary group-hover:flex"
+            className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded text-tertiary hover:bg-hover hover:text-primary"
             aria-label="Dismiss AI Actuary widget"
           >
             <X size={12} />
@@ -79,9 +79,9 @@ export default function Layout({ onTourStart }: LayoutProps) {
           >
             <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-              Campaign Intelligence · 4 signal plays
+              AI Actuary · 4 signal plays
             </div>
-            <div className="mt-1 text-sm leading-snug text-secondary">
+            <div className="mt-1 hidden text-sm leading-snug text-secondary sm:block">
               VO2 Max, HRV, sleep, and resting HR campaigns are priced against book value.
               <span className="ml-1 font-medium text-accent">View {'->'}</span>
             </div>

@@ -4,7 +4,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'actuary-nav',
     route: '/app/actuary',
-    title: 'Campaign Intelligence',
+    title: 'AI Actuary',
     narration:
       'This cockpit turns verified wearable signals into campaign plays that can be priced, launched, and measured against expected book value.',
     targetSelector: '[data-tour="actuary-nav"]',
@@ -24,9 +24,9 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'actuary-ask',
     route: '/app/actuary',
-    title: 'Book Copilot',
+    title: 'Actuary Copilot',
     narration:
-      'Book Copilot explains which campaign to launch, how to price rewards, and where modifiable risk is building in the partner book.',
+      'Actuary Copilot explains which campaign to launch, how to price rewards, and where modifiable risk is building in the partner book.',
     targetSelector: '[data-walkthrough="actuary-ask"]',
     actionType: 'auto',
     delayMs: 350,

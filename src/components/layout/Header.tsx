@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, HelpCircle, Sun, Moon, Menu, Building2 } from 'lucide-react';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useThemeStore } from '@/stores/useThemeStore';
@@ -14,6 +15,15 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
   const { currentPartner, allPartners, setCurrentPartner } = usePartnerStore();
   const { theme, toggleTheme } = useThemeStore();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const location = useLocation();
+  const sectionLabel = (() => {
+    if (location.pathname.startsWith('/app/actuary')) return 'AI Actuary';
+    if (location.pathname.startsWith('/app/campaigns')) return 'Campaign Studio';
+    if (location.pathname.startsWith('/app/explorer')) return 'Member Pool';
+    if (location.pathname.startsWith('/app/compliance')) return 'Verification Trail';
+    if (location.pathname.startsWith('/app/settings')) return 'Settings';
+    return 'HealthID';
+  })();
 
   // Global Cmd/Ctrl+K shortcut to open command palette.
   useEffect(() => {
@@ -44,7 +54,11 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
         {/* Breadcrumb area */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-2xs text-tertiary font-medium uppercase tracking-wider hidden sm:inline">
-            Campaign Studio
+            HealthID
+          </span>
+          <span className="text-tertiary hidden sm:inline">/</span>
+          <span className="text-2xs text-tertiary font-medium uppercase tracking-wider hidden sm:inline">
+            {sectionLabel}
           </span>
           <span className="text-tertiary hidden sm:inline">/</span>
           <span className="text-2xs text-secondary font-medium">
@@ -83,11 +97,6 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           >
             <Search size={14} />
           </button>
-          <div className="hidden sm:flex items-center gap-1.5 px-2 h-[30px] rounded border border-border bg-base mr-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            <span className="text-2xs text-secondary font-medium">HK / JP</span>
-          </div>
-
           {/* Partner Selector */}
           <button
             className="flex h-[30px] w-[30px] items-center justify-center rounded border border-border bg-base text-tertiary hover:bg-hover sm:hidden"

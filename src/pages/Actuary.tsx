@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BrainCircuit, ExternalLink, Sparkles, Target } from 'lucide-react';
+import { BrainCircuit, ExternalLink, Sparkles, Target, X } from 'lucide-react';
 import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
-import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
+import { formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
+import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
 import type { CampaignTemplate, DataSource, HealthMetric } from '@/types';
 
 function confidenceLabel(confidence: ActuaryConfidence) {
@@ -14,10 +15,25 @@ function confidenceLabel(confidence: ActuaryConfidence) {
   return 'EMERGING SIGNAL';
 }
 
+function confidenceShortLabel(confidence: ActuaryConfidence) {
+  if (confidence === 'high') return 'HIGH';
+  if (confidence === 'medium') return 'MEDIUM';
+  return 'EMERGING';
+}
+
 function confidenceClass(confidence: ActuaryConfidence) {
   if (confidence === 'high') return 'bg-accent-muted text-accent border-accent/20';
   if (confidence === 'medium') return 'bg-warning-muted text-warning border-warning/20';
   return 'bg-elevated text-secondary border-border';
+}
+
+function formatHktTime(date: string) {
+  return new Date(date).toLocaleTimeString('en-HK', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Hong_Kong',
+  });
 }
 
 function OutputTile({ label, value }: { label: string; value: string }) {
@@ -85,7 +101,123 @@ function templateForInsight(insight: ActuaryInsight): CampaignTemplate {
   };
 }
 
-function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
+function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose: () => void }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-primary/30 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={`${insight.campaignName} evidence trail`}>
+      <button className="flex-1 cursor-default" onClick={onClose} aria-label="Close evidence trail" />
+      <aside className="h-full w-[min(760px,96vw)] overflow-y-auto border-l border-border bg-surface shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border bg-surface/95 px-6 py-5 backdrop-blur">
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Evidence trail</div>
+            <h2 className="mt-2 text-xl font-semibold text-primary">{insight.campaignName}</h2>
+            <p className="mt-1 text-sm text-secondary">{insight.title}</p>
+          </div>
+          <button onClick={onClose} className="rounded p-1 text-tertiary hover:bg-hover hover:text-primary" aria-label="Close evidence trail">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="space-y-4 px-6 py-5">
+          <section className="rounded-lg border border-border bg-base/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Cohort math</h3>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <OutputTile label="Cohort size" value={formatNumber(insight.cohortSize)} />
+              <OutputTile label="Signal" value={insight.signal} />
+              <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
+            </div>
+            <div className="mt-3 rounded border border-border bg-surface px-3 py-2 font-mono text-xs text-secondary">
+              {insight.cohortFilter}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-border bg-base/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Source breakdown</h3>
+            <div className="mt-3 space-y-2">
+              {insight.sourceBreakdown.map((source) => (
+                <div key={source.source} className="grid grid-cols-[120px_minmax(0,1fr)_48px] items-center gap-3 text-xs">
+                  <span className="text-secondary">{source.source}</span>
+                  <span className="h-2 rounded-full bg-elevated">
+                    <span className="block h-2 rounded-full bg-accent" style={{ width: `${source.pct}%` }} />
+                  </span>
+                  <span className="font-mono text-tertiary">{source.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-border bg-base/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Literature</h3>
+            <div className="mt-3 space-y-3">
+              {insight.evidence.literature.map((paper) => (
+                <a
+                  key={paper.doi}
+                  href={`https://doi.org/${paper.doi}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded border border-border bg-surface px-3 py-3 text-sm transition-colors hover:border-accent/30"
+                >
+                  <div className="font-medium text-primary">{paper.title}</div>
+                  <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-tertiary">
+                    {paper.journal} · {paper.year} · DOI {paper.doi}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-secondary">{paper.effectSize}</p>
+                </a>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-border bg-base/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Actuarial confidence</h3>
+            <p className="mt-2 text-sm leading-relaxed text-secondary">{insight.evidence.portfolioContext}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {Object.entries(insight.evidence.confidenceBreakdown).map(([label, score]) => (
+                <div key={label} className="rounded border border-border bg-surface px-3 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">{label}</span>
+                    <span className="font-mono text-sm font-semibold text-primary">{score}/100</span>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full bg-elevated">
+                    <div className="h-1.5 rounded-full bg-accent" style={{ width: `${score}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-lg border border-accent/20 bg-accent/10 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Counterfactual</div>
+            <p className="mt-2 text-sm leading-relaxed text-primary">
+              If no campaign is launched, the model estimates {formatCurrencyCompact(insight.evidence.counterfactualUsd)} of unrealised book-value improvement over the next 12 months.
+            </p>
+          </section>
+        </div>
+
+        <div className="sticky bottom-0 flex flex-wrap gap-2 border-t border-border bg-surface/95 px-6 py-4 backdrop-blur">
+          <button
+            onClick={() => navigate('/app/campaigns/new', { state: { template: templateForInsight(insight) } })}
+            className="btn-primary text-xs"
+          >
+            Create campaign from this insight
+          </button>
+          <button className="btn-ghost text-xs">Save to watchlist</button>
+          <button className="btn-ghost text-xs">Dismiss with reason</button>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onEvidence: (insight: ActuaryInsight) => void }) {
   const navigate = useNavigate();
 
   return (
@@ -97,7 +229,7 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
           {confidenceLabel(insight.confidence)}
         </div>
         <div className="font-mono text-xs text-tertiary">
-          {new Date(insight.generatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {formatHktTime(insight.generatedAt)}
         </div>
       </div>
 
@@ -131,7 +263,7 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
       <div className="mt-3 grid gap-2 md:grid-cols-3">
         <OutputTile label="Claims reduction" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
         <OutputTile label="Morbidity shift" value={`${insight.outputs.morbidityShiftBps} bps`} />
-        <OutputTile label="Confidence" value={confidenceLabel(insight.confidence).replace(' CONFIDENCE', '')} />
+        <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
@@ -142,7 +274,7 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
           <Target size={13} />
           Create Campaign
         </button>
-        <button className="btn-ghost text-xs">
+        <button onClick={() => onEvidence(insight)} className="btn-ghost text-xs">
           <ExternalLink size={13} />
           See evidence
         </button>
@@ -158,12 +290,14 @@ export default function Actuary() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const { messages, isStreaming, sendMessage } = useCopilotStore();
   const [query, setQuery] = useState('');
+  const [evidenceInsight, setEvidenceInsight] = useState<ActuaryInsight | null>(null);
+  const playsRef = useRef<HTMLDivElement>(null);
   const topInsight = actuaryInsights[0];
   const chatPreview = messages.slice(-4);
 
   const portfolio = useMemo(() => {
-    const verifiedOutcomes = 5800;
-    const liabilityAvoided = 92100000;
+    const verifiedOutcomes = 8289;
+    const liabilityAvoided = liabilityAvoidedFromReceipts(verifiedOutcomes);
     const avgTrust = 'High';
 
     return { verifiedOutcomes, liabilityAvoided, avgTrust };
@@ -178,12 +312,15 @@ export default function Actuary() {
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
               Live · Last scan 09:14 HKT · Next scan in 46 min
             </div>
-            <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · Campaign Intelligence Cockpit</h1>
+            <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · AI Actuary</h1>
             <p className="mt-2 text-sm text-secondary">
-              Monitoring verified wearable signals across 36,000 lives: VO2 Max, HRV, sleep, and resting heart rate.
+              Campaign intelligence cockpit monitoring verified wearable signals across 36,000 lives: VO2 Max, HRV, sleep, and resting heart rate.
             </p>
           </div>
-          <button className="btn-primary text-xs">
+          <button
+            onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="btn-primary text-xs"
+          >
             <Sparkles size={14} />
             Show campaign plays
           </button>
@@ -192,7 +329,7 @@ export default function Actuary() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <main className="space-y-4">
-          <div className="flex items-center justify-between" data-walkthrough="actuary-opportunities">
+          <div ref={playsRef} className="flex items-center justify-between scroll-mt-4" data-walkthrough="actuary-opportunities">
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Wearable signal campaigns</h2>
               <p className="mt-1 text-xs text-tertiary">
@@ -201,7 +338,7 @@ export default function Actuary() {
             </div>
           </div>
           {actuaryInsights.map((insight) => (
-            <OpportunityCard key={insight.id} insight={insight} />
+            <OpportunityCard key={insight.id} insight={insight} onEvidence={setEvidenceInsight} />
           ))}
 
           <section className="card" data-walkthrough="actuary-log">
@@ -228,7 +365,7 @@ export default function Actuary() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
             <div className="mt-4 grid gap-2">
               <OutputTile label="Verified outcomes" value={formatNumber(portfolio.verifiedOutcomes)} />
-              <OutputTile label="Liability avoided" value={formatCurrency(portfolio.liabilityAvoided)} />
+              <OutputTile label="Liability avoided" value={formatCurrencyCompact(portfolio.liabilityAvoided)} />
               <OutputTile label="Avg trust" value={portfolio.avgTrust} />
             </div>
           </section>
@@ -238,7 +375,7 @@ export default function Actuary() {
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <BrainCircuit size={16} className="text-accent" />
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Book Copilot</h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Actuary Copilot</h2>
                 </div>
                 <div className="rounded-full border border-accent/20 bg-accent/10 px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-accent">
                   Live
@@ -270,7 +407,7 @@ export default function Actuary() {
                   ) : (
                     <>
                       <div className="rounded-xl border border-border bg-elevated px-3 py-3 text-xs leading-relaxed text-secondary">
-                        Start a conversation with Book Copilot. It uses the current partner context from this platform rather than a generic chatbot prompt.
+                        Start a conversation with Actuary Copilot. It uses the current partner context from this platform rather than a generic chatbot prompt.
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {[
@@ -337,13 +474,18 @@ export default function Actuary() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Six-output model</h2>
             <div className="mt-4 grid gap-2">
               <OutputTile label="Claims reduction" value={formatPercent(topInsight.outputs.claimsReductionPct / 100)} />
+              <OutputTile label="Projected savings" value={formatCurrencyCompact(topInsight.outputs.projectedSavingsUsd)} />
               <OutputTile label="Budget ROI" value={`${topInsight.outputs.budgetRoiMultiple.toFixed(1)}x`} />
               <OutputTile label="Suggested HP" value={`${topInsight.outputs.suggestedHpYield} HP`} />
               <OutputTile label="Morbidity shift" value={`${topInsight.outputs.morbidityShiftBps} bps`} />
+              <OutputTile label="Payback period" value={`${topInsight.outputs.paybackMonths} mo`} />
             </div>
           </section>
         </aside>
       </div>
+      {evidenceInsight && (
+        <EvidenceModal insight={evidenceInsight} onClose={() => setEvidenceInsight(null)} />
+      )}
     </div>
   );
 }

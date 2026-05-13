@@ -8,7 +8,7 @@ import { useCampaignStore } from '@/stores/useCampaignStore';
 import { StatusBadge, TypeBadge, MetricBadge } from '@/components/ui/Badge';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
-import { formatNumber, formatCurrency } from '@/utils/format';
+import { formatNumber, formatCurrencyCompact } from '@/utils/format';
 import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
@@ -23,12 +23,19 @@ interface StudioCampaignTemplate extends CampaignTemplate {
   consentNote?: string;
 }
 
-const familyFilters: Array<{ id: CampaignFamily; label: string; summary: string }> = [
-  { id: 'signal', label: 'Signal improvement', summary: '$8.1M book value' },
-  { id: 'acquisition', label: 'Open pool acquisition', summary: '14.3K anonymous pool' },
-  { id: 'retention', label: 'Retention', summary: '$1.6M retained value' },
-  { id: 'engagement', label: 'Engagement', summary: '+31% receipt growth' },
+const familyFilters: Array<{ id: CampaignFamily; label: string }> = [
+  { id: 'signal', label: 'Signal improvement' },
+  { id: 'acquisition', label: 'Open pool acquisition' },
+  { id: 'retention', label: 'Retention' },
+  { id: 'engagement', label: 'Engagement' },
 ];
+
+const signalBookValues: Record<string, number> = {
+  'Cardio Fitness Activation': 4_200_000,
+  'HRV Recovery': 1_800_000,
+  'Sleep Regularity': 1_250_000,
+  'Resting Heart Rate Improvement': 840_000,
+};
 
 const campaignTemplates: StudioCampaignTemplate[] = [
   {
@@ -262,11 +269,12 @@ function TemplateIcon({ icon }: { icon: string }) {
   return <Target size={15} className={className} />;
 }
 
-function familyForUseCase(useCase: string): CampaignFamily {
-  if (useCase === 'acquisition') return 'acquisition';
-  if (useCase === 'renewal') return 'retention';
-  if (useCase === 'underwriting') return 'signal';
-  if (useCase === 'dynamic_premium') return 'signal';
+function campaignFamily(campaign: Pick<Campaign, 'name' | 'useCase'>): CampaignFamily {
+  if (campaign.name === 'Device Connection Activation') return 'engagement';
+  if (campaign.useCase === 'acquisition') return 'acquisition';
+  if (campaign.useCase === 'renewal') return 'retention';
+  if (campaign.useCase === 'underwriting') return 'signal';
+  if (campaign.useCase === 'dynamic_premium') return 'signal';
   return 'signal';
 }
 
@@ -276,7 +284,7 @@ function familyLabel(family: CampaignFamily) {
 
 function portfolioFamilyLabel(campaign: Campaign) {
   if (campaign.useCase === 'underwriting') return 'Lab proof';
-  return familyLabel(familyForUseCase(campaign.useCase));
+  return familyLabel(campaignFamily(campaign));
 }
 
 export default function Campaigns() {
@@ -321,6 +329,28 @@ export default function Campaigns() {
     acquisition: campaigns.filter((c) => c.useCase === 'acquisition').length,
   }), [campaigns]);
 
+  const familyStats = useMemo(() => {
+    return familyFilters.map((family) => {
+      const rows = campaigns.filter((campaign) => campaignFamily(campaign) === family.id);
+      let summary = `${formatNumber(rows.reduce((sum, campaign) => sum + campaign.funnel.eligible, 0))} reachable`;
+
+      if (family.id === 'signal') {
+        summary = `${formatCurrencyCompact(rows.reduce((sum, campaign) => sum + (signalBookValues[campaign.name] ?? 0), 0))} book value`;
+      }
+      if (family.id === 'acquisition') {
+        summary = `${formatNumber(rows.reduce((sum, campaign) => sum + campaign.funnel.eligible, 0))} anonymous pool`;
+      }
+      if (family.id === 'retention') {
+        summary = '$1.6M retained value';
+      }
+      if (family.id === 'engagement') {
+        summary = '+31% receipt growth';
+      }
+
+      return { ...family, count: rows.length, summary };
+    });
+  }, [campaigns]);
+
   const portfolioRows = useMemo(() => {
     return filtered.slice(0, 8);
   }, [filtered]);
@@ -359,8 +389,8 @@ export default function Campaigns() {
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-2xs text-tertiary">
               <span className="badge bg-accent/10 border-accent/20 text-accent">Health Points priced</span>
-              <span className="badge bg-elevated border-border text-secondary">Anonymous until consent</span>
-              <span className="badge bg-elevated border-border text-secondary">Wearable signal verified</span>
+              <span className="badge bg-accent/10 border-accent/20 text-accent">Anonymous until consent</span>
+              <span className="badge bg-accent/10 border-accent/20 text-accent">Wearable signal verified</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 xl:justify-end">
@@ -389,7 +419,7 @@ export default function Campaigns() {
               Campaign portfolio
             </div>
             <p className="mt-1 text-xs text-tertiary">
-              {stats.total} campaigns · {stats.active} active · {formatCurrency(stats.totalBudget)} HP budget · {formatNumber(stats.totalEligible)} reachable members · {formatNumber(stats.totalVerified)} verified receipts
+              {stats.total} campaigns · {stats.active} active · {formatCurrencyCompact(stats.totalBudget)} HP budget · {formatNumber(stats.totalEligible)} reachable members · {formatNumber(stats.totalVerified)} verified receipts
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -417,8 +447,8 @@ export default function Campaigns() {
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-4">
-          {familyFilters.map((family) => {
-            const plays = campaignTemplates.filter((template) => template.family === family.id).length;
+          {familyStats.map((family) => {
+            const playLabel = family.count === 1 ? 'PLAY' : 'PLAYS';
             return (
               <button
                 key={family.id}
@@ -432,7 +462,7 @@ export default function Campaigns() {
                     : 'border-border bg-base/60 hover:border-accent/20'
                 }`}
               >
-                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">{plays} plays</div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">{family.count} {playLabel}</div>
                 <div className="mt-1 text-sm font-semibold text-primary">{family.label}</div>
                 <div className="mt-1 text-xs text-secondary">{family.summary}</div>
               </button>
@@ -468,7 +498,7 @@ export default function Campaigns() {
                     <span className="badge bg-elevated border-border text-secondary">{portfolioFamilyLabel(campaign)}</span>
                   </td>
                   <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.eligible)}</td>
-                  <td className="py-2 pr-3 font-mono text-secondary">{formatCurrency(campaign.rewards.budgetCeiling)}</td>
+                  <td className="py-2 pr-3 font-mono text-secondary">{formatCurrencyCompact(campaign.rewards.budgetCeiling)}</td>
                   <td className="py-2 pr-3"><StatusBadge status={campaign.status} /></td>
                   <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.verified)}</td>
                 </tr>

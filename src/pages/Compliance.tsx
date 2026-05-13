@@ -9,9 +9,10 @@ import Badge from '@/components/ui/Badge';
 import Tabs from '@/components/ui/Tabs';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { complianceRecords, dataProcessingSummaries } from '@/data';
-import { formatCompact, formatTimestamp, formatDuration, formatHash } from '@/utils/format';
+import { formatNumber, formatTimestamp, formatDuration, formatHash, formatCurrencyCompact } from '@/utils/format';
 import { DATA_SOURCE_LABELS } from '@/utils/constants';
 import { exportToCSV, exportToJSON } from '@/utils/export';
+import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
 import { useToastStore } from '@/stores/useToastStore';
 import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import type { ComplianceRecord, ComplianceEventType } from '@/types';
@@ -137,15 +138,18 @@ export default function Compliance() {
   };
 
   const stats = useMemo(() => {
-    const totalProofs = partnerRecords.filter((r) =>
-      ['proof_generated', 'proof_verified'].includes(r.eventType)
-    ).length;
+    const totalRequested = partnerRecords.filter((r) => r.eventType === 'verification_requested').length;
+    const totalProofs = partnerRecords.filter((r) => r.eventType === 'proof_verified').length;
     const totalFailed = partnerRecords.filter((r) => r.eventType === 'proof_failed').length;
+    const pending = Math.max(totalRequested - totalProofs - totalFailed, 0);
     return {
       totalRecords: partnerRecords.length,
+      totalRequested,
       totalProofs,
       totalFailed,
+      pending,
       piiEvents: 0,
+      liabilityAvoided: liabilityAvoidedFromReceipts(totalProofs),
     };
   }, [partnerRecords]);
 
@@ -183,15 +187,15 @@ export default function Compliance() {
       <SectionHeader as="h1" title="Verification Trail" description="A clean record of verification requests, proof generation, and receipt delivery for buyer diligence and pilot readiness conversations." icon={<ShieldCheck size={16} />} />
 
       {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3" data-walkthrough="compliance-metrics">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" data-walkthrough="compliance-metrics">
         <MetricCard
           label="Verification Events"
-          value={formatCompact(stats.totalRecords)}
+          value={formatNumber(stats.totalRecords)}
           icon={<FileText size={14} />}
         />
         <MetricCard
           label="Receipts Generated"
-          value={formatCompact(stats.totalProofs)}
+          value={formatNumber(stats.totalProofs)}
           icon={<ShieldCheck size={14} />}
         />
         <MetricCard
@@ -202,15 +206,21 @@ export default function Compliance() {
         />
         <div id="liability-avoided">
           <MetricCard
-          label="Illustrative Liability Avoided"
-          value={`$${((9.77 * stats.totalProofs) / 1000).toFixed(1)}M`}
-          subValue="Based on $9.77M avg breach cost"
-          icon={<ShieldCheck size={14} />}
+            label="Illustrative Liability Avoided"
+            value={formatCurrencyCompact(stats.liabilityAvoided)}
+            subValue="Based on ~$9,770 per breached record"
+            icon={<ShieldCheck size={14} />}
           />
         </div>
         <MetricCard
           label="Failed Proofs"
-          value={formatCompact(stats.totalFailed)}
+          value={formatNumber(stats.totalFailed)}
+          icon={<Clock size={14} />}
+        />
+        <MetricCard
+          label="Pending Requests"
+          value={formatNumber(stats.pending)}
+          subValue="Awaiting proof"
           icon={<Clock size={14} />}
         />
       </div>
@@ -227,7 +237,7 @@ export default function Compliance() {
         </div>
         <div className="flex-shrink-0 text-right">
           <div className="font-mono text-2xl font-bold text-accent">0</div>
-          <div className="text-2xs text-tertiary">Raw Data Exposures</div>
+          <div className="text-2xs text-tertiary">Raw data exposures · receipt-only</div>
         </div>
       </div>
 
@@ -243,20 +253,24 @@ export default function Compliance() {
             <option key={key} value={key}>{label}</option>
           ))}
         </select>
-        <input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
-          placeholder="From"
-        />
-        <input
-          type="date"
-          value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
-          placeholder="To"
-        />
+        <label className="flex items-center gap-1 text-2xs text-tertiary">
+          From
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
+          />
+        </label>
+        <label className="flex items-center gap-1 text-2xs text-tertiary">
+          To
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="h-[28px] px-2 bg-base border border-border rounded text-xs text-secondary"
+          />
+        </label>
         {(eventFilter !== 'all' || dateFrom || dateTo) && (
           <button
             onClick={() => { setEventFilter('all'); setDateFrom(''); setDateTo(''); }}
@@ -270,6 +284,9 @@ export default function Compliance() {
       {/* Tabs + Export */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Tabs tabs={tabs} activeTab={tab} onChange={(id) => setTab(id as 'audit' | 'processing')} />
+        <p className="text-2xs text-tertiary">
+          Audit Log shows receipt events. Data Processing shows aggregate processing windows with zero raw-data exposure.
+        </p>
         <div className="flex items-center gap-1">
           <button onClick={() => handleExport('csv')} className="btn-ghost text-xs">
             <Download size={12} /> CSV
@@ -299,15 +316,15 @@ export default function Compliance() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <div>
                     <span className="text-2xs text-tertiary block">Records Processed</span>
-                    <span className="font-mono text-sm text-secondary">{formatCompact(summary.recordsProcessed)}</span>
+                    <span className="font-mono text-sm text-secondary">{formatNumber(summary.recordsProcessed)}</span>
                   </div>
                   <div>
                     <span className="text-2xs text-tertiary block">Proofs Generated</span>
-                    <span className="font-mono text-sm text-secondary">{formatCompact(summary.proofsGenerated)}</span>
+                    <span className="font-mono text-sm text-secondary">{formatNumber(summary.proofsGenerated)}</span>
                   </div>
                   <div>
                     <span className="text-2xs text-tertiary block">Proofs Verified</span>
-                    <span className="font-mono text-sm text-secondary">{formatCompact(summary.proofsVerified)}</span>
+                    <span className="font-mono text-sm text-secondary">{formatNumber(summary.proofsVerified)}</span>
                   </div>
                   <div>
                     <span className="text-2xs text-tertiary block">Avg Proof Time</span>
