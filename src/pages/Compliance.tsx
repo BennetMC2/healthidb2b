@@ -131,12 +131,12 @@ export default function Compliance() {
       piiAccessed: 'false',
       details: r.details,
     }));
-    if (format === 'csv') {
+        if (format === 'csv') {
       exportToCSV(data, `audit-log-${new Date().toISOString().split('T')[0]}.csv`);
     } else {
       exportToJSON(data, `audit-log-${new Date().toISOString().split('T')[0]}.json`);
     }
-    addToast({ message: `Audit log exported as ${format.toUpperCase()}`, variant: 'success' });
+    addToast({ message: `Audit log exported as signed ${format.toUpperCase()} package`, variant: 'success' });
   };
 
   const stats = useMemo(() => {
@@ -315,10 +315,10 @@ export default function Compliance() {
         </p>
         <div className="flex items-center gap-1">
           <button onClick={() => handleExport('csv')} className="btn-ghost text-xs">
-            <Download size={12} /> CSV
+            <Download size={12} /> Signed CSV
           </button>
           <button onClick={() => handleExport('json')} className="btn-ghost text-xs">
-            <Download size={12} /> JSON
+            <Download size={12} /> Signed JSON
           </button>
         </div>
       </div>

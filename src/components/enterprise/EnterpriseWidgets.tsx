@@ -2,6 +2,13 @@ import { BrainCircuit, CalendarClock, Check, Hexagon, Radio, ShieldCheck, Sparkl
 import { formatNumber } from '@/utils/format';
 import type { PartnerPortfolio } from '@/data/partnerPortfolios';
 
+const proofTicker = [
+  'rcp_8f31a904 · 0x51d8b5…cea485ca',
+  'rcp_cbaa8a52 · 0xba95b0…f07ab18c',
+  'rcp_2290fe71 · 0x7e34c2…912ad4bf',
+  'rcp_d8a04c19 · 0x12ce78…a09cc711',
+];
+
 export function ProofReceiptAnimation({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`proof-receipt ${compact ? 'p-3' : 'p-4'} rounded-xl border border-border bg-surface`}>
@@ -12,11 +19,17 @@ export function ProofReceiptAnimation({ compact = false }: { compact?: boolean }
         </div>
         <div className="min-w-0">
           <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Proof verified</div>
-          <div className="mt-1 truncate font-mono text-xs text-primary">prt_cbaa8a52 · 0xba95b0…f07ab18c</div>
+          <div className="proof-receipt__ticker mt-1 h-5 overflow-hidden font-mono text-xs text-primary">
+            <div className="proof-receipt__ticker-track">
+              {[...proofTicker, ...proofTicker.slice(0, 1)].map((proof, index) => (
+                <div key={`${proof}-${index}`} className="h-5 truncate">{proof}</div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
       <div className="mt-3 grid gap-2">
-        {['Cohort matched', 'ZK proof valid', 'No PII access'].map((label, index) => (
+        {['Cohort rule matched', 'ZK proof valid', 'Raw data stayed local'].map((label, index) => (
           <div key={label} className="proof-receipt__check flex items-center gap-2 rounded border border-border bg-base/60 px-2 py-1.5" style={{ animationDelay: `${index * 180 + 260}ms` }}>
             <Check size={12} className="text-accent" />
             <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-secondary">{label}</span>

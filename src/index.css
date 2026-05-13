@@ -305,6 +305,14 @@
     animation: receiptCheck 6s var(--ease-emphasis) infinite;
   }
 
+  .proof-receipt__ticker {
+    mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
+  }
+
+  .proof-receipt__ticker-track {
+    animation: proofTicker 8s steps(4) infinite;
+  }
+
   .input-field {
     @apply bg-base border border-border rounded px-2 py-1.5 text-sm text-primary
            placeholder:text-tertiary
@@ -388,6 +396,11 @@
   0%, 10% { opacity: 0; transform: translateY(6px); }
   18%, 78% { opacity: 1; transform: translateY(0); }
   88%, 100% { opacity: 0; transform: translateY(6px); }
+}
+
+@keyframes proofTicker {
+  from { transform: translateY(0); }
+  to { transform: translateY(-80px); }
 }
 
 [data-executive-mode="true"] main {

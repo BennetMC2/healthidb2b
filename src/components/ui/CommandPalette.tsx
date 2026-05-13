@@ -99,7 +99,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
   if (!open) return null;
 
   const commands = [
-    { id: 'ask', label: 'Ask the Actuary Copilot', sublabel: 'Open the AI Actuary command center', icon: BrainCircuit, action: () => navigate('/app/actuary') },
+    { id: 'ask', label: 'Ask the Actuary Copilot', sublabel: 'Open the AI Actuary command center and focus the input', icon: BrainCircuit, action: () => navigate('/app/actuary?focusCopilot=1') },
     { id: 'plays', label: "Show today's opportunities", sublabel: 'Review wearable signal campaigns', icon: Target, action: () => navigate('/app/actuary') },
     { id: 'campaigns', label: 'Go to Campaign Studio', sublabel: 'Open campaign portfolio and builder', icon: Target, action: () => navigate('/app/campaigns') },
     { id: 'pool', label: 'Go to Member Pool', sublabel: 'Explore anonymous cohorts', icon: Globe, action: () => navigate('/app/explorer') },
