@@ -112,18 +112,24 @@ export function PartnerPortfolioBand({ portfolio }: { portfolio: PartnerPortfoli
   );
 }
 
-export function ActuaryProofMark() {
+export function AILiveMark() {
   return (
-    <div className="relative hidden h-28 w-28 overflow-hidden rounded-[30px] border border-accent/25 bg-primary/80 text-accent xl:flex">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_18%,rgb(var(--a-accent)/0.28),transparent_18%),linear-gradient(145deg,rgb(var(--n-elevated)/0.16),transparent)]" />
-      <div className="absolute left-4 top-4 h-20 w-20 rounded-[24px] border border-accent/20" />
-      <div className="absolute left-8 top-8 h-12 w-12 rotate-45 rounded-xl border border-accent/35 bg-accent/10" />
-      <div className="absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-accent/25 bg-accent/15">
-        <ShieldCheck size={24} strokeWidth={1.6} />
+    <div className="relative hidden h-28 w-32 overflow-hidden rounded-[30px] border border-accent/25 bg-primary text-accent xl:flex">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgb(var(--a-accent)/0.30),transparent_18%),radial-gradient(circle_at_18%_82%,rgb(var(--a-accent-secondary)/0.20),transparent_24%)]" />
+      <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/10" />
+      <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/20" />
+      <div className="absolute left-1/2 top-1/2 h-24 w-px origin-top bg-accent/30 animate-[spin_6s_linear_infinite]" />
+      <div className="absolute left-5 top-5 flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2 py-1 font-mono text-[9px] uppercase tracking-[0.12em]">
+        <span className="h-1.5 w-1.5 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+        Live
       </div>
-      <div className="absolute right-5 top-5 h-2.5 w-2.5 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-      <div className="absolute bottom-5 left-5 font-mono text-[9px] uppercase tracking-[0.16em] text-accent/80">ZK</div>
-      <div className="absolute bottom-5 right-5 font-mono text-[9px] uppercase tracking-[0.16em] text-accent/80">A+</div>
+      <div className="absolute inset-x-0 top-[42px] text-center font-display text-4xl font-extrabold tracking-tight text-white">
+        AI
+      </div>
+      <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-accent/85">
+        <span>Scan</span>
+        <span>09:14</span>
+      </div>
     </div>
   );
 }
