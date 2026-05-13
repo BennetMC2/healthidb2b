@@ -114,8 +114,8 @@ export function PartnerPortfolioBand({ portfolio }: { portfolio: PartnerPortfoli
 
 export function AILiveMark() {
   return (
-    <div className="relative hidden h-28 w-32 overflow-hidden rounded-[30px] border border-accent/25 bg-primary text-accent xl:flex">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgb(var(--a-accent)/0.30),transparent_18%),radial-gradient(circle_at_18%_82%,rgb(var(--a-accent-secondary)/0.20),transparent_24%)]" />
+    <div className="relative hidden h-28 w-32 overflow-hidden rounded-[30px] border border-accent/20 bg-[#16182d] text-accent xl:flex">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_20%,rgb(var(--a-accent)/0.18),transparent_20%),radial-gradient(circle_at_18%_82%,rgb(var(--hid-navy-500)/0.18),transparent_26%),linear-gradient(145deg,rgb(var(--hid-navy-800)/0.65),rgb(var(--hid-navy-900)/0.88))]" />
       <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/10" />
       <div className="absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/20" />
       <div className="absolute left-1/2 top-1/2 h-24 w-px origin-top bg-accent/30 animate-[spin_6s_linear_infinite]" />
@@ -123,7 +123,7 @@ export function AILiveMark() {
         <span className="h-1.5 w-1.5 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
         Live
       </div>
-      <div className="absolute inset-x-0 top-[42px] text-center font-display text-4xl font-extrabold tracking-tight text-white">
+      <div className="absolute inset-x-0 top-[42px] text-center font-display text-4xl font-extrabold tracking-tight text-cream-100/90">
         AI
       </div>
       <div className="absolute bottom-5 left-5 right-5 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.14em] text-accent/85">
