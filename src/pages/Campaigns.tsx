@@ -1,16 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
-import { Plus, Zap, Radio, Target, Filter, Activity, Heart, Moon, Users, Repeat2, Megaphone } from 'lucide-react';
+import { Plus, Target, Filter, Activity, Heart, Moon, Users, Repeat2, Megaphone } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import CampaignOnboardingModal from '@/components/campaigns/CampaignOnboardingModal';
 import { useCampaignStore } from '@/stores/useCampaignStore';
-import { StatusBadge, TypeBadge, UseCaseBadge, MetricBadge } from '@/components/ui/Badge';
-import CampaignPopover from '@/components/campaigns/CampaignPopover';
-import MetricCard from '@/components/ui/MetricCard';
+import { StatusBadge, TypeBadge, MetricBadge } from '@/components/ui/Badge';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
-import { formatNumber, formatCurrency, formatPercent, formatDate } from '@/utils/format';
+import { formatNumber, formatCurrency } from '@/utils/format';
 import type { CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
@@ -25,12 +23,11 @@ interface StudioCampaignTemplate extends CampaignTemplate {
   consentNote?: string;
 }
 
-const familyFilters: Array<{ id: 'all' | CampaignFamily; label: string }> = [
-  { id: 'all', label: 'All families' },
-  { id: 'signal', label: 'Signal improvement' },
-  { id: 'acquisition', label: 'Open pool acquisition' },
-  { id: 'retention', label: 'Retention' },
-  { id: 'engagement', label: 'Engagement' },
+const familyFilters: Array<{ id: CampaignFamily; label: string; summary: string }> = [
+  { id: 'signal', label: 'Signal improvement', summary: '$8.1M book value' },
+  { id: 'acquisition', label: 'Open pool acquisition', summary: '14.3K anonymous pool' },
+  { id: 'retention', label: 'Retention', summary: '$1.6M retained value' },
+  { id: 'engagement', label: 'Engagement', summary: '+31% receipt growth' },
 ];
 
 const campaignTemplates: StudioCampaignTemplate[] = [
@@ -265,6 +262,18 @@ function TemplateIcon({ icon }: { icon: string }) {
   return <Target size={15} className={className} />;
 }
 
+function familyForUseCase(useCase: string): CampaignFamily {
+  if (useCase === 'acquisition') return 'acquisition';
+  if (useCase === 'renewal') return 'retention';
+  if (useCase === 'underwriting') return 'signal';
+  if (useCase === 'dynamic_premium') return 'signal';
+  return 'signal';
+}
+
+function familyLabel(family: CampaignFamily) {
+  return familyFilters.find((filter) => filter.id === family)?.label ?? 'Signal improvement';
+}
+
 export default function Campaigns() {
   const navigate = useNavigate();
   const loading = useSimulatedLoading(300);
@@ -272,7 +281,8 @@ export default function Campaigns() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const [typeFilter, setTypeFilter] = useState<'all' | CampaignType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | CampaignStatus>('all');
-  const [familyFilter, setFamilyFilter] = useState<'all' | CampaignFamily>('all');
+  const [familyFilter, setFamilyFilter] = useState<CampaignFamily>('signal');
+  const [selectedTemplateId, setSelectedTemplateId] = useState(campaignTemplates[0]?.id ?? '');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Partner-scoped campaigns
@@ -290,17 +300,28 @@ export default function Campaigns() {
   }, [campaigns, typeFilter, statusFilter]);
 
   const visibleTemplates = useMemo(() => {
-    if (familyFilter === 'all') return campaignTemplates;
     return campaignTemplates.filter((template) => template.family === familyFilter);
   }, [familyFilter]);
+
+  const selectedTemplate = useMemo(() => (
+    visibleTemplates.find((template) => template.id === selectedTemplateId) ?? visibleTemplates[0]
+  ), [selectedTemplateId, visibleTemplates]);
 
   const stats = useMemo(() => ({
     total: campaigns.length,
     active: campaigns.filter((c) => c.status === 'active').length,
     totalEligible: campaigns.reduce((s, c) => s + c.funnel.eligible, 0),
     totalBudget: campaigns.reduce((s, c) => s + c.rewards.budgetCeiling, 0),
+    totalVerified: campaigns.reduce((s, c) => s + c.funnel.verified, 0),
     acquisition: campaigns.filter((c) => c.useCase === 'acquisition').length,
   }), [campaigns]);
+
+  const portfolioRows = useMemo(() => {
+    return filtered.slice(0, 6).map((campaign) => ({
+      campaign,
+      family: familyForUseCase(campaign.useCase),
+    }));
+  }, [filtered]);
 
   if (loading) {
     return (
@@ -358,184 +379,191 @@ export default function Campaigns() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        <MetricCard label="Campaigns" value={stats.total} icon={<Zap size={14} />} />
-        <MetricCard label="Live programmes" value={stats.active} icon={<Radio size={14} />} />
-        <MetricCard label="Reachable Members" value={formatNumber(stats.totalEligible)} />
-        <MetricCard label="Acquisition Plays" value={stats.acquisition} subValue={formatCurrency(stats.totalBudget)} />
-      </div>
-
-      <div data-walkthrough="campaigns-templates">
-        <SectionHeader title="Campaign families" description="Select the commercial motion first, then tune the signal, cohort, and Health Points price." />
-        <div className="mb-3 flex flex-wrap gap-2">
-          {familyFilters.map((filter) => (
-            <button
-              key={filter.id}
-              onClick={() => setFamilyFilter(filter.id)}
-              className={`badge cursor-pointer ${familyFilter === filter.id ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-elevated border-border text-tertiary'}`}
+      <section className="card" data-walkthrough="campaigns-portfolio">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+              <Target size={16} className="text-accent" />
+              Campaign portfolio
+            </div>
+            <p className="mt-1 text-xs text-tertiary">
+              {stats.total} campaigns · {stats.active} active · {formatCurrency(stats.totalBudget)} HP budget · {formatNumber(stats.totalEligible)} reachable members · {formatNumber(stats.totalVerified)} verified receipts
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as 'all' | CampaignType)}
+              className="h-[32px] px-2 bg-base border border-border rounded text-xs text-secondary min-w-[150px]"
             >
-              {filter.label}
-            </button>
-          ))}
+              <option value="all">All Campaign Types</option>
+              <option value="snapshot">Snapshot</option>
+              <option value="stream">Stream</option>
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'all' | CampaignStatus)}
+              className="h-[32px] px-2 bg-base border border-border rounded text-xs text-secondary min-w-[140px]"
+            >
+              <option value="all">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="paused">Paused</option>
+            </select>
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
-          {visibleTemplates.map((template) => (
-            <article
-              key={template.id}
-              className="card hover:bg-hover transition-colors duration-100"
-            >
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
+
+        <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-4">
+          {familyFilters.map((family) => {
+            const plays = campaignTemplates.filter((template) => template.family === family.id).length;
+            return (
+              <button
+                key={family.id}
+                onClick={() => {
+                  setFamilyFilter(family.id);
+                  setSelectedTemplateId(campaignTemplates.find((template) => template.family === family.id)?.id ?? '');
+                }}
+                className={`rounded border px-3 py-3 text-left transition-colors ${
+                  familyFilter === family.id
+                    ? 'border-accent/30 bg-accent/10'
+                    : 'border-border bg-base/60 hover:border-accent/20'
+                }`}
+              >
+                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">{plays} plays</div>
+                <div className="mt-1 text-sm font-semibold text-primary">{family.label}</div>
+                <div className="mt-1 text-xs text-secondary">{family.summary}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[760px] text-left text-xs">
+            <thead className="border-y border-border text-[11px] uppercase tracking-[0.12em] text-tertiary">
+              <tr>
+                <th className="py-2 pr-3 font-mono">Campaign</th>
+                <th className="py-2 pr-3 font-mono">Family</th>
+                <th className="py-2 pr-3 font-mono">Audience</th>
+                <th className="py-2 pr-3 font-mono">Budget</th>
+                <th className="py-2 pr-3 font-mono">Status</th>
+                <th className="py-2 pr-3 font-mono">Verified</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {portfolioRows.map(({ campaign, family }) => (
+                <tr key={campaign.id} className="hover:bg-hover/60">
+                  <td className="py-2 pr-3">
+                    <button
+                      onClick={() => navigate(`/app/campaigns/${campaign.id}`)}
+                      className="font-medium text-primary hover:text-accent"
+                    >
+                      {campaign.name}
+                    </button>
+                    <div className="mt-0.5 max-w-[360px] truncate text-2xs text-tertiary">{campaign.description}</div>
+                  </td>
+                  <td className="py-2 pr-3">
+                    <span className="badge bg-elevated border-border text-secondary">{familyLabel(family)}</span>
+                  </td>
+                  <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.eligible)}</td>
+                  <td className="py-2 pr-3 font-mono text-secondary">{formatCurrency(campaign.rewards.budgetCeiling)}</td>
+                  <td className="py-2 pr-3"><StatusBadge status={campaign.status} /></td>
+                  <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.verified)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {portfolioRows.length === 0 && (
+            <EmptyState
+              icon={<Filter size={20} className="text-tertiary" />}
+              title="No campaigns match the current filters"
+              description="Adjust the programme type or status filter to broaden the results."
+              action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
+            />
+          )}
+        </div>
+      </section>
+
+      <section data-walkthrough="campaigns-templates">
+        <SectionHeader title="Create next campaign" description="Choose a campaign family, inspect the strongest play, then open the builder with the right defaults." />
+        <div className="grid gap-4 xl:grid-cols-[minmax(320px,420px)_minmax(0,1fr)]">
+          <div className="card p-0">
+            <div className="border-b border-border px-4 py-3">
+              <div className="text-sm font-semibold text-primary">{familyLabel(familyFilter)}</div>
+              <div className="mt-1 text-xs text-tertiary">{visibleTemplates.length} available plays</div>
+            </div>
+            <div className="divide-y divide-border">
+              {visibleTemplates.map((template) => (
+                <button
+                  key={template.id}
+                  onClick={() => setSelectedTemplateId(template.id)}
+                  className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${
+                    selectedTemplate?.id === template.id ? 'bg-accent/10' : 'hover:bg-hover'
+                  }`}
+                >
                   <TemplateIcon icon={template.icon} />
-                  <span className="text-sm font-medium text-primary">{template.name}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-medium text-primary">{template.name}</span>
+                      <span className="badge bg-elevated border-border text-tertiary">{template.source}</span>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed text-tertiary">{template.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <MetricBadge metric={template.challenge.metric} />
+                      <TypeBadge type={template.type} />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {selectedTemplate && (
+            <article className="card">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="badge bg-accent/10 border-accent/20 text-accent">{selectedTemplate.familyLabel}</span>
+                    <MetricBadge metric={selectedTemplate.challenge.metric} />
+                    <TypeBadge type={selectedTemplate.type} />
+                  </div>
+                  <h2 className="mt-3 text-xl font-semibold text-primary">{selectedTemplate.name}</h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-secondary">{selectedTemplate.description}</p>
                 </div>
-                <span className="badge bg-elevated border-border text-tertiary">{template.source}</span>
+                <button
+                  onClick={() => navigate('/app/campaigns/new', { state: { template: selectedTemplate } })}
+                  className="btn-primary shrink-0 text-xs"
+                >
+                  <Plus size={13} />
+                  Create Campaign
+                </button>
               </div>
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <span className="badge bg-accent/10 border-accent/20 text-accent">{template.familyLabel}</span>
-                <MetricBadge metric={template.challenge.metric} />
-                <TypeBadge type={template.type} />
+
+              <div className="mt-5 grid gap-3 lg:grid-cols-2">
+                <div className="rounded border border-border bg-base/60 px-4 py-3">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Audience</div>
+                  <div className="mt-1 text-sm font-medium text-primary">{selectedTemplate.audience}</div>
+                  {selectedTemplate.consentNote && <div className="mt-2 text-xs text-tertiary">{selectedTemplate.consentNote}</div>}
+                </div>
+                <div className="rounded border border-border bg-base/60 px-4 py-3">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-accent">Health Points action</div>
+                  <div className="mt-1 text-sm font-medium text-primary">{selectedTemplate.action}</div>
+                </div>
               </div>
-              <p className="text-xs leading-relaxed text-tertiary mb-3">{template.description}</p>
-              <div className="mb-3 rounded border border-border bg-base/60 px-3 py-2">
-                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Audience</div>
-                <div className="mt-1 text-xs text-secondary">{template.audience}</div>
-                {template.consentNote && <div className="mt-2 text-2xs text-tertiary">{template.consentNote}</div>}
-              </div>
-              <div className="mb-3 rounded border border-border bg-base/60 px-3 py-2">
-                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-accent">Health Points action</div>
-                <div className="mt-1 text-xs text-secondary">{template.action}</div>
-              </div>
-              <div className="mb-4 grid grid-cols-3 gap-2">
-                {template.metrics.map((metric) => (
-                  <div key={`${template.id}-${metric.label}`} className="rounded border border-border bg-surface px-2 py-2">
-                    <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">{metric.label}</div>
-                    <div className="mt-1 font-mono text-xs font-semibold text-primary">{metric.value}</div>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                {selectedTemplate.metrics.map((metric) => (
+                  <div key={`${selectedTemplate.id}-${metric.label}`} className="rounded border border-border bg-surface px-3 py-3">
+                    <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">{metric.label}</div>
+                    <div className="mt-1 font-mono text-base font-semibold text-primary">{metric.value}</div>
                   </div>
                 ))}
               </div>
-              <button
-                onClick={() => navigate('/app/campaigns/new', { state: { template } })}
-                className="btn-primary w-full justify-center text-xs"
-              >
-                <Plus size={13} />
-                Create Campaign
-              </button>
             </article>
-          ))}
+          )}
         </div>
-      </div>
+      </section>
 
-      <SectionHeader
-        title="Campaign portfolio"
-        description="Live campaigns and drafts across signal improvement, acquisition, retention, and member engagement."
-        icon={<Target size={16} />}
-      />
-
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-2 text-2xs text-tertiary">
-          <span>Filter the portfolio by programme type and status.</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as 'all' | CampaignType)}
-            className="h-[32px] px-2 bg-base border border-border rounded text-xs text-secondary min-w-[150px]"
-          >
-            <option value="all">All Campaign Types</option>
-            <option value="snapshot">Snapshot</option>
-            <option value="stream">Stream</option>
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as 'all' | CampaignStatus)}
-            className="h-[32px] px-2 bg-base border border-border rounded text-xs text-secondary min-w-[140px]"
-          >
-            <option value="all">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="paused">Paused</option>
-          </select>
-          <button
-            onClick={() => navigate('/app/campaigns/new')}
-            className="btn-primary text-xs"
-          >
-            <Plus size={13} />
-            Create Campaign
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-2" data-walkthrough="campaigns-portfolio">
-        {filtered.length === 0 && (
-          <EmptyState
-            icon={<Filter size={20} className="text-tertiary" />}
-            title="No campaigns match the current filters"
-            description="Adjust the programme type or status filter to broaden the results."
-            action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
-          />
-        )}
-        {filtered.map((campaign) => (
-          <CampaignPopover key={campaign.id} campaign={campaign}>
-            <button
-              onClick={() => navigate(`/app/campaigns/${campaign.id}`)}
-              className="w-full card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
-            >
-              <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-primary truncate">
-                      {campaign.name}
-                    </span>
-                    <MetricBadge metric={campaign.challenge.metric} />
-                    <UseCaseBadge useCase={campaign.useCase} />
-                    <TypeBadge type={campaign.type} />
-                    <StatusBadge status={campaign.status} />
-                  </div>
-                  <p className="text-xs text-tertiary truncate">
-                    {campaign.description}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:items-center sm:gap-6 flex-shrink-0">
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatNumber(campaign.funnel.enrolled)}
-                    </div>
-                    <div className="text-2xs text-tertiary">enrolled</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatNumber(campaign.funnel.verified)}
-                    </div>
-                    <div className="text-2xs text-tertiary">verified</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatPercent(campaign.funnel.verified / Math.max(campaign.funnel.enrolled, 1))}
-                    </div>
-                    <div className="text-2xs text-tertiary">rate</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-mono text-secondary">
-                      {formatCurrency(campaign.rewards.budgetSpent)}
-                    </div>
-                    <div className="text-2xs text-tertiary">
-                      of {formatCurrency(campaign.rewards.budgetCeiling)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xs text-tertiary">
-                      {formatDate(campaign.startDate)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </button>
-          </CampaignPopover>
-        ))}
-      </div>
     </div>
   );
 }
