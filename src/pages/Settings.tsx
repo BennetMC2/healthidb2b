@@ -5,9 +5,17 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { REGIONS } from '@/utils/constants';
+import { FDECard } from '@/components/enterprise/EnterpriseWidgets';
+import { getPartnerPortfolio } from '@/data/partnerPortfolios';
+
+function webhookForPartner(label: string) {
+  const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return `https://hooks.${slug}.com/healthid`;
+}
 
 export default function Settings() {
   const { currentPartner } = usePartnerStore();
+  const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
   const addToast = useToastStore((s) => s.addToast);
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -24,7 +32,7 @@ export default function Settings() {
   const [regions, setRegions] = useState(currentPartner.settings.allowedRegions);
 
   // Webhook state
-  const [webhookUrl, setWebhookUrl] = useState('https://api.example.com/webhooks/healthid');
+  const [webhookUrl, setWebhookUrl] = useState(webhookForPartner(currentPartner.label));
   const [webhookEvents, setWebhookEvents] = useState({
     verification_completed: true,
     campaign_milestone: true,
@@ -44,6 +52,7 @@ export default function Settings() {
     setProofRetention(String(currentPartner.settings.dataRetention.proofRetentionDays));
     setAuditRetention(String(currentPartner.settings.dataRetention.auditLogRetentionDays));
     setRegions(currentPartner.settings.allowedRegions);
+    setWebhookUrl(webhookForPartner(currentPartner.label));
   }, [currentPartner]);
 
   // Dirty check
@@ -96,17 +105,18 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-[720px]">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,900px)_360px]">
       {showOnboarding && <SettingsOnboarding onDismiss={() => setShowOnboarding(false)} />}
-      <div className="flex items-center justify-between" data-walkthrough="settings-header">
-        <SectionHeader as="h1" title="Settings" description="Partner configuration and API access management." />
-        {isDirty && (
-          <button onClick={handleSave} disabled={saving} className="btn-primary text-xs flex-shrink-0">
-            {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
-        )}
-      </div>
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between" data-walkthrough="settings-header">
+          <SectionHeader as="h1" title="Settings" description="Partner configuration and API access management." />
+          {isDirty && (
+            <button onClick={handleSave} disabled={saving} className="btn-primary text-xs flex-shrink-0">
+              {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          )}
+        </div>
 
       {/* Partner Profile */}
       <section className="card space-y-4" data-walkthrough="settings-profile">
@@ -348,6 +358,29 @@ export default function Settings() {
           </div>
         </div>
       </section>
+      </div>
+
+      <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+        <FDECard portfolio={partnerPortfolio} />
+        <section className="card">
+          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Enterprise plan</div>
+          <h2 className="mt-2 text-lg font-semibold text-primary">{currentPartner.tier} workspace</h2>
+          <div className="mt-4 grid gap-2">
+            <div className="rounded border border-border bg-base/60 px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Contract term</div>
+              <div className="mt-1 text-sm text-primary">Pilot MSA · Q2 2026</div>
+            </div>
+            <div className="rounded border border-border bg-base/60 px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Receipt billing</div>
+              <div className="mt-1 text-sm text-primary">Monthly verified receipts</div>
+            </div>
+            <div className="rounded border border-border bg-base/60 px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Support channel</div>
+              <div className="mt-1 text-sm text-primary">{partnerPortfolio.fde.channel}</div>
+            </div>
+          </div>
+        </section>
+      </aside>
     </div>
   );
 }

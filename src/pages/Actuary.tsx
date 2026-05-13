@@ -7,6 +7,8 @@ import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
 import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
+import { getPartnerPortfolio } from '@/data/partnerPortfolios';
+import { ActuaryBrainMark, FDECard, PartnerPortfolioBand, ProofReceiptAnimation, ResearchFeed } from '@/components/enterprise/EnterpriseWidgets';
 import type { CampaignTemplate, DataSource, HealthMetric } from '@/types';
 
 function confidenceLabel(confidence: ActuaryConfidence) {
@@ -292,20 +294,21 @@ export default function Actuary() {
   const [query, setQuery] = useState('');
   const [evidenceInsight, setEvidenceInsight] = useState<ActuaryInsight | null>(null);
   const playsRef = useRef<HTMLDivElement>(null);
+  const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
   const topInsight = actuaryInsights[0];
   const chatPreview = messages.slice(-4);
 
   const portfolio = useMemo(() => {
-    const verifiedOutcomes = 8289;
+    const verifiedOutcomes = partnerPortfolio.verifiedReceipts;
     const liabilityAvoided = liabilityAvoidedFromReceipts(verifiedOutcomes);
-    const avgTrust = 'High';
+    const avgTrust = partnerPortfolio.avgTrust;
 
     return { verifiedOutcomes, liabilityAvoided, avgTrust };
-  }, []);
+  }, [partnerPortfolio]);
 
   return (
     <div className="space-y-4">
-      <section className="card bg-surface" data-walkthrough="actuary-hero">
+      <section className="command-surface p-5" data-walkthrough="actuary-hero">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-accent">
@@ -314,16 +317,26 @@ export default function Actuary() {
             </div>
             <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · AI Actuary</h1>
             <p className="mt-2 text-sm text-secondary">
-              Campaign intelligence cockpit monitoring verified wearable signals across 36,000 lives: VO2 Max, HRV, sleep, and resting heart rate.
+              Campaign intelligence cockpit monitoring verified wearable signals across {formatNumber(partnerPortfolio.lives)} lives. Lead signal: {partnerPortfolio.leadSignal}.
             </p>
+            <div className="mt-4 rounded-xl border border-accent/15 bg-accent/10 px-4 py-3">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Today's brief</div>
+              <p className="mt-1 max-w-4xl text-sm leading-relaxed text-primary">{partnerPortfolio.morningBrief}</p>
+            </div>
           </div>
-          <button
-            onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="btn-primary text-xs"
-          >
-            <Sparkles size={14} />
-            Show campaign plays
-          </button>
+          <div className="flex items-center gap-3">
+            <ActuaryBrainMark />
+            <button
+              onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="btn-primary text-xs"
+            >
+              <Sparkles size={14} />
+              Show campaign plays
+            </button>
+          </div>
+        </div>
+        <div className="mt-5">
+          <PartnerPortfolioBand portfolio={partnerPortfolio} />
         </div>
       </section>
 
@@ -361,6 +374,7 @@ export default function Actuary() {
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+          <ProofReceiptAnimation compact />
           <section className="card" data-walkthrough="actuary-portfolio">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
             <div className="mt-4 grid gap-2">
@@ -369,6 +383,9 @@ export default function Actuary() {
               <OutputTile label="Avg trust" value={portfolio.avgTrust} />
             </div>
           </section>
+
+          <ResearchFeed portfolio={partnerPortfolio} />
+          <FDECard portfolio={partnerPortfolio} />
 
           <section className="card overflow-hidden p-0" data-walkthrough="actuary-ask">
             <div className="border-b border-border px-4 py-4">

@@ -7,6 +7,7 @@ import Header from './Header';
 import Footer from './Footer';
 import CopilotPanel from '@/components/copilot/CopilotPanel';
 import { useDemoStore } from '@/stores/useDemoStore';
+import { useExperienceStore } from '@/stores/useExperienceStore';
 
 interface LayoutProps {
   onTourStart?: () => void;
@@ -17,12 +18,13 @@ export default function Layout({ onTourStart }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [widgetDismissed, setWidgetDismissed] = useState(false);
+  const executiveMode = useExperienceStore((s) => s.executiveMode);
   const location = useLocation();
   const navigate = useNavigate();
   const hideActuaryWidget = location.pathname === '/app/actuary' || location.pathname === '/app/campaigns/new';
 
   return (
-    <div className="relative flex h-screen w-screen bg-base overflow-hidden">
+    <div className="relative flex h-screen w-screen bg-base overflow-hidden" data-executive-mode={executiveMode}>
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-[-10%] top-[-15%] h-[340px] w-[340px] rounded-full bg-accent/10 blur-3xl" />
         <div className="absolute right-[-8%] top-[12%] h-[280px] w-[280px] rounded-full bg-accent-secondary/10 blur-3xl" />

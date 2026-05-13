@@ -9,6 +9,9 @@ interface DataContextLike {
     name?: string;
     tier?: string;
     industry?: string;
+    portfolioBrief?: string;
+    lives?: number;
+    leadSignal?: string;
   };
   campaigns?: {
     total?: number;
@@ -49,6 +52,7 @@ interface DataContextLike {
     byEventType?: Record<string, number>;
     piiAccessEvents?: number;
     recentFailures?: number;
+    verifiedReceipts?: number;
   };
 }
 
@@ -82,6 +86,8 @@ function latestUserMessage(messages: MessageLike[]): string {
 function buildDemoAnswer(question: string, context: DataContextLike = {}): string | null {
   const normalized = question.toLowerCase();
   const partnerName = context.partner?.name ?? 'this partner';
+  const leadSignal = context.partner?.leadSignal ?? 'VO2 Max';
+  const lives = numberValue(context.partner?.lives);
   const verificationRate = numberValue(context.verifications?.successRate);
   const verified = numberValue(context.verifications?.verified);
   const totalVerifications = numberValue(context.verifications?.total);
@@ -89,7 +95,7 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
   const topCampaign = context.campaigns?.topCampaign ?? 'Q4 HbA1c Underwriting Screen';
 
   if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(normalized)) {
-    return `Hello. I can help ${partnerName} turn verified wearable signals into priced campaign decisions. Ask me which signal to act on, where modifiable risk is building, or how to price Health Points against expected book value.`;
+    return `Hello. I can help ${partnerName} turn verified wearable signals into priced campaign decisions across ${lives ? `**${lives.toLocaleString('en-US')} lives**` : 'the current book'}. The current lead signal is **${leadSignal}**. Ask me which signal to act on, where modifiable risk is building, or how to price Health Points against expected book value.`;
   }
 
   if (/(underpriced|which cohort.*underpriced|cohort.*underpriced)/.test(normalized)) {
@@ -200,6 +206,7 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
     context.currentPage ? `Current page: ${context.currentPage}` : null,
     '',
     `Partner: ${partner.name ?? 'Unknown partner'} · ${partner.industry ?? 'unknown industry'} · ${partner.tier ?? 'unknown tier'}`,
+    partner.portfolioBrief ? `Portfolio brief: ${partner.portfolioBrief}` : null,
     '',
     'Use the platform snapshot below as your source of truth. Never fabricate numbers or claim access to data that is not in the snapshot.',
     '',
@@ -207,7 +214,7 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
     `Member Pool: ${numberValue(identities.total).toLocaleString('en-US')} identities. Average health score ${numberValue(identities.avgHealthScore)}/100. Top sources: ${(identities.topSources ?? []).join(', ') || 'none recorded'}. Tiers: ${Object.entries(identities.byTier ?? {}).map(([tier, count]) => `${tier}: ${count}`).join(', ') || 'none recorded'}.`,
     `Verifications: ${numberValue(verifications.total).toLocaleString('en-US')} total. ${numberValue(verifications.verified)} verified, ${numberValue(verifications.pending)} pending, ${numberValue(verifications.failed)} failed, ${numberValue(verifications.expired)} expired. Success rate ${numberValue(verifications.successRate)}%. Average proof time ${numberValue(verifications.avgProofTimeMs)}ms. Types: ${Object.entries(verifications.byProofType ?? {}).map(([type, count]) => `${type}: ${count}`).join(', ') || 'none recorded'}.`,
     `Treasury: ${formatUsd(treasury.totalBudget)} total budget, ${formatUsd(treasury.availableBalance)} available, ${(numberValue(treasury.yieldRate) * 100).toFixed(1)}% APY, ${formatUsd(treasury.yieldGenerated)} yield generated, ${numberValue(treasury.valueMultiplier)}x value multiplier, ${numberValue(treasury.pointsDistributed).toLocaleString('en-US')} Health Points distributed.`,
-    `Compliance: ${numberValue(compliance.totalRecords)} records, ${numberValue(compliance.piiAccessEvents)} raw data access events, ${numberValue(compliance.recentFailures)} recent proof failures. Events: ${Object.entries(compliance.byEventType ?? {}).map(([type, count]) => `${type}: ${count}`).join(', ') || 'none recorded'}.`,
+    `Compliance: ${numberValue(compliance.totalRecords)} records, ${numberValue(compliance.verifiedReceipts)} verified receipts, ${numberValue(compliance.piiAccessEvents)} raw data access events, ${numberValue(compliance.recentFailures)} recent proof failures. Events: ${Object.entries(compliance.byEventType ?? {}).map(([type, count]) => `${type}: ${count}`).join(', ') || 'none recorded'}.`,
     '',
     'Behavior rules:',
     '- Be concise and commercial.',

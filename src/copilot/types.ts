@@ -19,6 +19,9 @@ export interface DataContext {
     name: string;
     tier: string;
     industry: PartnerIndustry;
+    portfolioBrief?: string;
+    lives?: number;
+    leadSignal?: string;
   };
   campaigns: {
     total: number;
@@ -59,6 +62,7 @@ export interface DataContext {
     byEventType: Record<string, number>;
     piiAccessEvents: number;
     recentFailures: number;
+    verifiedReceipts?: number;
   };
 }
 

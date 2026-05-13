@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { Search, HelpCircle, Sun, Moon, Menu, Building2 } from 'lucide-react';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useThemeStore } from '@/stores/useThemeStore';
+import { useExperienceStore } from '@/stores/useExperienceStore';
 import CommandPalette from '@/components/ui/CommandPalette';
 import NotificationDropdown from '@/components/layout/NotificationDropdown';
 
@@ -14,6 +15,7 @@ interface HeaderProps {
 export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
   const { currentPartner, allPartners, setCurrentPartner } = usePartnerStore();
   const { theme, toggleTheme } = useThemeStore();
+  const { executiveMode, toggleExecutiveMode } = useExperienceStore();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const location = useLocation();
   const sectionLabel = (() => {
@@ -30,6 +32,10 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
     const handler = (e: KeyboardEvent) => {
       const commandK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
       if (commandK && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setPaletteOpen(true);
+      }
+      if (e.key === '/' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
         e.preventDefault();
         setPaletteOpen(true);
       }
@@ -115,6 +121,19 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
               </option>
             ))}
           </select>
+
+          <button
+            onClick={toggleExecutiveMode}
+            className={`hidden h-[30px] items-center rounded border px-2 font-mono text-[11px] uppercase tracking-[0.1em] transition-colors sm:flex ${
+              executiveMode
+                ? 'border-accent/30 bg-accent/10 text-accent'
+                : 'border-border bg-base text-tertiary hover:bg-hover hover:text-secondary'
+            }`}
+            title="Toggle executive demo mode"
+            aria-pressed={executiveMode}
+          >
+            Exec
+          </button>
 
           {/* Dark mode toggle */}
           <button
