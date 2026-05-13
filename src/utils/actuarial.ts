@@ -43,11 +43,11 @@ interface UseCaseConfig {
 }
 
 export const USE_CASE_CONFIG: Record<CampaignUseCase, UseCaseConfig> = {
-  underwriting:     { savingsFraming: 'Exam avoidance and faster risk selection', realizationMultiplier: 0.96, scenarioHorizonMonths: 12, expectedVerificationRate: 0.31, additionalNote: 'Best for cycle-time and acquisition friction, not long-tail claims proof.' },
+  underwriting:     { savingsFraming: 'Proof completion and faster risk selection', realizationMultiplier: 0.96, scenarioHorizonMonths: 12, expectedVerificationRate: 0.31, additionalNote: 'Best for cycle-time, review avoidance, and clean proof receipts.' },
   dynamic_premium:  { savingsFraming: 'Behavior-linked renewal and pricing discipline', realizationMultiplier: 0.92, scenarioHorizonMonths: 18, expectedVerificationRate: 0.27, additionalNote: 'Value compounds if longitudinal signals stay stable over time.' },
-  claims_reduction: { savingsFraming: 'Avoidable claims event reduction', realizationMultiplier: 1.08, scenarioHorizonMonths: 18, expectedVerificationRate: 0.29, additionalNote: 'Most strategic upside, but also the highest proof burden.' },
+  claims_reduction: { savingsFraming: 'Healthy-life value uplift from modifiable risk', realizationMultiplier: 1.08, scenarioHorizonMonths: 18, expectedVerificationRate: 0.29, additionalNote: 'Most strategic upside, but also the highest proof burden.' },
   renewal:          { savingsFraming: 'Retention and renewal operating efficiency', realizationMultiplier: 0.84, scenarioHorizonMonths: 12, expectedVerificationRate: 0.24, additionalNote: 'Often strongest as a friction-reduction and engagement motion.' },
-  acquisition:      { savingsFraming: 'Risk-adjusted acquisition and pre-qualification', realizationMultiplier: 0.78, scenarioHorizonMonths: 9, expectedVerificationRate: 0.22, additionalNote: 'Easiest commercial wedge because integration and proof burden are lower.' },
+  acquisition:      { savingsFraming: 'Risk-adjusted acquisition and consented onboarding', realizationMultiplier: 0.78, scenarioHorizonMonths: 9, expectedVerificationRate: 0.22, additionalNote: 'Easiest commercial wedge because integration and proof burden are lower.' },
 };
 
 const STREAM_REALIZATION_MULTIPLIER = 1.12;

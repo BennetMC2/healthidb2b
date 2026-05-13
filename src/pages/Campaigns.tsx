@@ -9,7 +9,7 @@ import { StatusBadge, TypeBadge, MetricBadge } from '@/components/ui/Badge';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrency } from '@/utils/format';
-import type { CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
+import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
 
@@ -274,6 +274,11 @@ function familyLabel(family: CampaignFamily) {
   return familyFilters.find((filter) => filter.id === family)?.label ?? 'Signal improvement';
 }
 
+function portfolioFamilyLabel(campaign: Campaign) {
+  if (campaign.useCase === 'underwriting') return 'Lab proof';
+  return familyLabel(familyForUseCase(campaign.useCase));
+}
+
 export default function Campaigns() {
   const navigate = useNavigate();
   const loading = useSimulatedLoading(300);
@@ -317,10 +322,7 @@ export default function Campaigns() {
   }), [campaigns]);
 
   const portfolioRows = useMemo(() => {
-    return filtered.slice(0, 6).map((campaign) => ({
-      campaign,
-      family: familyForUseCase(campaign.useCase),
-    }));
+    return filtered.slice(0, 8);
   }, [filtered]);
 
   if (loading) {
@@ -451,7 +453,7 @@ export default function Campaigns() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {portfolioRows.map(({ campaign, family }) => (
+              {portfolioRows.map((campaign) => (
                 <tr key={campaign.id} className="hover:bg-hover/60">
                   <td className="py-2 pr-3">
                     <button
@@ -463,7 +465,7 @@ export default function Campaigns() {
                     <div className="mt-0.5 max-w-[360px] truncate text-2xs text-tertiary">{campaign.description}</div>
                   </td>
                   <td className="py-2 pr-3">
-                    <span className="badge bg-elevated border-border text-secondary">{familyLabel(family)}</span>
+                    <span className="badge bg-elevated border-border text-secondary">{portfolioFamilyLabel(campaign)}</span>
                   </td>
                   <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.eligible)}</td>
                   <td className="py-2 pr-3 font-mono text-secondary">{formatCurrency(campaign.rewards.budgetCeiling)}</td>

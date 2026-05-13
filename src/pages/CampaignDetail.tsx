@@ -20,7 +20,6 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import {
   StatusBadge,
   TypeBadge,
-  UseCaseBadge,
   MetricBadge,
   ChallengeDisplay,
   DataSourceBadge,
@@ -40,7 +39,7 @@ import {
   formatTimestamp,
 } from '@/utils/format';
 import { USE_CASE_LABELS } from '@/utils/constants';
-import type { StreamCampaign } from '@/types';
+import type { Campaign, StreamCampaign } from '@/types';
 
 const funnelTooltips: Record<string, string> = {
   Eligible: 'Members matching campaign eligibility and source requirements.',
@@ -49,6 +48,98 @@ const funnelTooltips: Record<string, string> = {
   Verified: 'Binary outcome receipts successfully generated for the programme.',
   Rewarded: 'Members who have received the campaign incentive after a verified interval.',
 };
+
+function getCommercialModel(campaign: Campaign) {
+  const isEngagement = campaign.name.toLowerCase().includes('device connection');
+
+  if (campaign.useCase === 'acquisition') {
+    return {
+      signalLabel: 'Opt-in signal',
+      signalDescription: 'Verified signup conversion across the anonymous open-pool campaign.',
+      cards: {
+        reachable: 'Anonymous Target Pool',
+        activation: 'Opt-in Rate',
+        verified: 'Verified Signups',
+        signal: 'Acquisition Signal',
+        value: 'Acquisition',
+      },
+      howItWorks:
+        'The partner targets an anonymous HealthID segment. Identity stays hidden in Campaign Studio until a user consents to partner onboarding.',
+      footer:
+        'This campaign is measured on acquisition quality: verified signups, cost per consented onboarding, and projected acquired book value.',
+    };
+  }
+
+  if (campaign.useCase === 'renewal' && !isEngagement) {
+    return {
+      signalLabel: 'Renewal signal',
+      signalDescription: 'Verified engagement and readiness across the members approaching renewal.',
+      cards: {
+        reachable: 'Members At Renewal Risk',
+        activation: 'Engagement Recovered',
+        verified: 'Verified Streaks',
+        signal: 'Renewal Signal',
+        value: 'Retention',
+      },
+      howItWorks:
+        'Members approaching renewal complete lightweight wearable proofs that restore engagement and reduce renewal friction.',
+      footer:
+        'This campaign is measured on retained book value, renewal lift, verified streaks, and member engagement recovery.',
+    };
+  }
+
+  if (isEngagement) {
+    return {
+      signalLabel: 'Readiness signal',
+      signalDescription: 'First-receipt conversion across dormant or single-source members.',
+      cards: {
+        reachable: 'Dormant Members',
+        activation: 'Devices Connected',
+        verified: 'First Receipts',
+        signal: 'Readiness Signal',
+        value: 'Engagement',
+      },
+      howItWorks:
+        'Members connect a wearable and emit a first receipt, increasing source coverage for future signal-improvement campaigns.',
+      footer:
+        'This campaign is measured on device connections, first receipts, receipt growth, and future campaign readiness.',
+    };
+  }
+
+  if (campaign.useCase === 'underwriting') {
+    return {
+      signalLabel: 'Underwriting signal',
+      signalDescription: 'Proof completion across applicants screened without raw lab or health record custody.',
+      cards: {
+        reachable: 'Applicants Screened',
+        activation: 'Proof Completion',
+        verified: 'Eligible Receipts',
+        signal: 'Lab Signal',
+        value: 'Underwriting',
+      },
+      howItWorks:
+        'Applicants generate a binary proof against the configured threshold. The partner receives the receipt, not the raw lab value.',
+      footer:
+        'This campaign is measured on underwriting efficiency, manual review avoided, eligible receipts, and proof completion.',
+    };
+  }
+
+  return {
+    signalLabel: 'Healthy-life signal',
+    signalDescription: 'Verified behaviour-change conversion across the enrolled cohort.',
+    cards: {
+      reachable: 'Reachable Members',
+      activation: 'Cohort Activated',
+      verified: 'Verified Outcome',
+      signal: 'Wearable Signal',
+      value: 'Healthy-Life Value',
+    },
+    howItWorks:
+      'Members continue using connected wearables as normal. Health Points are paid when the verified behaviour-change rule is met.',
+    footer:
+      'This campaign is measured on healthy-life value uplift, morbidity shift, payback, and Health Points ROI.',
+  };
+}
 
 export default function CampaignDetail() {
   const { id } = useParams();
@@ -130,6 +221,7 @@ export default function CampaignDetail() {
   }
 
   const funnel = campaign.funnel;
+  const commercialModel = getCommercialModel(campaign);
   const completionRate = funnel.verified / Math.max(funnel.enrolled, 1);
   const cohortActivation = funnel.enrolled / Math.max(funnel.eligible, 1);
   const budgetRemaining = Math.max(campaign.rewards.budgetCeiling - campaign.rewards.budgetSpent, 0);
@@ -176,7 +268,7 @@ export default function CampaignDetail() {
               <div className="flex flex-wrap items-center gap-2">
                 <TypeBadge type={campaign.type} />
                 <StatusBadge status={campaign.status} />
-                <UseCaseBadge useCase={campaign.useCase} />
+                <span className="badge bg-elevated border-border text-secondary">{commercialModel.cards.value}</span>
               </div>
             </div>
             <h1 className="mt-4 text-2xl font-semibold text-primary">{campaign.name}</h1>
@@ -195,13 +287,13 @@ export default function CampaignDetail() {
           </div>
           <div className="flex flex-col items-stretch gap-2 lg:w-[270px]">
             <div className="card bg-surface/80">
-              <div className="metric-label">Modeled business signal</div>
+              <div className="metric-label">{commercialModel.signalLabel}</div>
               <div className="mt-2 flex items-center gap-2">
                 <span className="metric-value">{formatPercent(completionRate)}</span>
                 <ArrowUpRight size={16} className="text-success" />
               </div>
               <p className="mt-1 text-xs leading-relaxed text-tertiary">
-                Verified outcome rate across the enrolled cohort. This is the primary conversion signal for the programme.
+                {commercialModel.signalDescription}
               </p>
             </div>
             {(campaign.status === 'active' || campaign.status === 'paused') && (
@@ -238,12 +330,12 @@ export default function CampaignDetail() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
-        <MetricCard label="Reachable Members" value={formatNumber(funnel.eligible)} icon={<Users size={14} />} />
-        <MetricCard label="Cohort Activated" value={formatPercent(cohortActivation)} subValue={`${formatNumber(funnel.enrolled)} enrolled`} icon={<Activity size={14} />} />
-        <MetricCard label="Verified Outcome" value={formatPercent(completionRate)} subValue={`${formatNumber(funnel.verified)} receipts`} icon={<Shield size={14} />} />
+        <MetricCard label={commercialModel.cards.reachable} value={formatNumber(funnel.eligible)} icon={<Users size={14} />} />
+        <MetricCard label={commercialModel.cards.activation} value={formatPercent(cohortActivation)} subValue={`${formatNumber(funnel.enrolled)} enrolled`} icon={<Activity size={14} />} />
+        <MetricCard label={commercialModel.cards.verified} value={formatPercent(completionRate)} subValue={`${formatNumber(funnel.verified)} receipts`} icon={<Shield size={14} />} />
         <MetricCard label="Remaining Budget" value={formatCurrency(budgetRemaining)} subValue={`of ${formatCurrency(campaign.rewards.budgetCeiling)}`} icon={<Wallet size={14} />} />
-        <MetricCard label="Signal" value={campaign.challenge.target} subValue={`${campaign.challenge.unit} threshold`} icon={<LineChart size={14} />} />
-        <MetricCard label="Business Motion" value={USE_CASE_LABELS[campaign.useCase]} />
+        <MetricCard label={commercialModel.cards.signal} value={campaign.challenge.target} subValue={campaign.challenge.unit} icon={<LineChart size={14} />} />
+        <MetricCard label="Business Motion" value={commercialModel.cards.value} />
       </div>
 
       <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-4">
@@ -297,13 +389,13 @@ export default function CampaignDetail() {
           />
           <div className="space-y-3 text-xs text-secondary leading-relaxed">
             <p>
-              Members continue using their connected sources as normal. Verification is only produced when the campaign condition is met.
+              {commercialModel.howItWorks}
             </p>
             <p>
-              The insurer receives cohort movement, verification evidence, and reward status without taking custody of raw health data.
+              The partner receives cohort movement, verification evidence, and reward status without taking custody of raw health data.
             </p>
             <p className="rounded-xl bg-hover px-3 py-3 text-tertiary">
-              The same operating model can support claims reduction, underwriting review, and renewal programmes.
+              {commercialModel.footer}
             </p>
           </div>
         </div>

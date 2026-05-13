@@ -21,6 +21,50 @@ const EVIDENCE_COLORS: Record<string, { dot: string; value: string }> = {
   low: { dot: 'bg-tertiary/50', value: 'text-tertiary' },
 };
 
+function getProjectionCopy(useCase: CampaignUseCase | '') {
+  if (useCase === 'acquisition') {
+    return {
+      description: 'The model prices Health Points against verified signup quality and projected acquired book value.',
+      primaryRate: 'Verified Signup Rate',
+      valueLabel: 'Acquired Book Value',
+      shiftLabel: 'Quality Shift',
+      verifiedDetail: 'verified signups',
+      framingLabel: 'acquired value',
+    };
+  }
+
+  if (useCase === 'renewal') {
+    return {
+      description: 'The model prices Health Points against engagement recovery, renewal lift, and retained book value.',
+      primaryRate: 'Renewal Lift',
+      valueLabel: 'Retained Book Value',
+      shiftLabel: 'Retention Shift',
+      verifiedDetail: 'verified streaks',
+      framingLabel: 'retained value',
+    };
+  }
+
+  if (useCase === 'underwriting') {
+    return {
+      description: 'The model prices Health Points against proof completion, review avoidance, and underwriting efficiency value.',
+      primaryRate: 'Review Avoidance',
+      valueLabel: 'Efficiency Value',
+      shiftLabel: 'Risk Selection Shift',
+      verifiedDetail: 'eligible receipts',
+      framingLabel: 'efficiency value',
+    };
+  }
+
+  return {
+    description: 'The model prices Health Points against expected behaviour change and healthy-life value uplift.',
+    primaryRate: 'Risk Improvement',
+    valueLabel: 'Healthy-Life Value',
+    shiftLabel: 'Morbidity Shift',
+    verifiedDetail: 'verified lives',
+    framingLabel: 'healthy-life value',
+  };
+}
+
 export default function ActuarialROICalculator({
   metric,
   type,
@@ -33,6 +77,7 @@ export default function ActuarialROICalculator({
 }: ActuarialROICalculatorProps) {
   const [mode, setMode] = useState<'gross' | 'adjusted'>('gross');
   const isHero = variant === 'hero';
+  const copy = getProjectionCopy(useCase);
 
   const roi = useMemo(
     () =>
@@ -55,13 +100,13 @@ export default function ActuarialROICalculator({
   const maxSavings = comparisons.length > 0 ? comparisons[0].savingsPerMember : 1;
   const projectionTiles = [
     {
-      label: 'Claims Reduction',
+      label: copy.primaryRate,
       value: roi.isReady ? `${(roi.claimsReductionRate * 100).toFixed(1)}%` : '—',
       detail: roi.isReady ? `${roi.confidenceLabel}` : 'Select a signal',
       tone: roi.isReady ? evidence.value : 'text-tertiary',
     },
     {
-      label: 'Projected Savings',
+      label: copy.valueLabel,
       value: roi.isReady ? formatCurrencyCompact(roi.totalProjectedSavings) : '—',
       detail: roi.isReady ? `${roi.scenarioHorizonMonths}-month horizon` : 'Awaiting cohort',
       tone: roi.isReady && roi.totalProjectedSavings > 0 ? 'text-accent' : 'text-tertiary',
@@ -79,9 +124,9 @@ export default function ActuarialROICalculator({
       tone: roi.isReady ? 'text-primary' : 'text-tertiary',
     },
     {
-      label: 'Morbidity Shift',
+      label: copy.shiftLabel,
       value: roi.isReady ? `${roi.morbidityShiftBps} bps` : '—',
-      detail: roi.isReady ? `${roi.expectedVerifiedLives.toLocaleString()} verified lives` : 'Needs participants',
+      detail: roi.isReady ? `${roi.expectedVerifiedLives.toLocaleString()} ${copy.verifiedDetail}` : 'Needs participants',
       tone: roi.isReady ? 'text-primary' : 'text-tertiary',
     },
     {
@@ -108,7 +153,7 @@ export default function ActuarialROICalculator({
               Campaign economics
             </h2>
             <p className={`mt-1 text-sm leading-relaxed text-secondary ${isHero ? 'max-w-[680px]' : ''}`}>
-              The model updates as the campaign changes, pricing rewards from expected insurer value rather than marketing spend.
+              {copy.description}
             </p>
           </div>
         </div>
@@ -168,7 +213,7 @@ export default function ActuarialROICalculator({
             <Info size={14} className="mt-0.5 shrink-0 text-tertiary" />
             <p className="text-xs leading-relaxed text-tertiary">
               <span className="font-medium text-secondary">{roi.confidenceLabel}.</span>{' '}
-              Directional planning model based on literature, expected verified-life conversion, and outcome timing. Useful for prioritization, not certification.
+              Directional planning model based on literature, expected verification conversion, and outcome timing. Useful for prioritization, not certification.
             </p>
           </div>
           <div className="flex items-start gap-2 rounded-2xl border border-border bg-surface/60 p-3">
@@ -191,7 +236,7 @@ export default function ActuarialROICalculator({
 
       {roi.isReady && comparisons.length > 0 && (
         <div className="mt-5 space-y-2">
-          <span className="metric-label block">Signal ranking · conservative savings / targeted life</span>
+          <span className="metric-label block">Signal ranking · conservative {copy.framingLabel} / targeted member</span>
           {comparisons.map((comparison) => (
             <div key={comparison.metric} className="flex items-center gap-2">
               <span className={`w-32 truncate text-xs ${comparison.isSelected ? 'font-medium text-accent' : 'text-tertiary'}`}>
@@ -214,7 +259,7 @@ export default function ActuarialROICalculator({
       <p className="mt-5 border-t border-border pt-4 text-xs leading-relaxed text-tertiary">
         {roi.isReady ? (
           <>
-            {roi.savingsFraming} · {maxParticipants.toLocaleString()} targeted lives · ${roi.savingsPerMember.toFixed(0)}/targeted life
+            {roi.savingsFraming} · {maxParticipants.toLocaleString()} targeted members · ${roi.savingsPerMember.toFixed(0)}/targeted member
             {roi.additionalNote && (
               <>
                 <br />

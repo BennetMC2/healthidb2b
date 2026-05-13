@@ -14,12 +14,14 @@ interface CampaignStore {
 
 function mergeCampaignLists(persistedCampaigns?: Campaign[]): Campaign[] {
   const merged = new Map<string, Campaign>();
+  const seedIds = new Set(seedCampaigns.map((campaign) => campaign.id));
 
   seedCampaigns.forEach((campaign) => {
     merged.set(campaign.id, campaign);
   });
 
   (persistedCampaigns ?? []).forEach((campaign) => {
+    if (seedIds.has(campaign.id)) return;
     merged.set(campaign.id, campaign);
   });
 
