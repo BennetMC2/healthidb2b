@@ -52,7 +52,7 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
       <div className="mt-5 flex flex-wrap gap-2">
         <button className="btn-primary text-xs">
           <Target size={13} />
-          Design campaign
+          Create campaign
         </button>
         <button className="btn-ghost text-xs">
           <ExternalLink size={13} />

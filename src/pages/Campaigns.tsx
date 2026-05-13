@@ -136,7 +136,7 @@ export default function Campaigns() {
               className="btn-primary text-xs"
             >
               <Plus size={13} />
-              Design Campaign
+              Create Campaign
             </button>
             <button
               onClick={() => navigate('/app/explorer')}

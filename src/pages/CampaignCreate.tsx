@@ -280,7 +280,7 @@ export default function CampaignCreate() {
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h1 className="text-lg font-semibold text-primary">Design Campaign</h1>
+          <h1 className="text-lg font-semibold text-primary">Create Campaign</h1>
           <p className="text-2xs text-tertiary mt-0.5">
             Launch high-trust health programmes with measurable insurer value.
           </p>
