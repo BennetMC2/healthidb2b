@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BrainCircuit, ExternalLink, Sparkles, Target } from 'lucide-react';
 import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
+import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatCurrency, formatNumber, formatPercent } from '@/utils/format';
@@ -72,7 +73,7 @@ export default function Actuary() {
   const { messages, isStreaming, sendMessage } = useCopilotStore();
   const [query, setQuery] = useState('');
   const topInsight = actuaryInsights[0];
-  const latestAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant');
+  const chatPreview = messages.slice(-4);
 
   const portfolio = useMemo(() => {
     const verifiedOutcomes = 5800;
@@ -147,33 +148,88 @@ export default function Actuary() {
           <section className="card" data-walkthrough="actuary-ask">
             <div className="flex items-center gap-2">
               <BrainCircuit size={16} className="text-accent" />
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Ask the Actuary</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Actuary Chat</h2>
             </div>
-            <textarea
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask about your portfolio..."
-              className="mt-4 h-28 w-full resize-none rounded border border-border bg-base p-3 text-sm text-primary outline-none placeholder:text-tertiary focus:border-accent/40"
-            />
-            <button
-              onClick={() => {
-                const text = query.trim();
-                if (!text || isStreaming) return;
-                setQuery('');
-                void sendMessage(text);
-              }}
-              disabled={isStreaming || query.trim().length === 0}
-              className="btn-primary mt-3 w-full text-xs disabled:opacity-40"
-            >
-              {isStreaming ? 'Thinking...' : 'Ask'}
-            </button>
-            <div className="mt-4 rounded border border-border bg-elevated p-3 text-xs leading-relaxed text-secondary">
-              Try: Which cohort is underpriced?
+            <p className="mt-2 text-xs leading-relaxed text-tertiary">
+              Ask for portfolio analysis, campaign advice, or underwriting implications.
+            </p>
+
+            <div className="mt-4 min-h-[220px] rounded-2xl border border-border bg-base/75 p-3">
+              {chatPreview.length > 0 ? (
+                <div className="flex max-h-[280px] flex-col gap-3 overflow-y-auto pr-1">
+                  {chatPreview.map((message) => (
+                    <CopilotMessage key={message.id} message={message} />
+                  ))}
+                  {isStreaming && chatPreview[chatPreview.length - 1]?.content === '' && (
+                    <div className="flex justify-start">
+                      <div className="flex gap-1 rounded-lg border border-border bg-elevated px-3 py-2">
+                        <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" />
+                        <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '200ms' }} />
+                        <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '400ms' }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex h-full flex-col justify-between gap-4">
+                  <div className="rounded-xl border border-border bg-surface/70 px-3 py-3 text-xs leading-relaxed text-secondary">
+                    Start a conversation with the AI Actuary. It uses the current partner context from this platform, not a generic chatbot prompt.
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      'Which cohort is underpriced?',
+                      'What is my verification success rate?',
+                      'Where is the weakest campaign in the portfolio?',
+                    ].map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        onClick={() => {
+                          setQuery('');
+                          void sendMessage(suggestion);
+                        }}
+                        disabled={isStreaming}
+                        className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-secondary transition-colors hover:border-accent/30 hover:text-primary disabled:opacity-40"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="mt-4 rounded border border-border bg-surface/70 p-3">
-              <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Latest response</div>
-              <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-secondary">
-                {latestAssistantMessage?.content || 'Ask a question to generate a live actuarial response.'}
+
+            <div className="mt-4 rounded-2xl border border-border bg-surface/70 p-3">
+              <textarea
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const text = query.trim();
+                    if (!text || isStreaming) return;
+                    setQuery('');
+                    void sendMessage(text);
+                  }
+                }}
+                placeholder="Ask about your portfolio..."
+                className="h-24 w-full resize-none bg-transparent text-sm text-primary outline-none placeholder:text-tertiary"
+              />
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="text-2xs text-tertiary">
+                  Press Enter to send. Shift+Enter for a new line.
+                </div>
+                <button
+                  onClick={() => {
+                    const text = query.trim();
+                    if (!text || isStreaming) return;
+                    setQuery('');
+                    void sendMessage(text);
+                  }}
+                  disabled={isStreaming || query.trim().length === 0}
+                  className="btn-primary text-xs disabled:opacity-40"
+                >
+                  {isStreaming ? 'Thinking...' : 'Send'}
+                </button>
               </div>
             </div>
           </section>
