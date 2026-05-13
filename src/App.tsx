@@ -1,6 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import Joyride, { STATUS } from 'react-joyride';
 import Layout from '@/components/layout/Layout';
 import Actuary from '@/pages/Actuary';
 import NetworkExplorer from '@/pages/NetworkExplorer';
@@ -14,7 +13,6 @@ import Settings from '@/pages/Settings';
 import DemoWalkthrough from '@/components/walkthrough/DemoWalkthrough';
 import ToastContainer from '@/components/ui/Toast';
 import { useDemoStore } from '@/stores/useDemoStore';
-import { tourSteps } from '@/utils/tourSteps';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import NotFound from '@/pages/NotFound';
 import FutureLayout from '@/future/FutureLayout';
@@ -25,8 +23,7 @@ import FutureDecisions from '@/future/pages/FutureDecisions';
 import FutureTrust from '@/future/pages/FutureTrust';
 
 export default function App() {
-  const [runTour, setRunTour] = useState(false);
-  const demoActive = useDemoStore((s) => s.isActive);
+  const startDemo = useDemoStore((s) => s.startDemo);
   const location = useLocation();
 
   useEffect(() => {
@@ -93,70 +90,13 @@ export default function App() {
   }, [location.pathname]);
 
   const handleTourStart = useCallback(() => {
-    setRunTour(true);
-  }, []);
-
-  const handleTourCallback = useCallback((data: { status: string }) => {
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status as typeof STATUS.FINISHED)) {
-      setRunTour(false);
-    }
-  }, []);
+    startDemo();
+  }, [startDemo]);
 
   return (
     <>
       <DemoWalkthrough />
       <ToastContainer />
-      <Joyride
-        steps={tourSteps}
-        run={runTour && !demoActive}
-        continuous
-        showSkipButton
-        showProgress
-        callback={handleTourCallback}
-        styles={{
-          options: {
-            arrowColor: '#FFFFFF',
-            backgroundColor: '#FFFFFF',
-            overlayColor: 'rgba(27, 42, 74, 0.4)',
-            primaryColor: '#E07A5F',
-            textColor: '#1B2A4A',
-            zIndex: 10000,
-          },
-          tooltip: {
-            borderRadius: '12px',
-            fontSize: '12px',
-            padding: '12px 16px',
-          },
-          tooltipTitle: {
-            fontSize: '13px',
-            fontWeight: 600,
-            marginBottom: '4px',
-          },
-          tooltipContent: {
-            fontSize: '12px',
-            lineHeight: '1.4',
-            color: '#4A5568',
-            padding: '8px 0',
-          },
-          buttonNext: {
-            backgroundColor: '#E07A5F',
-            borderRadius: '8px',
-            fontSize: '11px',
-            padding: '4px 12px',
-          },
-          buttonBack: {
-            color: '#4A5568',
-            fontSize: '11px',
-          },
-          buttonSkip: {
-            color: '#8896AB',
-            fontSize: '11px',
-          },
-          spotlight: {
-            borderRadius: '12px',
-          },
-        }}
-      />
       <ErrorBoundary fallbackTitle="Page failed to load">
         <Routes>
           <Route path="/" element={<Navigate to="/app/explorer" replace />} />
