@@ -19,6 +19,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
   const [widgetDismissed, setWidgetDismissed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const hideActuaryWidget = location.pathname === '/app/actuary' || location.pathname === '/app/campaigns/new';
 
   return (
     <div className="relative flex h-screen w-screen bg-base overflow-hidden">
@@ -62,7 +63,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
         </div>
       )}
 
-      {!copilotOpen && !widgetDismissed && location.pathname !== '/app/actuary' && (
+      {!copilotOpen && !widgetDismissed && !hideActuaryWidget && (
         <div className="group fixed bottom-5 right-4 z-30 w-[min(420px,calc(100vw-32px))] rounded-xl border border-border bg-elevated px-4 py-3 shadow-none">
           <button
             onClick={() => setWidgetDismissed(true)}

@@ -342,8 +342,18 @@ export default function CampaignCreate() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(560px,1fr)_minmax(480px,0.72fr)] 2xl:grid-cols-[minmax(680px,1fr)_560px]">
-        <div className="card">
+      <ActuarialROICalculator
+        metric={form.metric}
+        type={form.type}
+        useCase={form.useCase}
+        maxParticipants={Number(form.maxParticipants) || 0}
+        budgetCeiling={Number(form.budgetCeiling) || 0}
+        onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
+        variant="hero"
+      />
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="card p-5">
           {step === 0 && (
             <div className="space-y-4">
               <div>
@@ -735,16 +745,7 @@ export default function CampaignCreate() {
           )}
         </div>
 
-        <aside className="flex min-h-0 flex-col gap-4 xl:sticky xl:top-20 xl:self-start">
-          <ActuarialROICalculator
-            metric={form.metric}
-            type={form.type}
-            useCase={form.useCase}
-            maxParticipants={Number(form.maxParticipants) || 0}
-            budgetCeiling={Number(form.budgetCeiling) || 0}
-            onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
-          />
-
+        <aside className="flex min-h-0 flex-col gap-4 xl:self-start">
           <div className="card">
             <div className="metric-label mb-2">Live campaign summary</div>
             <div className="space-y-2 text-xs text-secondary">

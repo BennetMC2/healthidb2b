@@ -12,6 +12,7 @@ interface ActuarialROICalculatorProps {
   budgetCeiling: number;
   onApplySuggestedHP?: (hp: number) => void;
   showVNB?: boolean;
+  variant?: 'compact' | 'hero';
 }
 
 const EVIDENCE_COLORS: Record<string, { dot: string; value: string }> = {
@@ -28,8 +29,10 @@ export default function ActuarialROICalculator({
   budgetCeiling,
   onApplySuggestedHP,
   showVNB = false,
+  variant = 'compact',
 }: ActuarialROICalculatorProps) {
   const [mode, setMode] = useState<'gross' | 'adjusted'>('gross');
+  const isHero = variant === 'hero';
 
   const roi = useMemo(
     () =>
@@ -90,8 +93,8 @@ export default function ActuarialROICalculator({
   ];
 
   return (
-    <div className="card relative overflow-hidden border-accent/20 bg-elevated p-5 before:absolute before:left-0 before:right-0 before:top-0 before:h-[3px] before:bg-accent">
-      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className={`card relative overflow-hidden border-accent/20 bg-elevated before:absolute before:left-0 before:right-0 before:top-0 before:h-[3px] before:bg-accent ${isHero ? 'p-6' : 'p-5'}`}>
+      <div className={`mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${isHero ? 'xl:mb-6' : ''}`}>
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
             <TrendingUp size={20} className="text-accent" />
@@ -104,7 +107,7 @@ export default function ActuarialROICalculator({
             <h2 className="mt-1 font-display text-2xl font-semibold leading-tight text-primary">
               Campaign economics
             </h2>
-            <p className="mt-1 text-sm leading-relaxed text-secondary">
+            <p className={`mt-1 text-sm leading-relaxed text-secondary ${isHero ? 'max-w-[680px]' : ''}`}>
               The model updates as the campaign changes, pricing rewards from expected insurer value rather than marketing spend.
             </p>
           </div>
@@ -142,11 +145,11 @@ export default function ActuarialROICalculator({
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${isHero ? 'xl:grid-cols-3 2xl:grid-cols-6' : ''}`}>
         {projectionTiles.map((tile) => (
           <div key={tile.label} className="rounded-2xl border border-border bg-surface/70 p-4">
             <span className="metric-label block">{tile.label}</span>
-            <span className={`mt-2 block font-mono text-[1.85rem] font-semibold leading-none tracking-tight ${tile.tone}`}>
+            <span className={`mt-2 block font-mono font-semibold leading-none tracking-tight ${isHero ? 'text-[1.65rem]' : 'text-[1.85rem]'} ${tile.tone}`}>
               {tile.value}
             </span>
             <span className="mt-2 block text-xs leading-relaxed text-tertiary">{tile.detail}</span>
@@ -160,30 +163,29 @@ export default function ActuarialROICalculator({
       </div>
 
       {roi.isReady && (
-        <div className="mt-4 flex items-start gap-2 rounded-2xl border border-border bg-surface/70 p-3">
-          <Info size={14} className="mt-0.5 shrink-0 text-tertiary" />
-          <p className="text-xs leading-relaxed text-tertiary">
-            <span className="font-medium text-secondary">{roi.confidenceLabel}.</span>{' '}
-            Directional planning model based on literature, expected verified-life conversion, and outcome timing. Useful for prioritization, not certification.
-          </p>
-        </div>
-      )}
-
-      {roi.isReady && (
-        <div className="mt-4 flex items-start gap-2 rounded-2xl border border-border bg-surface/60 p-3">
-          <span
-            className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium ${
-              roi.evidenceLevel === 'high'
-                ? 'bg-success/10 text-success'
-                : roi.evidenceLevel === 'medium'
-                  ? 'bg-warning/10 text-warning'
-                  : 'bg-tertiary/10 text-tertiary'
-            }`}
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${evidence.dot}`} />
-            {roi.evidenceLevel} evidence
-          </span>
-          <span className="text-xs leading-relaxed text-tertiary">{roi.evidenceNote}</span>
+        <div className={`mt-4 grid grid-cols-1 gap-3 ${isHero ? 'lg:grid-cols-2' : ''}`}>
+          <div className="flex items-start gap-2 rounded-2xl border border-border bg-surface/70 p-3">
+            <Info size={14} className="mt-0.5 shrink-0 text-tertiary" />
+            <p className="text-xs leading-relaxed text-tertiary">
+              <span className="font-medium text-secondary">{roi.confidenceLabel}.</span>{' '}
+              Directional planning model based on literature, expected verified-life conversion, and outcome timing. Useful for prioritization, not certification.
+            </p>
+          </div>
+          <div className="flex items-start gap-2 rounded-2xl border border-border bg-surface/60 p-3">
+            <span
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium ${
+                roi.evidenceLevel === 'high'
+                  ? 'bg-success/10 text-success'
+                  : roi.evidenceLevel === 'medium'
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-tertiary/10 text-tertiary'
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${evidence.dot}`} />
+              {roi.evidenceLevel} evidence
+            </span>
+            <span className="text-xs leading-relaxed text-tertiary">{roi.evidenceNote}</span>
+          </div>
         </div>
       )}
 
