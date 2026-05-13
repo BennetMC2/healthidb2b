@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ComplianceOnboarding from '@/components/onboarding/ComplianceOnboarding';
-import { ShieldCheck, ShieldOff, FileText, Clock, Download } from 'lucide-react';
+import { ShieldCheck, ShieldOff, FileText, Clock, Download, X, KeyRound } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
@@ -13,6 +13,7 @@ import { formatNumber, formatTimestamp, formatDuration, formatHash, formatCurren
 import { DATA_SOURCE_LABELS } from '@/utils/constants';
 import { exportToCSV, exportToJSON } from '@/utils/export';
 import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
+import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
 import { useToastStore } from '@/stores/useToastStore';
 import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import type { ComplianceRecord, ComplianceEventType } from '@/types';
@@ -82,6 +83,7 @@ export default function Compliance() {
   const [eventFilter, setEventFilter] = useState<ComplianceEventType | 'all'>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [selectedRecord, setSelectedRecord] = useState<ComplianceRecord | null>(null);
   const addToast = useToastStore((s) => s.addToast);
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const loading = useSimulatedLoading(500);
@@ -129,12 +131,12 @@ export default function Compliance() {
       piiAccessed: 'false',
       details: r.details,
     }));
-    if (format === 'csv') {
+        if (format === 'csv') {
       exportToCSV(data, `audit-log-${new Date().toISOString().split('T')[0]}.csv`);
     } else {
       exportToJSON(data, `audit-log-${new Date().toISOString().split('T')[0]}.json`);
     }
-    addToast({ message: `Audit log exported as ${format.toUpperCase()}`, variant: 'success' });
+    addToast({ message: `Audit log exported as signed ${format.toUpperCase()} package`, variant: 'success' });
   };
 
   const stats = useMemo(() => {
@@ -241,6 +243,30 @@ export default function Compliance() {
         </div>
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
+        <ProofReceiptAnimation />
+        <div className="card flex flex-col justify-center">
+          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Receipt scheme</div>
+          <p className="mt-2 text-sm leading-relaxed text-primary">
+            zk-SNARK proof receipt over a partner-specific cohort rule. The partner receives event status, proof hash, circuit reference, and retention metadata, not raw biometric values.
+          </p>
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="rounded border border-border bg-base/60 px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Circuit</div>
+              <div className="mt-1 font-mono text-xs text-primary">plonk_health_v2</div>
+            </div>
+            <div className="rounded border border-border bg-base/60 px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Verifier</div>
+              <div className="mt-1 font-mono text-xs text-primary">Moca testnet</div>
+            </div>
+            <div className="rounded border border-border bg-base/60 px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Retention</div>
+              <div className="mt-1 font-mono text-xs text-primary">14-day default</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <select
@@ -289,10 +315,10 @@ export default function Compliance() {
         </p>
         <div className="flex items-center gap-1">
           <button onClick={() => handleExport('csv')} className="btn-ghost text-xs">
-            <Download size={12} /> CSV
+            <Download size={12} /> Signed CSV
           </button>
           <button onClick={() => handleExport('json')} className="btn-ghost text-xs">
-            <Download size={12} /> JSON
+            <Download size={12} /> Signed JSON
           </button>
         </div>
       </div>
@@ -301,7 +327,7 @@ export default function Compliance() {
       <div>
         {tab === 'audit' && (
           <div className="card p-0 overflow-hidden">
-            <DataTable data={filteredRecords} columns={auditColumns} pageSize={20} />
+            <DataTable data={filteredRecords} columns={auditColumns} pageSize={20} onRowClick={setSelectedRecord} />
           </div>
         )}
 
@@ -344,6 +370,52 @@ export default function Compliance() {
           </div>
         )}
       </div>
+
+      {selectedRecord && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-primary/30 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Receipt detail">
+          <button className="flex-1 cursor-default" onClick={() => setSelectedRecord(null)} aria-label="Close receipt detail" />
+          <aside className="h-full w-[min(520px,96vw)] overflow-y-auto border-l border-border bg-surface shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border bg-surface/95 px-5 py-4 backdrop-blur">
+              <div>
+                <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Receipt detail</div>
+                <h2 className="mt-2 text-lg font-semibold text-primary">{eventTypeLabels[selectedRecord.eventType]}</h2>
+              </div>
+              <button onClick={() => setSelectedRecord(null)} className="rounded p-1 text-tertiary hover:bg-hover hover:text-primary" aria-label="Close receipt detail">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="space-y-4 px-5 py-5">
+              <ProofReceiptAnimation compact />
+              <div className="rounded-lg border border-border bg-base/60 p-4">
+                <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">
+                  <KeyRound size={13} /> Proof hash
+                </div>
+                <div className="mt-2 break-all font-mono text-sm text-primary">{selectedRecord.proofHash ?? 'Pending proof hash'}</div>
+              </div>
+              <div className="grid gap-2">
+                {[
+                  ['Timestamp', formatTimestamp(selectedRecord.timestamp)],
+                  ['Partner token', selectedRecord.partnerId],
+                  ['Campaign', selectedRecord.campaignId ?? 'Portfolio-level event'],
+                  ['ZK circuit', 'plonk_health_v2'],
+                  ['Verifier address', '0x4fd8…91c2'],
+                  ['Raw data access', '0 exposures'],
+                  ['Retention date', '14 days from event'],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded border border-border bg-surface px-3 py-2">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">{label}</div>
+                    <div className="mt-1 text-sm text-primary">{value}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-lg border border-accent/20 bg-accent/10 p-4">
+                <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Event details</div>
+                <p className="mt-2 text-sm leading-relaxed text-primary">{selectedRecord.details}</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }

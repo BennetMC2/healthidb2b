@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Target, Globe, ShieldCheck, X } from 'lucide-react';
+import { Search, Target, Globe, ShieldCheck, X, BrainCircuit, Moon, Building2 } from 'lucide-react';
 import { campaigns, identities, complianceRecords } from '@/data';
+import { useThemeStore } from '@/stores/useThemeStore';
+import { usePartnerStore } from '@/stores/usePartnerStore';
 
 interface SearchResult {
   id: string;
@@ -20,6 +22,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const { allPartners, setCurrentPartner } = usePartnerStore();
 
   useEffect(() => {
     if (open) {
@@ -94,6 +98,15 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
 
   if (!open) return null;
 
+  const commands = [
+    { id: 'ask', label: 'Ask the Actuary Copilot', sublabel: 'Open the AI Actuary command center and focus the input', icon: BrainCircuit, action: () => navigate('/app/actuary?focusCopilot=1') },
+    { id: 'plays', label: "Show today's opportunities", sublabel: 'Review wearable signal campaigns', icon: Target, action: () => navigate('/app/actuary') },
+    { id: 'campaigns', label: 'Go to Campaign Studio', sublabel: 'Open campaign portfolio and builder', icon: Target, action: () => navigate('/app/campaigns') },
+    { id: 'pool', label: 'Go to Member Pool', sublabel: 'Explore anonymous cohorts', icon: Globe, action: () => navigate('/app/explorer') },
+    { id: 'trail', label: 'Go to Verification Trail', sublabel: 'Audit proof receipts', icon: ShieldCheck, action: () => navigate('/app/compliance') },
+    { id: 'theme', label: 'Toggle dark mode', sublabel: 'Switch presentation theme', icon: Moon, action: () => toggleTheme() },
+  ];
+
   return (
     <div className="fixed inset-0 z-[9800] flex items-start justify-center pt-[15vh]" onClick={onClose}>
       <div className="absolute inset-0 bg-base/60 backdrop-blur-sm" />
@@ -148,8 +161,44 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         )}
 
         {!query.trim() && (
-          <div className="px-4 py-4 text-center text-2xs text-tertiary">
-            Start typing to search across campaigns, identities, and compliance events
+          <div className="max-h-[420px] overflow-auto py-2">
+            <div className="px-4 pb-2 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Commands</div>
+            {commands.map((command) => {
+              const Icon = command.icon;
+              return (
+                <button
+                  key={command.id}
+                  onClick={() => {
+                    command.action();
+                    onClose();
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-hover"
+                >
+                  <Icon size={14} className="text-accent/70" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs text-primary">{command.label}</div>
+                    <div className="text-2xs text-tertiary">{command.sublabel}</div>
+                  </div>
+                </button>
+              );
+            })}
+            <div className="mt-2 px-4 pb-2 pt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Switch partner</div>
+            {allPartners.map((partner) => (
+              <button
+                key={partner.id}
+                onClick={() => {
+                  setCurrentPartner(partner.id);
+                  onClose();
+                }}
+                className="flex w-full items-center gap-3 px-4 py-2 text-left transition-colors hover:bg-hover"
+              >
+                <Building2 size={14} className="text-accent/70" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs text-primary">{partner.label}</div>
+                  <div className="text-2xs text-tertiary">Load partner-specific portfolio</div>
+                </div>
+              </button>
+            ))}
           </div>
         )}
       </div>

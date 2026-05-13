@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { BrainCircuit, ExternalLink, Sparkles, Target, X } from 'lucide-react';
 import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
@@ -7,6 +7,9 @@ import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
 import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
+import { getPartnerPortfolio } from '@/data/partnerPortfolios';
+import { ActuaryBrainMark, FDECard, PartnerPortfolioBand, ProofReceiptAnimation, ResearchFeed } from '@/components/enterprise/EnterpriseWidgets';
+import { useScanClock } from '@/hooks/useScanClock';
 import type { CampaignTemplate, DataSource, HealthMetric } from '@/types';
 
 function confidenceLabel(confidence: ActuaryConfidence) {
@@ -194,11 +197,40 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
             </div>
           </section>
 
+          <section className="rounded-lg border border-border bg-base/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Receipt samples</h3>
+            <p className="mt-2 text-xs leading-relaxed text-secondary">
+              Sample proof receipts available for diligence. Each receipt is a binary outcome against the campaign rule, with raw wearable history retained on the member side.
+            </p>
+            <div className="mt-3 grid gap-2">
+              {['0xba95b0…f07ab18c', '0x51d8b5…cea485ca', '0x7e34c2…912ad4bf'].map((hash, index) => (
+                <div key={hash} className="flex items-center justify-between gap-3 rounded border border-border bg-surface px-3 py-2">
+                  <span className="font-mono text-xs text-primary">receipt_{index + 1} · {hash}</span>
+                  <span className="badge bg-success-muted border-success/20 text-success">verified</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section className="rounded-lg border border-accent/20 bg-accent/10 p-4">
             <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Counterfactual</div>
             <p className="mt-2 text-sm leading-relaxed text-primary">
               If no campaign is launched, the model estimates {formatCurrencyCompact(insight.evidence.counterfactualUsd)} of unrealised book-value improvement over the next 12 months.
             </p>
+          </section>
+
+          <section className="rounded-lg border border-border bg-base/60 p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Methodology</h3>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {[
+                'Actuarial credibility: cohort volume x source quality',
+                'Causal adjustment: behaviour-change response discount',
+                'Evidence grading: peer-reviewed support only',
+                'Conservative anchoring: bottom-quartile response case',
+              ].map((item) => (
+                <div key={item} className="rounded border border-border bg-surface px-3 py-2 text-xs text-secondary">{item}</div>
+              ))}
+            </div>
           </section>
         </div>
 
@@ -210,6 +242,7 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
             Create campaign from this insight
           </button>
           <button className="btn-ghost text-xs">Save to watchlist</button>
+          <button className="btn-ghost text-xs">Export signed evidence pack</button>
           <button className="btn-ghost text-xs">Dismiss with reason</button>
         </div>
       </aside>
@@ -287,43 +320,63 @@ function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onE
 }
 
 export default function Actuary() {
+  const location = useLocation();
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const { messages, isStreaming, sendMessage } = useCopilotStore();
   const [query, setQuery] = useState('');
+  const copilotInputRef = useRef<HTMLTextAreaElement>(null);
   const [evidenceInsight, setEvidenceInsight] = useState<ActuaryInsight | null>(null);
   const playsRef = useRef<HTMLDivElement>(null);
-  const topInsight = actuaryInsights[0];
+  const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
+  const scanClock = useScanClock();
   const chatPreview = messages.slice(-4);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('focusCopilot') === '1') {
+      window.setTimeout(() => copilotInputRef.current?.focus(), 120);
+    }
+  }, [location.search]);
+
   const portfolio = useMemo(() => {
-    const verifiedOutcomes = 8289;
+    const verifiedOutcomes = partnerPortfolio.verifiedReceipts;
     const liabilityAvoided = liabilityAvoidedFromReceipts(verifiedOutcomes);
-    const avgTrust = 'High';
+    const avgTrust = partnerPortfolio.avgTrust;
 
     return { verifiedOutcomes, liabilityAvoided, avgTrust };
-  }, []);
+  }, [partnerPortfolio]);
 
   return (
     <div className="space-y-4">
-      <section className="card bg-surface" data-walkthrough="actuary-hero">
+      <section className="command-surface p-5" data-walkthrough="actuary-hero">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-              Live · Last scan 09:14 HKT · Next scan in 46 min
+              Live · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}
             </div>
             <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · AI Actuary</h1>
             <p className="mt-2 text-sm text-secondary">
-              Campaign intelligence cockpit monitoring verified wearable signals across 36,000 lives: VO2 Max, HRV, sleep, and resting heart rate.
+              Campaign intelligence cockpit monitoring verified wearable signals across {formatNumber(partnerPortfolio.lives)} lives. Lead signal: {partnerPortfolio.leadSignal}.
             </p>
+            <div className="mt-4 rounded-xl border border-accent/15 bg-accent/10 px-4 py-3">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Today's brief</div>
+              <p className="mt-1 max-w-4xl text-sm leading-relaxed text-primary">{partnerPortfolio.morningBrief}</p>
+            </div>
           </div>
-          <button
-            onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-            className="btn-primary text-xs"
-          >
-            <Sparkles size={14} />
-            Show campaign plays
-          </button>
+          <div className="flex items-center gap-3">
+            <ActuaryBrainMark />
+            <button
+              onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="btn-primary text-xs"
+            >
+              <Sparkles size={14} />
+              Show campaign plays
+            </button>
+          </div>
+        </div>
+        <div className="mt-5">
+          <PartnerPortfolioBand portfolio={partnerPortfolio} />
         </div>
       </section>
 
@@ -361,6 +414,7 @@ export default function Actuary() {
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+          <ProofReceiptAnimation compact />
           <section className="card" data-walkthrough="actuary-portfolio">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
             <div className="mt-4 grid gap-2">
@@ -369,6 +423,9 @@ export default function Actuary() {
               <OutputTile label="Avg trust" value={portfolio.avgTrust} />
             </div>
           </section>
+
+          <ResearchFeed portfolio={partnerPortfolio} />
+          <FDECard portfolio={partnerPortfolio} />
 
           <section className="card overflow-hidden p-0" data-walkthrough="actuary-ask">
             <div className="border-b border-border px-4 py-4">
@@ -434,6 +491,7 @@ export default function Actuary() {
 
                 <div className="border-t border-border bg-surface px-3 py-3">
                   <textarea
+                    ref={copilotInputRef}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={(e) => {
@@ -467,18 +525,6 @@ export default function Actuary() {
                   </div>
                 </div>
               </div>
-            </div>
-          </section>
-
-          <section className="card">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Six-output model</h2>
-            <div className="mt-4 grid gap-2">
-              <OutputTile label="Claims reduction" value={formatPercent(topInsight.outputs.claimsReductionPct / 100)} />
-              <OutputTile label="Projected savings" value={formatCurrencyCompact(topInsight.outputs.projectedSavingsUsd)} />
-              <OutputTile label="Budget ROI" value={`${topInsight.outputs.budgetRoiMultiple.toFixed(1)}x`} />
-              <OutputTile label="Suggested HP" value={`${topInsight.outputs.suggestedHpYield} HP`} />
-              <OutputTile label="Morbidity shift" value={`${topInsight.outputs.morbidityShiftBps} bps`} />
-              <OutputTile label="Payback period" value={`${topInsight.outputs.paybackMonths} mo`} />
             </div>
           </section>
         </aside>

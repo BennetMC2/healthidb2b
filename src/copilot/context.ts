@@ -5,11 +5,13 @@ import { verifications } from '@/data/verifications';
 import { treasuryState } from '@/data/treasury';
 import { complianceRecords } from '@/data/compliance';
 import { useCampaignStore } from '@/stores/useCampaignStore';
+import { getPartnerPortfolio } from '@/data/partnerPortfolios';
 
 export function buildDataContext(partner: Partner, currentPage?: string): DataContext {
   // ── Campaigns scoped to partner ──
   const allCampaigns: Campaign[] = useCampaignStore.getState().campaigns;
   const partnerCampaigns = allCampaigns.filter((c) => c.partnerId === partner.id);
+  const portfolio = getPartnerPortfolio(partner.id);
   const activeCampaigns = partnerCampaigns.filter((c) => c.status === 'active');
   const completedCampaigns = partnerCampaigns.filter((c) => c.status === 'completed');
   const draftCampaigns = partnerCampaigns.filter((c) => c.status === 'draft');
@@ -80,6 +82,9 @@ export function buildDataContext(partner: Partner, currentPage?: string): DataCo
       name: partner.label,
       tier: partner.tier,
       industry: partner.industry,
+      portfolioBrief: portfolio.morningBrief,
+      lives: portfolio.lives,
+      leadSignal: portfolio.leadSignal,
     },
     campaigns: {
       total: partnerCampaigns.length,
@@ -120,6 +125,7 @@ export function buildDataContext(partner: Partner, currentPage?: string): DataCo
       byEventType,
       piiAccessEvents: 0,
       recentFailures,
+      verifiedReceipts: portfolio.verifiedReceipts,
     },
   };
 }

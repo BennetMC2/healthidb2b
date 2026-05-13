@@ -33,6 +33,10 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
         e.preventDefault();
         setPaletteOpen(true);
       }
+      if (e.key === '/' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setPaletteOpen(true);
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
@@ -115,6 +119,9 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
               </option>
             ))}
           </select>
+          <span className="hidden h-[30px] items-center rounded border border-accent/20 bg-accent/10 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-accent lg:flex">
+            Demo partner
+          </span>
 
           {/* Dark mode toggle */}
           <button

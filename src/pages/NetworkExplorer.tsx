@@ -23,6 +23,8 @@ import {
 } from '@/utils/constants';
 import { useDemoStore } from '@/stores/useDemoStore';
 import { useCampaignStore } from '@/stores/useCampaignStore';
+import { usePartnerStore } from '@/stores/usePartnerStore';
+import { getPartnerPortfolio } from '@/data/partnerPortfolios';
 import type { HealthIdentity, ReputationTier, DataSource, FilterState } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -50,8 +52,10 @@ export default function NetworkExplorer() {
   const notifyUserAction = useDemoStore((s) => s.notifyUserAction);
   const addToast = useToastStore((s) => s.addToast);
   const campaigns = useCampaignStore((s) => s.campaigns);
+  const currentPartner = usePartnerStore((s) => s.currentPartner);
   const loading = useSimulatedLoading(600);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
 
   const campaignId = new URLSearchParams(location.search).get('campaignId');
   const scopedCampaign = useMemo(
@@ -115,11 +119,20 @@ export default function NetworkExplorer() {
     { accessorKey: 'riskCohort', header: 'Risk Cohort', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<string>()}</span> },
     { accessorKey: 'connectedSources', header: 'Sources', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<DataSource[]>().length}</span> },
     { accessorKey: 'verificationCount', header: 'Verifications', cell: ({ getValue }) => <span className="font-mono text-xs text-secondary">{getValue<number>()}</span> },
-    { accessorKey: 'lastVerified', header: 'Last Verified', cell: ({ getValue }) => {
+    { accessorKey: 'lastVerified', header: 'Freshness', cell: ({ getValue }) => {
       const v = getValue<string | null>();
-      return v ? <span className="text-2xs text-tertiary">{formatRelativeTime(v)}</span> : <span className="text-2xs text-tertiary">—</span>;
+      if (!v) return <span className="text-2xs text-tertiary">—</span>;
+      const days = Math.floor((Date.now() - new Date(v).getTime()) / (24 * 60 * 60 * 1000));
+      const label = days <= 30 ? 'Fresh' : days <= 90 ? 'Stale' : 'Lapsed';
+      const tone = days <= 30 ? 'text-success border-success/20 bg-success-muted' : days <= 90 ? 'text-warning border-warning/20 bg-warning-muted' : 'text-error border-error/20 bg-error-muted';
+      return (
+        <div className="flex flex-col gap-1">
+          <span className={`badge ${tone}`}>{label}</span>
+          <span className="text-2xs text-tertiary">{formatRelativeTime(v)}</span>
+        </div>
+      );
     }},
-    { accessorKey: 'enrolledCampaigns', header: 'Enrolled', cell: ({ getValue }) => <span className="font-mono text-xs text-secondary">{getValue<number>()}</span> },
+    { accessorKey: 'enrolledCampaigns', header: 'Active Campaigns', cell: ({ getValue }) => <span className="font-mono text-xs text-secondary">{getValue<number>()}</span> },
     { accessorKey: 'demographics', header: 'Age', cell: ({ getValue }) => <span className="text-xs text-tertiary">{getValue<HealthIdentity['demographics']>().ageRange}</span> },
   ];
 
@@ -140,7 +153,43 @@ export default function NetworkExplorer() {
     <div className="flex flex-col gap-4">
       {showOnboarding && <ExplorerOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader as="h1" title="Member Pool" description="Reachable members available for campaign enrollment. Teams target cohorts using consented signals and trust tiers, never raw health records." icon={<Globe size={16} />} />
+      <SectionHeader
+        as="h1"
+        title="Member Pool"
+        description="Reachable members for Health Points campaigns, segmented by consented signals and trust tiers."
+        icon={<Globe size={16} />}
+        className="xl:[&_p]:max-w-none xl:[&_p]:whitespace-nowrap"
+      />
+
+      <div className="command-surface p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Partner-linked pool</div>
+            <h2 className="mt-1 text-xl font-semibold text-primary">{currentPartner.label}</h2>
+            <p className="mt-1 text-sm text-secondary">{partnerPortfolio.switcherNote}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[520px]">
+            <div className="rounded border border-border bg-surface px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Linked lives</div>
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">{formatNumber(Math.round(partnerPortfolio.lives * 0.51))}</div>
+            </div>
+            <div className="rounded border border-border bg-surface px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Lead signal</div>
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">{partnerPortfolio.leadSignal}</div>
+            </div>
+            <div className="rounded border border-border bg-surface px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Avg sources</div>
+              <div className="mt-1 font-mono text-sm font-semibold text-primary">
+                {(filtered.reduce((s, i) => s + i.connectedSources.length, 0) / Math.max(filtered.length, 1)).toFixed(1)}
+              </div>
+            </div>
+            <div className="rounded border border-border bg-surface px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Ready rule</div>
+              <div className="mt-1 text-xs font-medium text-primary">2+ sources · 30d proof</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {scopedCampaign && (
         <div className="card-elevated border-accent/15">
@@ -213,7 +262,7 @@ export default function NetworkExplorer() {
         <MetricCard
           label="Verification-Ready"
           value={formatNumber(filtered.filter((i) => i.verificationCount > 0).length)}
-          subValue={`${((filtered.filter((i) => i.verificationCount > 0).length / Math.max(filtered.length, 1)) * 100).toFixed(1)}%`}
+          subValue={`${((filtered.filter((i) => i.verificationCount > 0).length / Math.max(filtered.length, 1)) * 100).toFixed(1)}% of pool`}
           icon={<Users size={14} />}
         />
         <MetricCard

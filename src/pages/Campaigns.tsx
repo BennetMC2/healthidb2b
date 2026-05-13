@@ -9,6 +9,7 @@ import { StatusBadge, TypeBadge, MetricBadge } from '@/components/ui/Badge';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrencyCompact } from '@/utils/format';
+import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
 import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
@@ -269,6 +270,15 @@ function TemplateIcon({ icon }: { icon: string }) {
   return <Target size={15} className={className} />;
 }
 
+function OutputTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded border border-border bg-surface px-3 py-2">
+      <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">{label}</div>
+      <div className="mt-1 font-mono text-sm font-semibold text-primary">{value}</div>
+    </div>
+  );
+}
+
 function campaignFamily(campaign: Pick<Campaign, 'name' | 'useCase'>): CampaignFamily {
   if (campaign.name === 'Device Connection Activation') return 'engagement';
   if (campaign.useCase === 'acquisition') return 'acquisition';
@@ -296,6 +306,7 @@ export default function Campaigns() {
   const [statusFilter, setStatusFilter] = useState<'all' | CampaignStatus>('all');
   const [familyFilter, setFamilyFilter] = useState<CampaignFamily>('signal');
   const [selectedTemplateId, setSelectedTemplateId] = useState(campaignTemplates[0]?.id ?? '');
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Partner-scoped campaigns
@@ -354,6 +365,10 @@ export default function Campaigns() {
   const portfolioRows = useMemo(() => {
     return filtered.slice(0, 8);
   }, [filtered]);
+
+  const selectedPortfolioCampaign = useMemo(() => {
+    return portfolioRows.find((campaign) => campaign.id === selectedPortfolioId) ?? portfolioRows[0] ?? null;
+  }, [portfolioRows, selectedPortfolioId]);
 
   if (loading) {
     return (
@@ -470,48 +485,80 @@ export default function Campaigns() {
           })}
         </div>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[760px] text-left text-xs">
-            <thead className="border-y border-border text-[11px] uppercase tracking-[0.12em] text-tertiary">
-              <tr>
-                <th className="py-2 pr-3 font-mono">Campaign</th>
-                <th className="py-2 pr-3 font-mono">Family</th>
-                <th className="py-2 pr-3 font-mono">Audience</th>
-                <th className="py-2 pr-3 font-mono">Budget</th>
-                <th className="py-2 pr-3 font-mono">Status</th>
-                <th className="py-2 pr-3 font-mono">Verified</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {portfolioRows.map((campaign) => (
-                <tr key={campaign.id} className="hover:bg-hover/60">
-                  <td className="py-2 pr-3">
-                    <button
-                      onClick={() => navigate(`/app/campaigns/${campaign.id}`)}
-                      className="font-medium text-primary hover:text-accent"
-                    >
-                      {campaign.name}
-                    </button>
-                    <div className="mt-0.5 max-w-[360px] truncate text-2xs text-tertiary">{campaign.description}</div>
-                  </td>
-                  <td className="py-2 pr-3">
-                    <span className="badge bg-elevated border-border text-secondary">{portfolioFamilyLabel(campaign)}</span>
-                  </td>
-                  <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.eligible)}</td>
-                  <td className="py-2 pr-3 font-mono text-secondary">{formatCurrencyCompact(campaign.rewards.budgetCeiling)}</td>
-                  <td className="py-2 pr-3"><StatusBadge status={campaign.status} /></td>
-                  <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.verified)}</td>
+        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+            <table className="w-full min-w-[760px] text-left text-xs">
+              <thead className="border-b border-border text-[11px] uppercase tracking-[0.12em] text-tertiary">
+                <tr>
+                  <th className="py-2 pl-3 pr-3 font-mono">Campaign</th>
+                  <th className="py-2 pr-3 font-mono">Family</th>
+                  <th className="py-2 pr-3 font-mono">Audience</th>
+                  <th className="py-2 pr-3 font-mono">Budget</th>
+                  <th className="py-2 pr-3 font-mono">Status</th>
+                  <th className="py-2 pr-3 font-mono">Verified</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {portfolioRows.length === 0 && (
-            <EmptyState
-              icon={<Filter size={20} className="text-tertiary" />}
-              title="No campaigns match the current filters"
-              description="Adjust the programme type or status filter to broaden the results."
-              action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
-            />
+              </thead>
+              <tbody className="divide-y divide-border">
+                {portfolioRows.map((campaign) => (
+                  <tr
+                    key={campaign.id}
+                    onClick={() => setSelectedPortfolioId(campaign.id)}
+                    className={`cursor-pointer hover:bg-hover/60 ${selectedPortfolioCampaign?.id === campaign.id ? 'bg-accent/10' : ''}`}
+                  >
+                    <td className="py-2 pl-3 pr-3">
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/app/campaigns/${campaign.id}`);
+                        }}
+                        className="font-medium text-primary hover:text-accent"
+                      >
+                        {campaign.name}
+                      </button>
+                      <div className="mt-0.5 max-w-[360px] truncate text-2xs text-tertiary">{campaign.description}</div>
+                    </td>
+                    <td className="py-2 pr-3">
+                      <span className="badge bg-elevated border-border text-secondary">{portfolioFamilyLabel(campaign)}</span>
+                    </td>
+                    <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.eligible)}</td>
+                    <td className="py-2 pr-3 font-mono text-secondary">{formatCurrencyCompact(campaign.rewards.budgetCeiling)}</td>
+                    <td className="py-2 pr-3"><StatusBadge status={campaign.status} /></td>
+                    <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.verified)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {portfolioRows.length === 0 && (
+              <EmptyState
+                icon={<Filter size={20} className="text-tertiary" />}
+                title="No campaigns match the current filters"
+                description="Adjust the programme type or status filter to broaden the results."
+                action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
+              />
+            )}
+          </div>
+
+          {selectedPortfolioCampaign && (
+            <aside className="rounded-xl border border-border bg-base/70 p-3">
+              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Selected campaign</div>
+              <h3 className="mt-2 text-lg font-semibold text-primary">{selectedPortfolioCampaign.name}</h3>
+              <p className="mt-2 text-xs leading-relaxed text-secondary">{selectedPortfolioCampaign.description}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                <OutputTile label="Eligible" value={formatNumber(selectedPortfolioCampaign.funnel.eligible)} />
+                <OutputTile label="Verified" value={formatNumber(selectedPortfolioCampaign.funnel.verified)} />
+                <OutputTile label="Budget" value={formatCurrencyCompact(selectedPortfolioCampaign.rewards.budgetCeiling)} />
+                <OutputTile label="HP price" value={`${selectedPortfolioCampaign.rewards.pointsPerVerification} HP`} />
+              </div>
+              <div className="mt-4">
+                <ProofReceiptAnimation compact />
+              </div>
+              <button
+                onClick={() => navigate(`/app/campaigns/${selectedPortfolioCampaign.id}`)}
+                className="btn-primary mt-4 w-full text-xs"
+              >
+                Open performance page
+              </button>
+            </aside>
           )}
         </div>
       </section>
