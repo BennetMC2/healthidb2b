@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TrendingUp, Info } from 'lucide-react';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format';
-import { calculateActuarialROI, getMetricComparisons } from '@/utils/actuarial';
+import { calculateActuarialROI } from '@/utils/actuarial';
 import type { CampaignType, CampaignUseCase, HealthMetric } from '@/types';
 
 interface ActuarialROICalculatorProps {
@@ -93,11 +93,6 @@ export default function ActuarialROICalculator({
   );
 
   const evidence = EVIDENCE_COLORS[roi.evidenceLevel] ?? EVIDENCE_COLORS.low;
-  const comparisons = useMemo(
-    () => (roi.isReady ? getMetricComparisons(useCase, type, metric) : []),
-    [useCase, type, metric, roi.isReady],
-  );
-  const maxSavings = comparisons.length > 0 ? comparisons[0].savingsPerMember : 1;
   const projectionTiles = [
     {
       label: copy.primaryRate,
@@ -231,28 +226,6 @@ export default function ActuarialROICalculator({
             </span>
             <span className="text-xs leading-relaxed text-tertiary">{roi.evidenceNote}</span>
           </div>
-        </div>
-      )}
-
-      {roi.isReady && comparisons.length > 0 && (
-        <div className="mt-5 space-y-2">
-          <span className="metric-label block">Signal ranking · conservative {copy.framingLabel} / targeted member</span>
-          {comparisons.map((comparison) => (
-            <div key={comparison.metric} className="flex items-center gap-2">
-              <span className={`w-32 truncate text-xs ${comparison.isSelected ? 'font-medium text-accent' : 'text-tertiary'}`}>
-                {comparison.label}
-              </span>
-              <div className="h-1.5 flex-1 rounded-full bg-border">
-                <div
-                  className={`h-full rounded-full ${comparison.isSelected ? 'bg-accent/70' : 'bg-secondary/35'}`}
-                  style={{ width: `${(comparison.savingsPerMember / maxSavings) * 100}%` }}
-                />
-              </div>
-              <span className={`w-12 text-right font-mono text-xs ${comparison.isSelected ? 'font-medium text-accent' : 'text-tertiary'}`}>
-                ${comparison.savingsPerMember.toFixed(0)}
-              </span>
-            </div>
-          ))}
         </div>
       )}
 
