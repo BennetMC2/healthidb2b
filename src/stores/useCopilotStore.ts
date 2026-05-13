@@ -58,7 +58,7 @@ export const useCopilotStore = create<CopilotStore>((set, get) => ({
     try {
       const provider = getProvider();
       const allMessages = get().messages;
-      const stream = provider.generateResponse(allMessages, context);
+      const stream = provider.generateResponse(allMessages, context, { signal: abort.signal });
 
       let accumulated = '';
       for await (const chunk of stream) {

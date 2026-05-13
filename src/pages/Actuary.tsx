@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BrainCircuit, ExternalLink, Sparkles, Target } from 'lucide-react';
 import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
+import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatCurrency, formatNumber, formatPercent } from '@/utils/format';
 
@@ -68,8 +69,10 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
 
 export default function Actuary() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
+  const { messages, isStreaming, sendMessage } = useCopilotStore();
   const [query, setQuery] = useState('');
   const topInsight = actuaryInsights[0];
+  const latestAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant');
 
   const portfolio = useMemo(() => {
     const verifiedOutcomes = 5800;
@@ -132,7 +135,7 @@ export default function Actuary() {
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
-          <section className="card" data-walkthrough="actuary-ask">
+          <section className="card" data-walkthrough="actuary-portfolio">
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
             <div className="mt-4 grid gap-2">
               <OutputTile label="Verified outcomes" value={formatNumber(portfolio.verifiedOutcomes)} />
@@ -141,7 +144,7 @@ export default function Actuary() {
             </div>
           </section>
 
-          <section className="card">
+          <section className="card" data-walkthrough="actuary-ask">
             <div className="flex items-center gap-2">
               <BrainCircuit size={16} className="text-accent" />
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Ask the Actuary</h2>
@@ -152,9 +155,26 @@ export default function Actuary() {
               placeholder="Ask about your portfolio..."
               className="mt-4 h-28 w-full resize-none rounded border border-border bg-base p-3 text-sm text-primary outline-none placeholder:text-tertiary focus:border-accent/40"
             />
-            <button className="btn-primary mt-3 w-full text-xs">Ask</button>
+            <button
+              onClick={() => {
+                const text = query.trim();
+                if (!text || isStreaming) return;
+                setQuery('');
+                void sendMessage(text);
+              }}
+              disabled={isStreaming || query.trim().length === 0}
+              className="btn-primary mt-3 w-full text-xs disabled:opacity-40"
+            >
+              {isStreaming ? 'Thinking...' : 'Ask'}
+            </button>
             <div className="mt-4 rounded border border-border bg-elevated p-3 text-xs leading-relaxed text-secondary">
               Try: Which cohort is underpriced?
+            </div>
+            <div className="mt-4 rounded border border-border bg-surface/70 p-3">
+              <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Latest response</div>
+              <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-secondary">
+                {latestAssistantMessage?.content || 'Ask a question to generate a live actuarial response.'}
+              </div>
             </div>
           </section>
 

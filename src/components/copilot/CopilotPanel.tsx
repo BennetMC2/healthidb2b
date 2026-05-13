@@ -49,7 +49,7 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
             <Sparkles size={13} className="text-accent" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-primary">Campaign Strategy Agent</div>
+            <div className="text-xs font-semibold text-primary">AI Actuary</div>
             <div className="text-2xs text-tertiary">{partner.label}</div>
           </div>
         </div>
@@ -85,10 +85,10 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
           <div className="flex h-full flex-col gap-4">
             <div className="rounded-xl border border-border bg-hover/60 px-3 py-3">
               <p className="text-xs font-medium text-primary">
-                Use this rail as a claims strategist, not a generic copilot
+                Use this rail as an actuarial operator, not a generic copilot
               </p>
               <p className="mt-1 text-2xs text-tertiary leading-relaxed">
-                Ask for claims-reduction ideas, underwriting support options, weak assumptions, or buyer-ready summaries.
+                Ask for portfolio insights, underwriting support options, weak assumptions, or partner-ready summaries.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-2">
@@ -131,7 +131,7 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isStreaming ? 'Responding...' : 'Ask for claims strategy or campaign analysis...'}
+            placeholder={isStreaming ? 'Responding...' : 'Ask for portfolio or campaign analysis...'}
             disabled={isStreaming}
             className="flex-1 bg-transparent text-xs text-primary placeholder:text-tertiary outline-none disabled:opacity-50"
           />
