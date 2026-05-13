@@ -49,7 +49,7 @@ export default function CopilotPanel({ onClose }: CopilotPanelProps = {}) {
             <Sparkles size={13} className="text-accent" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-primary">AI Actuary</div>
+            <div className="text-xs font-semibold text-primary">Book Copilot</div>
             <div className="text-2xs text-tertiary">{partner.label}</div>
           </div>
         </div>

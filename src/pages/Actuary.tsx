@@ -148,7 +148,7 @@ export default function Actuary() {
           <section className="card" data-walkthrough="actuary-ask">
             <div className="flex items-center gap-2">
               <BrainCircuit size={16} className="text-accent" />
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Actuary Chat</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Book Copilot</h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-tertiary">
               Ask for portfolio analysis, campaign advice, or underwriting implications.
@@ -173,7 +173,7 @@ export default function Actuary() {
               ) : (
                 <div className="flex h-full flex-col justify-between gap-4">
                   <div className="rounded-xl border border-border bg-surface/70 px-3 py-3 text-xs leading-relaxed text-secondary">
-                    Start a conversation with the AI Actuary. It uses the current partner context from this platform, not a generic chatbot prompt.
+                    Start a conversation with Book Copilot. It uses the current partner context from this platform, not a generic chatbot prompt.
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {[
