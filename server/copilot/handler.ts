@@ -89,23 +89,24 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
   const topCampaign = context.campaigns?.topCampaign ?? 'Q4 HbA1c Underwriting Screen';
 
   if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(normalized)) {
-    return `Hello. I can help ${partnerName} with cohort quality, campaign performance, verification posture, and underwriting opportunities. Ask me where the next opportunity is or which part of the book needs attention.`;
+    return `Hello. I can help ${partnerName} turn verified wearable signals into priced campaign decisions. Ask me which signal to act on, where modifiable risk is building, or how to price Health Points against expected book value.`;
   }
 
   if (/(underpriced|which cohort.*underpriced|cohort.*underpriced)/.test(normalized)) {
     return [
-      `The clearest underpriced cohort in the demo book is the **high-trust cardio-fitness segment**.`,
-      `It contains **3,847 members** with top-decile VO2 Max signals that are still sitting in standard-risk premium bands.`,
-      `The demo model treats that as roughly **$4.2M** of repricing opportunity with an estimated **8-month payback** and **high confidence** because the source density and literature support are both strong.`,
-      `If I were acting on one signal first, I would launch the cardio repricing programme before expanding any lower-confidence sleep or maternity work.`,
+      `The stronger campaign question is not underpricing; it is **which modifiable risk is worth funding**.`,
+      `The best current answer is **Cardio Fitness Activation**: 3,847 addressable members show low or declining VO2 Max signals but are still active enough to respond to an 8-week intervention.`,
+      `I would price it at **650 Health Points per member**, cap the initial budget at **$58K**, and target verified Zone 2 consistency plus a positive VO2 Max trend.`,
+      `Expected book impact: **$4.2M** value opportunity, **4.2x ROI**, **3.3% claims reduction**, and **8-month payback**.`,
     ].join(' ');
   }
 
   if (/(weakest campaign|worst campaign|which campaign.*weakest|lowest performing campaign)/.test(normalized)) {
     return [
-      `In the demo portfolio, the **Sleep Resilience Campaign** is the weakest programme to keep on the field unchanged.`,
-      `It is not broken, but it has the softest evidence posture, lower verification consistency than the cardio cohort, and a materially lower modeled upside than the top underwriting and repricing motions.`,
-      `My recommendation would be to tighten that campaign to higher-trust members or reallocate budget toward the cardio-fitness and HbA1c underwriting motions first.`,
+      `The weakest campaign to launch unchanged is **Resting Heart Rate Improvement**.`,
+      `It is still worth testing, but it has emerging confidence, a narrower cohort of 946 members, and a lower expected ROI than VO2 Max, HRV, or Sleep Regularity.`,
+      `I would keep it as a controlled pilot: 600 Health Points per member over 90 days, focused on activity consistency and a 3 bpm resting heart rate improvement.`,
+      `The campaign to scale first is **Cardio Fitness Activation**, not resting heart rate.`,
     ].join(' ');
   }
 
@@ -115,23 +116,52 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
       verificationRate >= 80
         ? `For a demo book, that is a strong operating posture: the proof system is confirming outcomes reliably without exposing raw member health data.`
         : `That is serviceable but not where I would want it long term. I would tighten source requirements and simplify lower-fidelity campaign rules.`,
-      `The next operating question is not “does the proof layer work?” but “which campaign should absorb more verified volume?”`,
+      `The next operating question is which wearable campaign should absorb more verified volume: VO2 Max, HRV, sleep, or resting heart rate.`,
     ].join(' ');
   }
 
-  if (/(best next|next programme|next program|what should we launch|recommend.*campaign|best campaign)/.test(normalized)) {
+  if (/(best next|next programme|next program|what should we launch|recommend.*campaign|best campaign|wearable campaign|modifiable risk|biggest risk)/.test(normalized)) {
     return [
-      `The best next programme to launch in this demo is the **cardio-fitness repricing motion**.`,
-      `It carries the highest modeled savings, the cleanest evidence base, and the strongest trust profile among the seeded opportunities.`,
-      `That makes it the best commercial story for a partner conversation because it combines visible financial upside with a crisp proof narrative.`,
+      `Launch **Cardio Fitness Activation** first.`,
+      `It targets VO2 Max, which is the strongest modifiable wearable signal in the current demo book: 3,847 members, high confidence, 650 Health Points per member, $58K initial reward budget, and $4.2M expected book value.`,
+      `The campaign mechanic is simple: reward 8 weeks of verified Zone 2 activity consistency and a positive VO2 Max trend.`,
+      `Second priority is **HRV Recovery**, because it catches recovery drift before it becomes more expensive claims risk.`,
     ].join(' ');
   }
 
-  if (/(underwriting|pricing screen|hba1c|renewal screen)/.test(normalized)) {
+  if (/(vo2|cardio|fitness)/.test(normalized)) {
     return [
-      `The strongest underwriting opportunity in the current demo set is **${topCampaign}**.`,
-      `The reason it matters is that it converts verified biomarker evidence into a pricing and selection workflow without requiring raw health data custody.`,
-      `The main caution is the maternity threshold update, which should be reviewed before broadening that screen any further.`,
+      `For VO2 Max, I would run **Cardio Fitness Activation**.`,
+      `Target 3,847 addressable members with low or declining cardio-fitness signals who still have enough activity baseline to respond.`,
+      `Price the campaign at **650 Health Points per member** over **8 weeks**. Reward verified Zone 2 activity consistency and a positive VO2 Max trend.`,
+      `Expected impact: **$4.2M** book value, **4.2x ROI**, **3.3% claims reduction**, and **-140 bps morbidity shift**.`,
+    ].join(' ');
+  }
+
+  if (/(hrv|recovery|stress)/.test(normalized)) {
+    return [
+      `For HRV, I would run **HRV Recovery**.`,
+      `The target is 1,204 members with sustained HRV decline, rising training stress, and inconsistent recovery windows.`,
+      `Reward 21 verified recovery days across sleep consistency, lighter movement, and stabilised resting heart rate.`,
+      `Expected impact: **$1.8M** book value, **3.4x ROI**, and **12-month payback**. This is prevention: stop manageable recovery drift before it becomes claims risk.`,
+    ].join(' ');
+  }
+
+  if (/(sleep|sleep debt|regularity)/.test(normalized)) {
+    return [
+      `For sleep, I would run **Sleep Regularity**.`,
+      `The target is 2,186 members with persistent sleep debt or irregular sleep timing across the last 45 days.`,
+      `Reward 30 nights with verified sleep regularity and at least 6.5 hours average sleep duration.`,
+      `Expected impact: **$1.25M** book value, **3.1x ROI**, and **11-month payback**. It is broad, but Health Points pricing needs discipline so the partner does not over-reward low-value behaviour.`,
+    ].join(' ');
+  }
+
+  if (/(resting heart|heart rate|rhr)/.test(normalized)) {
+    return [
+      `For resting heart rate, I would keep **Resting Heart Rate Improvement** as a controlled pilot.`,
+      `The target is 946 members with elevated or worsening resting heart rate and enough device coverage to verify improvement.`,
+      `Reward 12 active weeks with verified activity consistency and a 3 bpm resting heart rate improvement.`,
+      `Expected impact: **$840K** book value, **2.7x ROI**, and **14-month payback**. It is useful, but not the first campaign I would scale.`,
     ].join(' ');
   }
 
@@ -147,8 +177,9 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
 
   if (/(top campaign|strongest campaign|best performing campaign)/.test(normalized)) {
     return [
-      `The strongest live campaign in the current book is **${topCampaign}**.`,
-      `It is carrying the clearest underwriting story in the portfolio and is the cleanest example of how verified outcomes can support partner decisioning without raw-data custody.`,
+      `The strongest campaign play is **Cardio Fitness Activation**.`,
+      `It has the best combination of scale, addressability, Health Points economics, and evidence quality: 3,847 members, 650 HP/member, $58K budget, $4.2M expected book value, and 4.2x ROI.`,
+      `The top existing campaign in the broader platform snapshot is still **${topCampaign}**, but this cockpit is now prioritising wearable-led campaign plays.`,
     ].join(' ');
   }
 
@@ -165,7 +196,7 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
 
   return [
     'You are the AI Actuary inside the HealthID B2B platform.',
-    'You help enterprise partners analyze verified health cohorts, campaign performance, proof activity, and partner operating decisions.',
+    'You help enterprise partners turn verified wearable signals into priced campaign decisions that improve expected book value.',
     context.currentPage ? `Current page: ${context.currentPage}` : null,
     '',
     `Partner: ${partner.name ?? 'Unknown partner'} · ${partner.industry ?? 'unknown industry'} · ${partner.tier ?? 'unknown tier'}`,
@@ -182,6 +213,8 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
     '- Be concise and commercial.',
     '- Ground every answer in the provided data context.',
     '- Emphasize that partners receive verification receipts and proofs, not raw member health data.',
+    '- Frame wearable-led campaigns around modifiable risk, Health Points pricing, expected behavior change, and book value impact.',
+    '- Prioritize VO2 Max, HRV, sleep regularity, and resting heart rate when asked about campaign opportunities.',
     '- When the user asks for advice, give a direct recommendation and why it matters.',
     '- If information is missing, say what is missing instead of guessing.',
   ].filter(Boolean).join('\n');

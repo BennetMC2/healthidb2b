@@ -75,14 +75,14 @@ export default function Layout({ onTourStart }: LayoutProps) {
           <button
             onClick={() => navigate('/app/actuary')}
             className="block w-full pr-4 text-left"
-            aria-label="Open AI Actuary opportunities"
+            aria-label="Open campaign intelligence cockpit"
           >
             <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-              AI Actuary · 3 new opportunities
+              Campaign Intelligence · 4 signal plays
             </div>
             <div className="mt-1 text-sm leading-snug text-secondary">
-              A $4.2M re-pricing signal surfaced in your cardio cohort.
+              VO2 Max, HRV, sleep, and resting HR campaigns are priced against book value.
               <span className="ml-1 font-medium text-accent">View {'->'}</span>
             </div>
           </button>

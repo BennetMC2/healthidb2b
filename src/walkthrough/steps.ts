@@ -4,9 +4,9 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'actuary-nav',
     route: '/app/actuary',
-    title: 'AI Actuary',
+    title: 'Campaign Intelligence',
     narration:
-      'This is the intelligence layer of the platform. It scans the partner portfolio, surfaces opportunities, and frames where to act next.',
+      'This cockpit turns verified wearable signals into campaign plays that can be priced, launched, and measured against expected book value.',
     targetSelector: '[data-tour="actuary-nav"]',
     actionType: 'auto',
     delayMs: 300,
@@ -14,9 +14,9 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'actuary-opportunities',
     route: '/app/actuary',
-    title: 'Opportunity inbox',
+    title: 'Wearable signal campaigns',
     narration:
-      'This queue is where the strongest signals land first. Teams review opportunities, inspect evidence, and turn a signal into an insurer programme.',
+      'VO2 Max, HRV, sleep, and resting heart rate each become a campaign recommendation with Health Points pricing and projected commercial impact.',
     targetSelector: '[data-walkthrough="actuary-opportunities"]',
     actionType: 'auto',
     delayMs: 350,
@@ -24,9 +24,9 @@ export const walkthroughSteps: WalkthroughStep[] = [
   {
     id: 'actuary-ask',
     route: '/app/actuary',
-    title: 'Ask the Actuary',
+    title: 'Book Copilot',
     narration:
-      'The Actuary is not just a dashboard. This panel is the conversational layer for interrogating the portfolio and testing what to do next.',
+      'Book Copilot explains which campaign to launch, how to price rewards, and where modifiable risk is building in the partner book.',
     targetSelector: '[data-walkthrough="actuary-ask"]',
     actionType: 'auto',
     delayMs: 350,

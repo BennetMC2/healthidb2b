@@ -35,8 +35,8 @@ export default function App() {
         robots: 'noindex',
       },
       '/app/actuary': {
-        title: 'AI Actuary · HealthID',
-        description: 'Always-on actuarial intelligence for verified health cohorts, campaign design, and evidence trails.',
+        title: 'Campaign Intelligence · HealthID',
+        description: 'Wearable signal campaigns priced with Health Points and measured against expected book value.',
         robots: 'noindex',
       },
       '/app/campaigns': {

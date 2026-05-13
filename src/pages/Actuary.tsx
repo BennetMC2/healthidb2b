@@ -4,7 +4,7 @@ import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
-import { formatCurrency, formatNumber, formatPercent } from '@/utils/format';
+import { formatCurrency, formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
 
 function confidenceLabel(confidence: ActuaryConfidence) {
   if (confidence === 'high') return 'HIGH CONFIDENCE';
@@ -41,13 +41,36 @@ function OpportunityCard({ insight }: { insight: ActuaryInsight }) {
         </div>
       </div>
 
-      <h2 className="mt-4 text-[1.35rem] font-semibold text-primary">{insight.title}</h2>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="rounded-full border border-border bg-elevated px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-secondary">
+          {insight.signal}
+        </span>
+        <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">
+          {insight.cohortSize.toLocaleString('en-US')} addressable members
+        </span>
+      </div>
+
+      <h2 className="mt-3 text-[1.35rem] font-semibold text-primary">{insight.campaignName}</h2>
+      <p className="mt-1 text-sm font-medium leading-relaxed text-primary">{insight.title}</p>
       <p className="mt-2 text-sm leading-relaxed text-secondary">{insight.subtitle}</p>
       <p className="mt-3 text-sm leading-relaxed text-tertiary">{insight.body}</p>
 
-      <div className="mt-5 grid gap-2 lg:grid-cols-3">
-        <OutputTile label="Projected savings" value={formatCurrency(insight.outputs.projectedSavingsUsd)} />
-        <OutputTile label="Payback" value={`${insight.outputs.paybackMonths} months`} />
+      <div className="mt-5 rounded border border-border bg-base/60 p-3">
+        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-accent">Campaign action</div>
+        <p className="mt-1 text-sm leading-relaxed text-secondary">{insight.behaviourToReward}</p>
+      </div>
+
+      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+        <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
+        <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
+        <OutputTile label="Book value" value={formatCurrencyCompact(insight.outputs.projectedSavingsUsd)} />
+        <OutputTile label="ROI" value={`${insight.outputs.budgetRoiMultiple.toFixed(1)}x`} />
+        <OutputTile label="Payback" value={`${insight.outputs.paybackMonths} mo`} />
+      </div>
+
+      <div className="mt-3 grid gap-2 md:grid-cols-3">
+        <OutputTile label="Claims reduction" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
+        <OutputTile label="Morbidity shift" value={`${insight.outputs.morbidityShiftBps} bps`} />
         <OutputTile label="Confidence" value={confidenceLabel(insight.confidence).replace(' CONFIDENCE', '')} />
       </div>
 
@@ -92,14 +115,14 @@ export default function Actuary() {
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
               Live · Last scan 09:14 HKT · Next scan in 46 min
             </div>
-            <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · AI Actuary</h1>
+            <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · Campaign Intelligence Cockpit</h1>
             <p className="mt-2 text-sm text-secondary">
-              Monitoring 36,000 lives · 108,402 data sources · 4,217 indexed papers.
+              Monitoring verified wearable signals across 36,000 lives: VO2 Max, HRV, sleep, and resting heart rate.
             </p>
           </div>
           <button className="btn-primary text-xs">
             <Sparkles size={14} />
-            Show today&apos;s opportunities
+            Show campaign plays
           </button>
         </div>
       </section>
@@ -108,8 +131,10 @@ export default function Actuary() {
         <main className="space-y-4">
           <div className="flex items-center justify-between" data-walkthrough="actuary-opportunities">
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Today&apos;s opportunities</h2>
-              <p className="mt-1 text-xs text-tertiary">{actuaryInsights.length} new signals requiring review.</p>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Wearable signal campaigns</h2>
+              <p className="mt-1 text-xs text-tertiary">
+                {actuaryInsights.length} priced campaign plays ranked by addressable behaviour change and expected book impact.
+              </p>
             </div>
           </div>
           {actuaryInsights.map((insight) => (
@@ -120,11 +145,11 @@ export default function Actuary() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">What the Actuary has been doing</h2>
             <div className="mt-4 space-y-2">
               {[
-                '09:14 · Refreshed cohort scoring across 36,000 lives',
-                '09:08 · Indexed 3 new papers from The Lancet and JAMA',
-                '08:51 · Re-scored Sleep Resilience cohort, drift detected',
-                '08:30 · Generated 2 campaign drafts awaiting review',
-                '08:00 · Daily portfolio sweep complete',
+                '09:14 · Priced VO2 Max activation cohort across 3,847 addressable members',
+                '09:02 · Re-scored HRV recovery drift and Health Points yield',
+                '08:51 · Rebuilt Sleep Regularity cohort from 45-day device history',
+                '08:30 · Flagged resting heart rate campaign with emerging confidence',
+                '08:00 · Daily wearable signal sweep complete',
               ].map((line) => (
                 <div key={line} className="flex items-center gap-2 font-mono text-xs text-secondary">
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" />
@@ -186,9 +211,9 @@ export default function Actuary() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {[
-                          'Which cohort is underpriced?',
+                          'Which wearable campaign should we launch next?',
+                          'Where is the biggest modifiable risk?',
                           'What is my verification success rate?',
-                          'Where is the weakest campaign in the portfolio?',
                         ].map((suggestion) => (
                           <button
                             key={suggestion}
