@@ -37,7 +37,7 @@ export default function CampaignOnboardingModal({ onDismiss }: CampaignOnboardin
       headerDescription="This is the operating center of the product. Configure one programme and reuse the same engine across multiple insurer motions."
       steps={steps}
       punchline="One insurer workflow. Multiple downstream commercial outcomes."
-      primaryAction={{ label: 'Design a Campaign', action: '/campaigns/new' }}
+      primaryAction={{ label: 'Design a Campaign', action: '/app/campaigns/new' }}
       ghostLabel="Explore Campaigns"
       onDismiss={onDismiss}
     />

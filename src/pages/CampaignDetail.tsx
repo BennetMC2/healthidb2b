@@ -168,7 +168,7 @@ export default function CampaignDetail() {
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate('/campaigns')}
+                onClick={() => navigate('/app/campaigns')}
                 className="btn-ghost p-1"
               >
                 <ArrowLeft size={16} />
@@ -369,7 +369,7 @@ export default function CampaignDetail() {
             {syncedTimeline.map((event) => (
               <button
                 key={event.id}
-                onClick={() => navigate(`/campaigns/${campaign.id}/members/${event.memberId}`)}
+                onClick={() => navigate(`/app/campaigns/${campaign.id}/members/${event.memberId}`)}
                 className="w-full flex items-center gap-3 px-4 py-2 border-b border-border/50 hover:bg-hover/70 transition-colors cursor-pointer text-left"
               >
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
@@ -414,7 +414,7 @@ export default function CampaignDetail() {
           />
           <div className="mb-3 flex justify-end">
             <button
-              onClick={() => navigate(`/explorer?campaignId=${campaign.id}`)}
+              onClick={() => navigate(`/app/explorer?campaignId=${campaign.id}`)}
               className="btn-ghost text-xs"
             >
               Open in Member Pool
@@ -424,7 +424,7 @@ export default function CampaignDetail() {
             {syncedMembers.length > 0 ? syncedMembers.map((member) => (
               <button
                 key={member.memberId}
-                onClick={() => navigate(`/campaigns/${campaign.id}/members/${member.memberId}`)}
+                onClick={() => navigate(`/app/campaigns/${campaign.id}/members/${member.memberId}`)}
                 className="w-full rounded-xl border border-border bg-surface/80 px-4 py-3 text-left transition-colors hover:bg-hover"
               >
                 <div className="flex items-start justify-between gap-3">

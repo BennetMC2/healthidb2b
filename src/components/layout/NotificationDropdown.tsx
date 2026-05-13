@@ -27,7 +27,7 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
       title: `${activeCampaigns[0].name} milestone`,
       description: `${activeCampaigns[0].funnel.verified} verifications completed`,
       time: '2h ago',
-      route: `/campaigns/${activeCampaigns[0].id}`,
+      route: `/app/campaigns/${activeCampaigns[0].id}`,
     });
   }
 
@@ -38,7 +38,7 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
     title: 'Cohort readiness update',
     description: `${activeCampaigns.length} active programmes currently sourcing verification-ready members`,
     time: '4h ago',
-    route: '/explorer',
+    route: '/app/explorer',
   });
 
   if (completedCampaigns[0]) {
@@ -49,7 +49,7 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
       title: 'Campaign completed',
       description: `${completedCampaigns[0].name} finished successfully`,
       time: '1d ago',
-      route: `/campaigns/${completedCampaigns[0].id}`,
+      route: `/app/campaigns/${completedCampaigns[0].id}`,
     });
   }
 
@@ -60,7 +60,7 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
     title: 'Business impact refresh',
     description: 'Campaign ROI projections updated for the latest configured cohort sizes',
     time: '1d ago',
-    route: '/campaigns',
+    route: '/app/campaigns',
   });
 
   items.push({
@@ -70,7 +70,7 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
     title: 'Budget threshold alert',
     description: 'Active campaigns approaching 80% budget utilization',
     time: '2d ago',
-    route: '/campaigns',
+    route: '/app/campaigns',
   });
 
   items.push({
@@ -80,7 +80,7 @@ function buildNotifications(campaigns: ReturnType<typeof useCampaignStore.getSta
     title: 'Verification review passed',
     description: 'Receipt trail ready for buyer diligence and pilot-readiness conversations',
     time: '3d ago',
-    route: '/compliance',
+    route: '/app/compliance',
   });
 
   return items;

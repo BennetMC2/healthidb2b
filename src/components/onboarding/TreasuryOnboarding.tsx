@@ -37,7 +37,7 @@ export default function TreasuryOnboarding({ onDismiss }: TreasuryOnboardingProp
       headerDescription="From metric selection to morbidity shift — model claims reduction at any scale."
       steps={steps}
       punchline="Real actuarial language. Real claims reduction. Modeled by metric, use case, and book size."
-      primaryAction={{ label: 'View Actuarial Model', action: '/treasury#actuarial-roi' }}
+      primaryAction={{ label: 'View Actuarial Model', action: '/app/treasury#actuarial-roi' }}
       ghostLabel="How Rewards Are Funded"
       onDismiss={onDismiss}
     />

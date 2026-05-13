@@ -37,15 +37,15 @@ const industrySpecific: Record<PartnerIndustry, Suggestion[]> = {
 };
 
 const pageSuggestions: Record<string, Suggestion[]> = {
-  '/explorer': [
+  '/app/explorer': [
     { label: 'Identity breakdown', prompt: 'How are identities distributed across trust tiers?' },
     { label: 'Source penetration', prompt: 'Which data sources have the highest penetration?' },
   ],
-  '/campaigns': [
+  '/app/campaigns': [
     { label: 'Active campaigns', prompt: 'Which live claims-reduction campaigns deserve more budget or attention right now?' },
     { label: 'Campaign ROI', prompt: 'Which campaign has the strongest modeled claims-impact case and why?' },
   ],
-  '/compliance': [
+  '/app/compliance': [
     { label: 'Trail summary', prompt: 'Show me the latest verification trail summary' },
     { label: 'Proof failures', prompt: 'Are there any recent proof failures?' },
   ],
@@ -53,7 +53,8 @@ const pageSuggestions: Record<string, Suggestion[]> = {
 
 export function getPageSuggestions(route: string, industry: PartnerIndustry): Suggestion[] {
   // Match page route (strip hash, params)
-  const basePath = '/' + (route.split('/')[1] || 'campaigns');
+  const parts = route.split('/');
+  const basePath = parts[1] === 'app' ? `/app/${parts[2] || 'campaigns'}` : `/${parts[1] || 'campaigns'}`;
   const pageSpecific = pageSuggestions[basePath] || [];
   return [...pageSpecific, ...industrySpecific[industry], ...shared].slice(0, 6);
 }

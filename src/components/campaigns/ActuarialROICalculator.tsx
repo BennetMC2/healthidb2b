@@ -12,6 +12,7 @@ interface ActuarialROICalculatorProps {
   budgetCeiling: number;
   onApplySuggestedHP?: (hp: number) => void;
   showVNB?: boolean;
+  variant?: 'compact' | 'hero';
 }
 
 const EVIDENCE_COLORS: Record<string, { dot: string; value: string }> = {
@@ -28,8 +29,10 @@ export default function ActuarialROICalculator({
   budgetCeiling,
   onApplySuggestedHP,
   showVNB = false,
+  variant = 'compact',
 }: ActuarialROICalculatorProps) {
   const [mode, setMode] = useState<'gross' | 'adjusted'>('gross');
+  const isHero = variant === 'hero';
 
   const roi = useMemo(
     () =>
@@ -50,32 +53,78 @@ export default function ActuarialROICalculator({
     [useCase, type, metric, roi.isReady],
   );
   const maxSavings = comparisons.length > 0 ? comparisons[0].savingsPerMember : 1;
+  const projectionTiles = [
+    {
+      label: 'Claims Reduction',
+      value: roi.isReady ? `${(roi.claimsReductionRate * 100).toFixed(1)}%` : '—',
+      detail: roi.isReady ? `${roi.confidenceLabel}` : 'Select a signal',
+      tone: roi.isReady ? evidence.value : 'text-tertiary',
+    },
+    {
+      label: 'Projected Savings',
+      value: roi.isReady ? formatCurrencyCompact(roi.totalProjectedSavings) : '—',
+      detail: roi.isReady ? `${roi.scenarioHorizonMonths}-month horizon` : 'Awaiting cohort',
+      tone: roi.isReady && roi.totalProjectedSavings > 0 ? 'text-accent' : 'text-tertiary',
+    },
+    {
+      label: 'Budget ROI',
+      value: roi.isReady ? `${roi.budgetROI.toFixed(1)}×` : '—',
+      detail: roi.isReady ? `${formatCurrencyCompact(roi.scenarioRangeLow)}–${formatCurrencyCompact(roi.scenarioRangeHigh)} range` : 'Budget required',
+      tone: !roi.isReady ? 'text-tertiary' : roi.budgetROI >= 2 ? 'text-accent' : roi.budgetROI < 1 ? 'text-warning' : 'text-primary',
+    },
+    {
+      label: 'Suggested HP Yield',
+      value: roi.isReady ? `${roi.suggestedHP} HP` : '—',
+      detail: roi.isReady ? 'Per verified receipt' : 'No model yet',
+      tone: roi.isReady ? 'text-primary' : 'text-tertiary',
+    },
+    {
+      label: 'Morbidity Shift',
+      value: roi.isReady ? `${roi.morbidityShiftBps} bps` : '—',
+      detail: roi.isReady ? `${roi.expectedVerifiedLives.toLocaleString()} verified lives` : 'Needs participants',
+      tone: roi.isReady ? 'text-primary' : 'text-tertiary',
+    },
+    {
+      label: 'Payback Period',
+      value: roi.isReady && roi.paybackMonths > 0 ? (roi.paybackMonths >= 36 ? '36 mo+' : `${roi.paybackMonths} mo`) : '—',
+      detail: roi.isReady ? 'Net-positive estimate' : 'Needs budget',
+      tone: roi.isReady && roi.paybackMonths > 0 ? 'text-primary' : 'text-tertiary',
+    },
+  ];
 
   return (
-    <div className="card border-accent/10 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px] before:bg-accent/40 before:rounded-l">
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-accent/10 flex items-center justify-center">
-            <TrendingUp size={14} className="text-accent" />
+    <div className={`card relative overflow-hidden border-accent/20 bg-elevated before:absolute before:left-0 before:right-0 before:top-0 before:h-[3px] before:bg-accent ${isHero ? 'p-6' : 'p-5'}`}>
+      <div className={`mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between ${isHero ? 'xl:mb-6' : ''}`}>
+        <div className="flex items-start gap-3">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10">
+            <TrendingUp size={20} className="text-accent" />
           </div>
           <div>
-            <span className="text-sm font-semibold text-primary font-display">Actuarial ROI Projection</span>
-            <span className="text-2xs text-tertiary ml-2">Live Model</span>
+            <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.18em] text-accent">
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+              AI Actuary · Live Projection
+            </div>
+            <h2 className="mt-1 font-display text-2xl font-semibold leading-tight text-primary">
+              Campaign economics
+            </h2>
+            <p className={`mt-1 text-sm leading-relaxed text-secondary ${isHero ? 'max-w-[680px]' : ''}`}>
+              The model updates as the campaign changes, pricing rewards from expected insurer value rather than marketing spend.
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-0.5 bg-border/50 rounded p-0.5">
+        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-border bg-surface/80 p-1">
           <button
             onClick={() => setMode('gross')}
-            className={`px-2 py-0.5 rounded text-2xs font-medium transition-colors ${
-              mode === 'gross' ? 'bg-surface text-primary shadow-sm' : 'text-tertiary hover:text-secondary'
+            className={`rounded-lg px-3 py-1.5 text-2xs font-medium transition-colors ${
+              mode === 'gross' ? 'bg-accent/10 text-accent' : 'text-tertiary hover:text-secondary'
             }`}
           >
             Upside
           </button>
           <button
             onClick={() => setMode('adjusted')}
-            className={`px-2 py-0.5 rounded text-2xs font-medium transition-colors ${
-              mode === 'adjusted' ? 'bg-surface text-primary shadow-sm' : 'text-tertiary hover:text-secondary'
+            className={`rounded-lg px-3 py-1.5 text-2xs font-medium transition-colors ${
+              mode === 'adjusted' ? 'bg-accent/10 text-accent' : 'text-tertiary hover:text-secondary'
             }`}
           >
             Conservative
@@ -85,123 +134,76 @@ export default function ActuarialROICalculator({
 
       {roi.isReady && (
         <div
-          className={`inline-flex items-center gap-1 mb-2 px-1.5 py-0.5 rounded text-2xs font-medium ${
+          className={`mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-2xs font-medium ${
             mode === 'gross' ? 'bg-warning/10 text-warning' : 'bg-accent/10 text-accent'
           }`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${mode === 'gross' ? 'bg-warning' : 'bg-accent'}`} />
+          <span className={`h-1.5 w-1.5 rounded-full ${mode === 'gross' ? 'bg-warning' : 'bg-accent'}`} />
           {mode === 'gross'
             ? 'Modeled upside case'
             : 'Conservative case'}
         </div>
       )}
 
-      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
-        <div>
-          <span className="text-2xs text-tertiary block">Impact Rate</span>
-          <span className={`font-mono text-sm font-semibold ${roi.isReady ? evidence.value : 'text-tertiary'}`}>
-            {roi.isReady ? `${(roi.claimsReductionRate * 100).toFixed(0)}%` : '—'}
-          </span>
-        </div>
-
-        <div>
-          <span className="text-2xs text-tertiary block">Projected Savings</span>
-          <span
-            className={`font-mono text-sm font-semibold ${
-              roi.isReady && roi.totalProjectedSavings > 0 ? 'text-accent' : 'text-tertiary'
-            }`}
-          >
-            {roi.isReady ? formatCurrencyCompact(roi.totalProjectedSavings) : '—'}
-          </span>
-          {roi.isReady && <span className="text-2xs text-tertiary/60 block">over {roi.scenarioHorizonMonths} mo</span>}
-        </div>
-
-        <div>
-          <span className="text-2xs text-tertiary block">Budget ROI</span>
-          <span
-            className={`font-mono text-sm font-semibold ${
-              !roi.isReady ? 'text-tertiary' : roi.budgetROI >= 2 ? 'text-accent' : roi.budgetROI < 1 ? 'text-warning' : 'text-primary'
-            }`}
-          >
-            {roi.isReady ? `${roi.budgetROI.toFixed(1)}×` : '—'}
-          </span>
-          {roi.isReady && (
-            <span className="text-2xs text-tertiary/60 block leading-tight mt-0.5">
-              {formatCurrencyCompact(roi.scenarioRangeLow)}–{formatCurrencyCompact(roi.scenarioRangeHigh)}
+      <div className={`grid grid-cols-1 gap-3 sm:grid-cols-2 ${isHero ? 'xl:grid-cols-3 2xl:grid-cols-6' : ''}`}>
+        {projectionTiles.map((tile) => (
+          <div key={tile.label} className="rounded-2xl border border-border bg-surface/70 p-4">
+            <span className="metric-label block">{tile.label}</span>
+            <span className={`mt-2 block font-mono font-semibold leading-none tracking-tight ${isHero ? 'text-[1.65rem]' : 'text-[1.85rem]'} ${tile.tone}`}>
+              {tile.value}
             </span>
-          )}
-        </div>
-
-        <div>
-          <span className="text-2xs text-tertiary block">Suggested HP</span>
-          <span className="font-mono text-sm font-semibold text-primary">
-            {roi.isReady ? `${roi.suggestedHP} HP` : '—'}
-          </span>
-          {roi.isReady && onApplySuggestedHP && (
-            <button onClick={() => onApplySuggestedHP(roi.suggestedHP)} className="text-2xs text-accent underline mt-0.5 block">
-              Apply
-            </button>
-          )}
-        </div>
-
-        <div>
-          <span className="text-2xs text-tertiary block">Verified Lives</span>
-          <span className={`font-mono text-sm font-semibold ${roi.isReady && roi.expectedVerifiedLives > 0 ? 'text-primary' : 'text-tertiary'}`}>
-            {roi.isReady && roi.expectedVerifiedLives > 0 ? roi.expectedVerifiedLives.toLocaleString() : '—'}
-          </span>
-        </div>
-
-        <div>
-          <span className="text-2xs text-tertiary block">Payback Period</span>
-          <span className={`font-mono text-sm font-semibold ${roi.isReady && roi.paybackMonths > 0 ? 'text-primary' : 'text-tertiary'}`}>
-            {roi.isReady && roi.paybackMonths > 0 ? (roi.paybackMonths >= 36 ? '36 mo+' : `${roi.paybackMonths} mo`) : '—'}
-          </span>
-        </div>
+            <span className="mt-2 block text-xs leading-relaxed text-tertiary">{tile.detail}</span>
+            {tile.label === 'Suggested HP Yield' && roi.isReady && onApplySuggestedHP && (
+              <button onClick={() => onApplySuggestedHP(roi.suggestedHP)} className="mt-2 text-xs font-medium text-accent underline">
+                Apply yield
+              </button>
+            )}
+          </div>
+        ))}
       </div>
 
       {roi.isReady && (
-        <div className="flex items-start gap-1.5 mt-3 p-2 rounded bg-border/30">
-          <Info size={11} className="text-tertiary mt-0.5 shrink-0" />
-          <p className="text-2xs text-tertiary leading-relaxed">
-            <span className="font-medium text-secondary">{roi.confidenceLabel}.</span>{' '}
-            Directional planning model based on literature, expected verified-life conversion, and outcome timing. Useful for prioritization, not certification.
-          </p>
-        </div>
-      )}
-
-      {roi.isReady && (
-        <div className="flex items-center gap-1.5 mt-2.5">
-          <span
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs font-medium ${
-              roi.evidenceLevel === 'high'
-                ? 'bg-success/10 text-success'
-                : roi.evidenceLevel === 'medium'
-                  ? 'bg-warning/10 text-warning'
-                  : 'bg-tertiary/10 text-tertiary'
-            }`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${evidence.dot}`} />
-            {roi.evidenceLevel} evidence
-          </span>
-          <span className="text-2xs text-tertiary">{roi.evidenceNote}</span>
+        <div className={`mt-4 grid grid-cols-1 gap-3 ${isHero ? 'lg:grid-cols-2' : ''}`}>
+          <div className="flex items-start gap-2 rounded-2xl border border-border bg-surface/70 p-3">
+            <Info size={14} className="mt-0.5 shrink-0 text-tertiary" />
+            <p className="text-xs leading-relaxed text-tertiary">
+              <span className="font-medium text-secondary">{roi.confidenceLabel}.</span>{' '}
+              Directional planning model based on literature, expected verified-life conversion, and outcome timing. Useful for prioritization, not certification.
+            </p>
+          </div>
+          <div className="flex items-start gap-2 rounded-2xl border border-border bg-surface/60 p-3">
+            <span
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-2xs font-medium ${
+                roi.evidenceLevel === 'high'
+                  ? 'bg-success/10 text-success'
+                  : roi.evidenceLevel === 'medium'
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-tertiary/10 text-tertiary'
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${evidence.dot}`} />
+              {roi.evidenceLevel} evidence
+            </span>
+            <span className="text-xs leading-relaxed text-tertiary">{roi.evidenceNote}</span>
+          </div>
         </div>
       )}
 
       {roi.isReady && comparisons.length > 0 && (
-        <div className="mt-2.5 space-y-1">
-          <span className="text-2xs text-tertiary">vs. top metrics · conservative savings / targeted life</span>
+        <div className="mt-5 space-y-2">
+          <span className="metric-label block">Signal ranking · conservative savings / targeted life</span>
           {comparisons.map((comparison) => (
             <div key={comparison.metric} className="flex items-center gap-2">
-              <span className={`w-28 truncate text-2xs ${comparison.isSelected ? 'text-accent font-medium' : 'text-tertiary'}`}>
+              <span className={`w-32 truncate text-xs ${comparison.isSelected ? 'font-medium text-accent' : 'text-tertiary'}`}>
                 {comparison.label}
               </span>
-              <div className="flex-1 h-1 rounded-full bg-border">
+              <div className="h-1.5 flex-1 rounded-full bg-border">
                 <div
-                  className={`h-full rounded-full ${comparison.isSelected ? 'bg-accent/50' : 'bg-secondary/40'}`}
+                  className={`h-full rounded-full ${comparison.isSelected ? 'bg-accent/70' : 'bg-secondary/35'}`}
                   style={{ width: `${(comparison.savingsPerMember / maxSavings) * 100}%` }}
                 />
               </div>
-              <span className={`w-10 text-right font-mono text-2xs ${comparison.isSelected ? 'text-accent font-medium' : 'text-tertiary'}`}>
+              <span className={`w-12 text-right font-mono text-xs ${comparison.isSelected ? 'font-medium text-accent' : 'text-tertiary'}`}>
                 ${comparison.savingsPerMember.toFixed(0)}
               </span>
             </div>
@@ -209,7 +211,7 @@ export default function ActuarialROICalculator({
         </div>
       )}
 
-      <p className="text-2xs text-tertiary mt-1.5">
+      <p className="mt-5 border-t border-border pt-4 text-xs leading-relaxed text-tertiary">
         {roi.isReady ? (
           <>
             {roi.savingsFraming} · {maxParticipants.toLocaleString()} targeted lives · ${roi.savingsPerMember.toFixed(0)}/targeted life

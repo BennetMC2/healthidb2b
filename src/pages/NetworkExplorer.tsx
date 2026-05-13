@@ -51,9 +51,7 @@ export default function NetworkExplorer() {
   const addToast = useToastStore((s) => s.addToast);
   const campaigns = useCampaignStore((s) => s.campaigns);
   const loading = useSimulatedLoading(600);
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => !localStorage.getItem('healthid_explorer_onboarded')
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const campaignId = new URLSearchParams(location.search).get('campaignId');
   const scopedCampaign = useMemo(
@@ -142,7 +140,7 @@ export default function NetworkExplorer() {
     <div className="flex flex-col gap-4">
       {showOnboarding && <ExplorerOnboarding onDismiss={() => setShowOnboarding(false)} />}
       {/* Section Header */}
-      <SectionHeader title="Member Pool" description="Reachable members available for campaign enrollment. Teams target cohorts using consented signals and trust tiers, never raw health records." icon={<Globe size={16} />} />
+      <SectionHeader as="h1" title="Member Pool" description="Reachable members available for campaign enrollment. Teams target cohorts using consented signals and trust tiers, never raw health records." icon={<Globe size={16} />} />
 
       {scopedCampaign && (
         <div className="card-elevated border-accent/15">
@@ -158,7 +156,7 @@ export default function NetworkExplorer() {
               </p>
             </div>
             <button
-              onClick={() => navigate(`/campaigns/${scopedCampaign.id}`)}
+              onClick={() => navigate(`/app/campaigns/${scopedCampaign.id}`)}
               className="btn-ghost text-xs"
             >
               Back to campaign
@@ -169,7 +167,7 @@ export default function NetworkExplorer() {
             {scopedMembers.length > 0 ? scopedMembers.map((member) => (
               <button
                 key={member.memberId}
-                onClick={() => navigate(`/campaigns/${scopedCampaign.id}/members/${member.memberId}`)}
+                onClick={() => navigate(`/app/campaigns/${scopedCampaign.id}/members/${member.memberId}`)}
                 className="rounded-xl border border-border bg-surface/80 px-4 py-3 text-left transition-colors hover:bg-hover"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -226,7 +224,7 @@ export default function NetworkExplorer() {
       </div>
 
       {/* Presets + filter toggle */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-walkthrough="explorer-presets">
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="btn-ghost text-xs"

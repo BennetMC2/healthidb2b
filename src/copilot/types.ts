@@ -68,5 +68,6 @@ export interface CopilotProvider {
   generateResponse(
     messages: Message[],
     context: DataContext,
+    options?: { signal?: AbortSignal },
   ): AsyncGenerator<string, void, undefined>;
 }

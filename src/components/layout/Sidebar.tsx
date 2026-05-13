@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
+  BrainCircuit,
   Globe,
   Target,
   ShieldCheck,
@@ -44,10 +45,11 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
 }
 
 const navItems = [
-  { path: '/campaigns', label: 'Campaign Engine', icon: Target, tourId: 'campaigns-nav' },
-  { path: '/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
-  { path: '/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
-  { path: '/settings', label: 'Settings', icon: Settings, tourId: undefined },
+  { path: '/app/actuary', label: 'AI Actuary', icon: BrainCircuit, tourId: 'actuary-nav' },
+  { path: '/app/campaigns', label: 'Campaign Engine', icon: Target, tourId: 'campaigns-nav' },
+  { path: '/app/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
+  { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
+  { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
 ];
 
 interface SidebarProps {
@@ -112,15 +114,18 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               data-tour={tourId}
               className={`flex items-center h-[32px] mx-1 px-2.5 rounded transition-colors duration-100 group ${
                 isActive
-                  ? 'bg-accent/10 text-accent'
+                  ? 'bg-accent-muted text-accent border-l-2 border-accent'
                   : 'text-tertiary hover:text-secondary hover:bg-hover'
               }`}
             >
               <Icon
                 size={16}
-                strokeWidth={isActive ? 2 : 1.5}
+                strokeWidth={1.5}
                 className="flex-shrink-0"
               />
+              {path === '/app/actuary' && (
+                <span className="ml-2 h-1.5 w-1.5 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+              )}
               {(isMobile || expanded) && (
                 <span className="ml-2.5 text-sm truncate">{label}</span>
               )}

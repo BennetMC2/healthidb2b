@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, HelpCircle, Sun, Moon, Menu } from 'lucide-react';
+import { Search, HelpCircle, Sun, Moon, Menu, Building2 } from 'lucide-react';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useThemeStore } from '@/stores/useThemeStore';
 import CommandPalette from '@/components/ui/CommandPalette';
@@ -15,10 +15,11 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
   const { theme, toggleTheme } = useThemeStore();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
-  // Global "/" shortcut to open command palette
+  // Global Cmd/Ctrl+K shortcut to open command palette.
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === '/' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+      const commandK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      if (commandK && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
         e.preventDefault();
         setPaletteOpen(true);
       }
@@ -67,7 +68,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
               Search campaigns, cohorts, receipts...
             </div>
             <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-tertiary bg-elevated px-1 rounded-sm border border-border">
-              /
+              Cmd K
             </kbd>
           </button>
         </div>
@@ -88,10 +89,16 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           </div>
 
           {/* Partner Selector */}
+          <button
+            className="flex h-[30px] w-[30px] items-center justify-center rounded border border-border bg-base text-tertiary hover:bg-hover sm:hidden"
+            title={currentPartner.label}
+          >
+            <Building2 size={14} />
+          </button>
           <select
             value={currentPartner.id}
             onChange={(e) => setCurrentPartner(e.target.value)}
-            className="h-[30px] px-2 bg-base border border-border rounded text-xs text-secondary focus:outline-none focus:border-accent/30 cursor-pointer max-w-[120px] sm:max-w-none"
+            className="hidden h-[30px] max-w-[180px] cursor-pointer rounded border border-border bg-base px-2 text-xs text-secondary focus:border-accent/30 focus:outline-none sm:block"
           >
             {allPartners.map((p) => (
               <option key={p.id} value={p.id}>

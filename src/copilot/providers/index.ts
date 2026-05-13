@@ -1,15 +1,19 @@
 import type { CopilotProvider } from '../types';
 import { SimulatedProvider } from './simulated';
 import { ClaudeProvider } from './claude';
+import { OpenAIProvider } from './openai';
 
 let cachedProvider: CopilotProvider | null = null;
 
 export function getProvider(): CopilotProvider {
   if (cachedProvider) return cachedProvider;
 
-  const providerType = import.meta.env.VITE_COPILOT_PROVIDER ?? 'simulated';
+  const providerType = import.meta.env.VITE_COPILOT_PROVIDER ?? 'openai';
 
   switch (providerType) {
+    case 'openai':
+      cachedProvider = new OpenAIProvider();
+      break;
     case 'claude': {
       const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
       if (!apiKey) {

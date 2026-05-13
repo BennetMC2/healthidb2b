@@ -145,9 +145,7 @@ export default function Treasury() {
   // Collapsible sections
   const [showOperations, setShowOperations] = useState(false);
   const [showYieldMechanics, setShowYieldMechanics] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => !localStorage.getItem('healthid_treasury_onboarded')
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const audienceSize = identities.length || 5000;
   const BUDGET_CEILING = 25000;

@@ -71,9 +71,7 @@ export default function Campaigns() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const [typeFilter, setTypeFilter] = useState<'all' | CampaignType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | CampaignStatus>('all');
-  const [showOnboarding, setShowOnboarding] = useState(
-    () => !localStorage.getItem('healthid_campaigns_onboarded')
-  );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Partner-scoped campaigns
   const campaigns = useMemo(
@@ -116,35 +114,32 @@ export default function Campaigns() {
         <CampaignOnboardingModal onDismiss={() => setShowOnboarding(false)} />
       )}
 
-      <div className="card-elevated border-accent/15">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-[720px]">
+      <div className="card-elevated border-accent/15" data-walkthrough="campaigns-hero">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Hong Kong + Japan Life Insurance Scenario
+              Enterprise programme studio
             </div>
-            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary">
-              Design claims-reduction campaigns around verified health outcomes.
+            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary xl:whitespace-nowrap">
+              Launch high-trust health programmes with measurable insurer value.
             </h1>
-            <p className="mt-2 max-w-[640px] text-sm leading-relaxed text-secondary">
-              Configure the target outcome, define the cohort, and launch a programme that converts member-side health activity into verification-grade insurer evidence.
-            </p>
             <div className="mt-4 flex flex-wrap gap-2 text-2xs text-tertiary">
-              <span className="badge bg-accent/10 border-accent/20 text-accent">Claims reduction</span>
-              <span className="badge bg-elevated border-border text-secondary">Underwriting support</span>
-              <span className="badge bg-elevated border-border text-secondary">Member engagement</span>
+              <span className="badge bg-accent/10 border-accent/20 text-accent">Commercial impact</span>
+              <span className="badge bg-elevated border-border text-secondary">Risk insight</span>
+              <span className="badge bg-elevated border-border text-secondary">Member growth</span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 xl:justify-end">
             <button
-              onClick={() => navigate('/campaigns/new')}
+              onClick={() => navigate('/app/campaigns/new')}
               className="btn-primary text-xs"
             >
               <Plus size={13} />
-              Design Campaign
+              Create Campaign
             </button>
             <button
-              onClick={() => navigate('/explorer')}
+              onClick={() => navigate('/app/explorer')}
               className="btn-ghost text-xs"
             >
               View Member Pool
@@ -160,13 +155,13 @@ export default function Campaigns() {
         <MetricCard label="Verified Outcomes" value={formatNumber(stats.totalVerified)} subValue={formatCurrency(stats.totalBudget)} />
       </div>
 
-      <div>
+      <div data-walkthrough="campaigns-templates">
         <SectionHeader title="Starter templates" description="Use proven insurer programme structures, then adapt them to the portfolio." />
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-3">
           {campaignTemplates.map((template) => (
             <button
               key={template.id}
-              onClick={() => navigate('/campaigns/new', { state: { template } })}
+              onClick={() => navigate('/app/campaigns/new', { state: { template } })}
               className="card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
             >
               <div className="flex items-center gap-2 mb-2">
@@ -194,7 +189,7 @@ export default function Campaigns() {
 
       <SectionHeader
         title="Campaign Portfolio"
-        description="Live campaigns and drafts for the current insurer environment across claims reduction, underwriting support, and adjacent member programmes."
+        description="Live campaigns and drafts for insurer execution across portfolio performance, underwriting support, and adjacent member programmes."
         icon={<Target size={16} />}
       />
 
@@ -224,7 +219,7 @@ export default function Campaigns() {
             <option value="paused">Paused</option>
           </select>
           <button
-            onClick={() => navigate('/campaigns/new')}
+            onClick={() => navigate('/app/campaigns/new')}
             className="btn-primary text-xs"
           >
             <Plus size={13} />
@@ -233,7 +228,7 @@ export default function Campaigns() {
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2" data-walkthrough="campaigns-portfolio">
         {filtered.length === 0 && (
           <EmptyState
             icon={<Filter size={20} className="text-tertiary" />}
@@ -245,7 +240,7 @@ export default function Campaigns() {
         {filtered.map((campaign) => (
           <CampaignPopover key={campaign.id} campaign={campaign}>
             <button
-              onClick={() => navigate(`/campaigns/${campaign.id}`)}
+              onClick={() => navigate(`/app/campaigns/${campaign.id}`)}
               className="w-full card hover:bg-hover transition-colors duration-100 cursor-pointer text-left"
             >
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center">

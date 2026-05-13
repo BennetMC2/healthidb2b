@@ -248,11 +248,11 @@ export default function CampaignCreate() {
 
   const handleLaunchComplete = useCallback(() => {
     if (!launchingState) {
-      navigate('/campaigns');
+      navigate('/app/campaigns');
       return;
     }
 
-    navigate(`/campaigns/${launchingState.campaignId}`);
+    navigate(`/app/campaigns/${launchingState.campaignId}`);
     addToast({
       message:
         launchingState.status === 'success'
@@ -274,15 +274,15 @@ export default function CampaignCreate() {
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-[1120px]">
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/campaigns')} className="btn-ghost p-1">
+        <button onClick={() => navigate('/app/campaigns')} className="btn-ghost p-1">
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h1 className="text-lg font-semibold text-primary">Design Campaign</h1>
+          <h1 className="text-lg font-semibold text-primary">Create Campaign</h1>
           <p className="text-2xs text-tertiary mt-0.5">
-            Build a life insurance programme around claims reduction, verified outcomes, and modeled business impact.
+            Launch high-trust health programmes with measurable insurer value.
           </p>
         </div>
       </div>
@@ -297,10 +297,6 @@ export default function CampaignCreate() {
             <h2 className="mt-3 text-xl font-semibold text-primary">
               Configure the programme, verification signal, and modeled business outcome in one flow.
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-secondary">
-              This should feel like an operating surface for life insurers, not a toy campaign builder.
-              It defaults to Hong Kong and Japan, assumes the insurer is bringing the members, and leads with claims reduction as the primary commercial story.
-            </p>
           </div>
           <div className="grid grid-cols-1 gap-2 text-2xs text-tertiary md:w-[250px]">
             <div className="rounded-xl border border-border bg-surface/80 px-3 py-2">
@@ -346,8 +342,18 @@ export default function CampaignCreate() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4">
-        <div className="card">
+      <ActuarialROICalculator
+        metric={form.metric}
+        type={form.type}
+        useCase={form.useCase}
+        maxParticipants={Number(form.maxParticipants) || 0}
+        budgetCeiling={Number(form.budgetCeiling) || 0}
+        onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
+        variant="hero"
+      />
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="card p-5">
           {step === 0 && (
             <div className="space-y-4">
               <div>
@@ -422,7 +428,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">What buyers should understand here</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  The campaign is the operating center of the product. One configuration surface leads with claims reduction,
+                  The campaign is the operating center of the product. One configuration surface leads with portfolio performance,
                   supports underwriting and pre-policy moments, and still extends into engagement, renewal, lead gen, and long-term wellness infrastructure.
                 </p>
               </div>
@@ -631,7 +637,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">Cohort strategy</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  Reach, trust tier, source quality, and market availability combine into a targetable cohort with commercial relevance for claims reduction first and underwriting support second.
+                  Reach, trust tier, source quality, and market availability combine into a targetable cohort with commercial relevance for portfolio performance first and underwriting support second.
                 </p>
               </div>
             </div>
@@ -731,7 +737,7 @@ export default function CampaignCreate() {
                 <div className="text-2xs uppercase tracking-wider text-accent">Executive launch framing</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
                   This campaign gives the insurer a self-serve way to configure a measurable health programme, target a consented cohort,
-                  and model business value before launch. The operating model leads with claims reduction while remaining commercially credible for underwriting,
+                  and model business value before launch. The operating model leads with portfolio performance while remaining commercially credible for underwriting,
                   engagement, and lead-generation conversations.
                 </p>
               </div>
@@ -739,16 +745,7 @@ export default function CampaignCreate() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 min-h-0">
-          <ActuarialROICalculator
-            metric={form.metric}
-            type={form.type}
-            useCase={form.useCase}
-            maxParticipants={Number(form.maxParticipants) || 0}
-            budgetCeiling={Number(form.budgetCeiling) || 0}
-            onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
-          />
-
+        <aside className="flex min-h-0 flex-col gap-4 xl:self-start">
           <div className="card">
             <div className="metric-label mb-2">Live campaign summary</div>
             <div className="space-y-2 text-xs text-secondary">
@@ -770,7 +767,7 @@ export default function CampaignCreate() {
               </div>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">

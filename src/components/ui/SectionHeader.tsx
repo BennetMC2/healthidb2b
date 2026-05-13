@@ -6,6 +6,7 @@ interface SectionHeaderProps {
   icon?: ReactNode;
   className?: string;
   children?: ReactNode;
+  as?: 'h1' | 'h2';
 }
 
 export default function SectionHeader({
@@ -14,12 +15,15 @@ export default function SectionHeader({
   icon,
   className = '',
   children,
+  as = 'h2',
 }: SectionHeaderProps) {
+  const Heading = as;
+
   return (
     <div className={`mb-3 ${className}`}>
       <div className="flex items-center gap-2">
         {icon && <span className="text-accent/60">{icon}</span>}
-        <h2 className="text-base font-semibold text-primary font-display">{title}</h2>
+        <Heading className="text-base font-semibold text-primary font-display">{title}</Heading>
         {children}
       </div>
       {description && (

@@ -37,7 +37,7 @@ export default function OverviewOnboarding({ onDismiss }: OverviewOnboardingProp
       headerDescription="The universal infrastructure for the new health economy. Here's how it works:"
       steps={steps}
       punchline="Raw data never leaves the device. Verified trust reaches everyone."
-      primaryAction={{ label: 'Explore the Network', action: '/explorer' }}
+      primaryAction={{ label: 'Explore the Network', action: '/app/explorer' }}
       ghostLabel="Stay on Overview"
       onDismiss={onDismiss}
     />

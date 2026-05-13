@@ -1,32 +1,58 @@
 :root {
-  --n-base: 242 244 248;
-  --n-surface: 255 255 255;
-  --n-elevated: 247 249 252;
-  --n-hover: 239 242 247;
-  --n-border: 219 225 235;
-  --n-border-light: 198 207 220;
-  --n-primary: 15 23 42;
-  --n-secondary: 71 85 105;
-  --n-tertiary: 120 134 156;
-  --n-shadow: 15 23 42;
+  --hid-cream-50: 247 243 236;
+  --hid-cream-100: 237 232 224;
+  --hid-cream-200: 226 219 207;
+  --hid-cream-300: 210 200 184;
+  --hid-navy-900: 20 22 50;
+  --hid-navy-800: 26 26 62;
+  --hid-navy-700: 40 44 88;
+  --hid-navy-600: 74 82 144;
+  --hid-navy-500: 91 107 170;
+  --hid-navy-400: 140 152 198;
+  --hid-navy-300: 190 198 220;
+  --hid-rust-600: 196 90 46;
+  --hid-rust-500: 232 115 74;
+  --hid-rust-400: 243 152 116;
+  --hid-rust-100: 252 232 220;
+  --hid-emerald-500: 82 158 122;
+  --hid-amber-500: 214 158 78;
+  --hid-slate-500: 110 116 130;
+  --hid-rose-500: 202 88 96;
+  --hid-font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --hid-font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --hid-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  --ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-precision: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --a-accent: 41 98 255;
-  --a-accent-hover: 27 78 214;
-  --a-accent-muted: 237 243 255;
-  --a-accent-dim: 227 236 255;
-  --a-accent-secondary: 15 118 110;
-  --a-accent-secondary-hover: 13 99 92;
-  --a-accent-secondary-muted: 229 248 246;
-  --a-accent-secondary-dim: 214 242 238;
+  --n-base: var(--hid-cream-100);
+  --n-surface: 247 243 236;
+  --n-elevated: var(--hid-cream-200);
+  --n-hover: 226 219 207;
+  --n-border: var(--hid-cream-300);
+  --n-border-light: var(--hid-cream-300);
+  --n-primary: var(--hid-navy-800);
+  --n-secondary: var(--hid-navy-700);
+  --n-tertiary: var(--hid-navy-500);
+  --n-shadow: var(--hid-navy-900);
 
-  --a-success: 45 122 79;
-  --a-success-muted: 232 245 236;
-  --a-warning: 184 134 11;
-  --a-warning-muted: 254 245 224;
-  --a-error: 197 48 48;
-  --a-error-muted: 253 232 232;
+  --a-accent: var(--hid-rust-500);
+  --a-accent-hover: var(--hid-rust-600);
+  --a-accent-muted: var(--hid-rust-100);
+  --a-accent-dim: 247 219 205;
+  --a-accent-secondary: var(--hid-navy-600);
+  --a-accent-secondary-hover: var(--hid-navy-700);
+  --a-accent-secondary-muted: 228 230 242;
+  --a-accent-secondary-dim: 218 222 238;
 
-  --a-info: 100 150 200;
+  --a-success: var(--hid-emerald-500);
+  --a-success-muted: 227 241 234;
+  --a-warning: var(--hid-amber-500);
+  --a-warning-muted: 250 238 220;
+  --a-error: var(--hid-rose-500);
+  --a-error-muted: 248 226 229;
+
+  --a-info: var(--hid-navy-500);
 
   --s-health-excellent: 29 122 94;
   --s-health-excellent-light: 209 241 230;
@@ -60,25 +86,25 @@
 }
 
 [data-theme="dark"] {
-  --n-base: 8 15 31;
-  --n-surface: 14 24 45;
-  --n-elevated: 18 31 58;
-  --n-hover: 23 38 69;
-  --n-border: 32 49 83;
-  --n-border-light: 49 68 109;
-  --n-primary: 234 241 255;
-  --n-secondary: 158 173 202;
-  --n-tertiary: 104 121 153;
+  --n-base: 14 16 28;
+  --n-surface: 20 22 38;
+  --n-elevated: 34 38 58;
+  --n-hover: 40 44 64;
+  --n-border: 48 52 76;
+  --n-border-light: 60 66 94;
+  --n-primary: 232 232 244;
+  --n-secondary: 190 198 220;
+  --n-tertiary: 150 156 184;
   --n-shadow: 0 0 0;
 
-  --a-accent: 102 150 255;
-  --a-accent-hover: 75 127 245;
-  --a-accent-muted: 18 34 66;
-  --a-accent-dim: 23 42 82;
-  --a-accent-secondary: 64 201 190;
-  --a-accent-secondary-hover: 45 180 170;
-  --a-accent-secondary-muted: 18 52 50;
-  --a-accent-secondary-dim: 22 66 62;
+  --a-accent: var(--hid-rust-500);
+  --a-accent-hover: var(--hid-rust-400);
+  --a-accent-muted: 56 35 32;
+  --a-accent-dim: 66 43 39;
+  --a-accent-secondary: 140 152 198;
+  --a-accent-secondary-hover: 190 198 220;
+  --a-accent-secondary-muted: 31 34 54;
+  --a-accent-secondary-dim: 36 40 62;
 
   --a-success: 75 160 115;
   --a-success-muted: 20 42 28;
@@ -139,28 +165,25 @@
   }
 
   body {
-    font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
-    background:
-      radial-gradient(circle at top left, rgb(var(--a-accent) / 0.08), transparent 24%),
-      radial-gradient(circle at top right, rgb(var(--a-accent-secondary) / 0.08), transparent 28%),
-      linear-gradient(180deg, rgb(var(--n-base)) 0%, rgb(var(--n-base)) 100%);
+    font-family: var(--hid-font-body);
+    background: rgb(var(--n-base));
     color: rgb(var(--n-primary));
     line-height: 1.3;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     overflow: hidden;
     height: 100vh;
   }
 
   h1, h2, h3 {
-    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-family: var(--hid-font-display);
+    font-weight: 700;
+    letter-spacing: 0;
     line-height: 1.2;
   }
 
   h4, h5, h6 {
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
 
   #root {
@@ -196,17 +219,11 @@
 
 @layer components {
   .card {
-    @apply bg-surface border border-border rounded-xl p-3 shadow;
-    box-shadow:
-      0 1px 2px rgb(var(--n-shadow) / 0.03),
-      0 10px 30px rgb(var(--n-shadow) / 0.05);
+    @apply bg-surface border border-border rounded p-3 shadow-none;
   }
 
   .card-elevated {
-    @apply bg-elevated border border-border rounded-xl p-3;
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.65),
-      0 12px 30px rgb(var(--n-shadow) / 0.04);
+    @apply bg-elevated border border-border rounded p-3 shadow-none;
   }
 
   .metric-value {

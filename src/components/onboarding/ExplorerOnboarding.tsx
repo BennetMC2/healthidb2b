@@ -37,7 +37,7 @@ export default function ExplorerOnboarding({ onDismiss }: ExplorerOnboardingProp
       headerDescription="Full cohort intelligence without personal data exposure. Here's how:"
       steps={steps}
       punchline="Full cohort intelligence. Zero personal data exposure."
-      primaryAction={{ label: 'Create a Campaign', action: '/campaigns/new' }}
+      primaryAction={{ label: 'Create a Campaign', action: '/app/campaigns/new' }}
       ghostLabel="Explore the Pool"
       onDismiss={onDismiss}
     />

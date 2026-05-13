@@ -57,7 +57,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           label: c.name,
           sublabel: `Campaign \u00b7 ${c.status} \u00b7 ${c.type}`,
           icon: Target,
-          route: `/campaigns/${c.id}`,
+          route: `/app/campaigns/${c.id}`,
         });
       });
 
@@ -71,7 +71,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           label: i.anonymizedId,
           sublabel: `Identity \u00b7 ${i.reputationTier} \u00b7 Score ${i.healthScore}`,
           icon: Globe,
-          route: '/explorer',
+          route: '/app/explorer',
         });
       });
 
@@ -85,7 +85,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           label: r.details,
           sublabel: `Compliance \u00b7 ${r.eventType.replace(/_/g, ' ')}`,
           icon: ShieldCheck,
-          route: '/compliance',
+          route: '/app/compliance',
         });
       });
 

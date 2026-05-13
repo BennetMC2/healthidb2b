@@ -39,7 +39,7 @@ export default function FutureHeader() {
           <h1 className="mt-2 text-xl font-semibold text-primary font-display">{page.title}</h1>
           <p className="mt-1 max-w-[760px] text-sm leading-relaxed text-tertiary">{page.description}</p>
         </div>
-        <Link to="/campaigns" className="btn-ghost text-xs shrink-0">
+        <Link to="/app/campaigns" className="btn-ghost text-xs shrink-0">
           <ArrowLeft size={13} />
           Back To Current Demo
         </Link>
