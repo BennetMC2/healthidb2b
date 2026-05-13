@@ -65,6 +65,96 @@ function formatUsd(value: number | undefined): string {
   return `$${numberValue(value).toLocaleString('en-US')}`;
 }
 
+function formatPercent(value: number | undefined): string {
+  return `${numberValue(value)}%`;
+}
+
+function latestUserMessage(messages: MessageLike[]): string {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index]?.role === 'user') {
+      return messages[index].content.trim();
+    }
+  }
+
+  return '';
+}
+
+function buildDemoAnswer(question: string, context: DataContextLike = {}): string | null {
+  const normalized = question.toLowerCase();
+  const partnerName = context.partner?.name ?? 'this partner';
+  const verificationRate = numberValue(context.verifications?.successRate);
+  const verified = numberValue(context.verifications?.verified);
+  const totalVerifications = numberValue(context.verifications?.total);
+  const failedProofs = numberValue(context.compliance?.recentFailures);
+  const topCampaign = context.campaigns?.topCampaign ?? 'Q4 HbA1c Underwriting Screen';
+
+  if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(normalized)) {
+    return `Hello. I can help ${partnerName} with cohort quality, campaign performance, verification posture, and underwriting opportunities. Ask me where the next opportunity is or which part of the book needs attention.`;
+  }
+
+  if (/(underpriced|which cohort.*underpriced|cohort.*underpriced)/.test(normalized)) {
+    return [
+      `The clearest underpriced cohort in the demo book is the **high-trust cardio-fitness segment**.`,
+      `It contains **3,847 members** with top-decile VO2 Max signals that are still sitting in standard-risk premium bands.`,
+      `The demo model treats that as roughly **$4.2M** of repricing opportunity with an estimated **8-month payback** and **high confidence** because the source density and literature support are both strong.`,
+      `If I were acting on one signal first, I would launch the cardio repricing programme before expanding any lower-confidence sleep or maternity work.`,
+    ].join(' ');
+  }
+
+  if (/(weakest campaign|worst campaign|which campaign.*weakest|lowest performing campaign)/.test(normalized)) {
+    return [
+      `In the demo portfolio, the **Sleep Resilience Campaign** is the weakest programme to keep on the field unchanged.`,
+      `It is not broken, but it has the softest evidence posture, lower verification consistency than the cardio cohort, and a materially lower modeled upside than the top underwriting and repricing motions.`,
+      `My recommendation would be to tighten that campaign to higher-trust members or reallocate budget toward the cardio-fitness and HbA1c underwriting motions first.`,
+    ].join(' ');
+  }
+
+  if (/(verification success rate|proof success rate|success rate|verification posture)/.test(normalized)) {
+    return [
+      `Your verification success rate is **${formatPercent(verificationRate)}**, based on **${verified.toLocaleString('en-US')} verified** outcomes out of **${totalVerifications.toLocaleString('en-US')} total** verification events.`,
+      verificationRate >= 80
+        ? `For a demo book, that is a strong operating posture: the proof system is confirming outcomes reliably without exposing raw member health data.`
+        : `That is serviceable but not where I would want it long term. I would tighten source requirements and simplify lower-fidelity campaign rules.`,
+      `The next operating question is not “does the proof layer work?” but “which campaign should absorb more verified volume?”`,
+    ].join(' ');
+  }
+
+  if (/(best next|next programme|next program|what should we launch|recommend.*campaign|best campaign)/.test(normalized)) {
+    return [
+      `The best next programme to launch in this demo is the **cardio-fitness repricing motion**.`,
+      `It carries the highest modeled savings, the cleanest evidence base, and the strongest trust profile among the seeded opportunities.`,
+      `That makes it the best commercial story for a partner conversation because it combines visible financial upside with a crisp proof narrative.`,
+    ].join(' ');
+  }
+
+  if (/(underwriting|pricing screen|hba1c|renewal screen)/.test(normalized)) {
+    return [
+      `The strongest underwriting opportunity in the current demo set is **${topCampaign}**.`,
+      `The reason it matters is that it converts verified biomarker evidence into a pricing and selection workflow without requiring raw health data custody.`,
+      `The main caution is the maternity threshold update, which should be reviewed before broadening that screen any further.`,
+    ].join(' ');
+  }
+
+  if (/(proof failure|compliance risk|audit risk|breach risk|proof risk)/.test(normalized)) {
+    return [
+      `The compliance posture is still strong: the operating model shows **0 raw-data access events** and keeps the partner on receipt-only evidence.`,
+      failedProofs > 0
+        ? `The one watch item is **${failedProofs} recent proof failures**, which is an operating quality issue rather than a privacy issue.`
+        : `There are no recent proof failures showing up as a material watch item in the current snapshot.`,
+      `For the demo, the right framing is that trust risk is low, while optimisation risk sits in proof throughput and campaign design quality.`,
+    ].join(' ');
+  }
+
+  if (/(top campaign|strongest campaign|best performing campaign)/.test(normalized)) {
+    return [
+      `The strongest live campaign in the current book is **${topCampaign}**.`,
+      `It is carrying the clearest underwriting story in the portfolio and is the cleanest example of how verified outcomes can support partner decisioning without raw-data custody.`,
+    ].join(' ');
+  }
+
+  return null;
+}
+
 function buildSystemPrompt(context: DataContextLike = {}): string {
   const partner = context.partner ?? {};
   const campaigns = context.campaigns ?? {};
@@ -151,6 +241,18 @@ export async function handleCopilotRequest(request: Request): Promise<Response> 
 
   if (messages.length === 0) {
     return new Response('No copilot messages were provided.', { status: 400 });
+  }
+
+  const question = latestUserMessage(messages);
+  const demoAnswer = buildDemoAnswer(question, body.context);
+  if (demoAnswer) {
+    return new Response(demoAnswer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'no-store',
+      },
+    });
   }
 
   const model = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
