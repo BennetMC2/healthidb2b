@@ -9,7 +9,7 @@ export default function Footer() {
       </div>
       <div className="flex items-center gap-3">
         <a href="https://healthid.life" target="_blank" rel="noreferrer" className="hover:text-accent">
-          healthid.life ↗
+          Consumer site ↗
         </a>
         <span>Privacy</span>
         <span>Terms</span>
