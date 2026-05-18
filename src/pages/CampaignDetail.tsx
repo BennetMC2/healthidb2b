@@ -31,6 +31,7 @@ import InfoTooltip from '@/components/ui/InfoTooltip';
 import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesChart';
 import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
 import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
+import BehaviorShiftEvidence from '@/components/campaigns/BehaviorShiftEvidence';
 import { fetchConsumerCampaignStatus } from '@/lib/consumerCampaigns';
 import {
   formatNumber,
@@ -437,6 +438,8 @@ export default function CampaignDetail() {
           budgetCeiling={campaign.rewards.budgetCeiling}
         />
       </div>
+
+      <BehaviorShiftEvidence campaign={campaign} />
 
       <div className="flex flex-col 2xl:flex-row gap-4">
         <div className="card w-full 2xl:w-[300px] flex-shrink-0">
