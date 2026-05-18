@@ -5,22 +5,27 @@ import { campaigns as seedCampaigns } from '@/data/campaigns';
 
 interface CampaignStore {
   campaigns: Campaign[];
+  deletedCampaignIds: string[];
   addCampaign: (campaign: Campaign) => void;
+  deleteCampaign: (id: string) => void;
   updateStatus: (id: string, status: CampaignStatus) => void;
   updateBudget: (id: string, budgetSpent: number) => void;
   updateB2CSync: (id: string, sync: Partial<CampaignB2CSyncState>) => void;
   getCampaign: (id: string) => Campaign | undefined;
 }
 
-function mergeCampaignLists(persistedCampaigns?: Campaign[]): Campaign[] {
+function mergeCampaignLists(persistedCampaigns?: Campaign[], deletedCampaignIds: string[] = []): Campaign[] {
   const merged = new Map<string, Campaign>();
   const seedIds = new Set(seedCampaigns.map((campaign) => campaign.id));
+  const deletedIds = new Set(deletedCampaignIds);
 
   seedCampaigns.forEach((campaign) => {
+    if (deletedIds.has(campaign.id)) return;
     merged.set(campaign.id, campaign);
   });
 
   (persistedCampaigns ?? []).forEach((campaign) => {
+    if (deletedIds.has(campaign.id)) return;
     if (seedIds.has(campaign.id)) return;
     merged.set(campaign.id, campaign);
   });
@@ -34,9 +39,21 @@ export const useCampaignStore = create<CampaignStore>()(
   persist(
     (set, get) => ({
       campaigns: mergeCampaignLists(),
+      deletedCampaignIds: [],
 
       addCampaign: (campaign) =>
-        set((s) => ({ campaigns: mergeCampaignLists([campaign, ...s.campaigns]) })),
+        set((s) => ({
+          campaigns: mergeCampaignLists([campaign, ...s.campaigns], s.deletedCampaignIds.filter((id) => id !== campaign.id)),
+          deletedCampaignIds: s.deletedCampaignIds.filter((id) => id !== campaign.id),
+        })),
+
+      deleteCampaign: (id) =>
+        set((s) => ({
+          campaigns: s.campaigns.filter((campaign) => campaign.id !== id),
+          deletedCampaignIds: s.deletedCampaignIds.includes(id)
+            ? s.deletedCampaignIds
+            : [...s.deletedCampaignIds, id],
+        })),
 
       updateStatus: (id, status) =>
         set((s) => ({
@@ -80,12 +97,18 @@ export const useCampaignStore = create<CampaignStore>()(
     {
       name: 'healthid-b2b-campaign-store',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ campaigns: state.campaigns }),
+      partialize: (state) => ({
+        campaigns: state.campaigns,
+        deletedCampaignIds: state.deletedCampaignIds,
+      }),
       merge: (persistedState, currentState) => {
-        const persistedCampaigns = (persistedState as { campaigns?: Campaign[] } | undefined)?.campaigns;
+        const persisted = persistedState as { campaigns?: Campaign[]; deletedCampaignIds?: string[] } | undefined;
+        const persistedCampaigns = persisted?.campaigns;
+        const deletedCampaignIds = persisted?.deletedCampaignIds ?? [];
         return {
           ...currentState,
-          campaigns: mergeCampaignLists(persistedCampaigns),
+          campaigns: mergeCampaignLists(persistedCampaigns, deletedCampaignIds),
+          deletedCampaignIds,
         };
       },
     },

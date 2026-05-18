@@ -86,7 +86,7 @@ export interface ConsumerCampaignTimelineEvent {
   timestamp: string;
 }
 
-const DEFAULT_CONSUMER_APP_URL = import.meta.env.VITE_CONSUMER_APP_URL || 'http://localhost:3000';
+const DEFAULT_CONSUMER_APP_URL = import.meta.env.VITE_CONSUMER_APP_URL || 'https://longevity-guide-wine.vercel.app';
 const DEFAULT_DEPLOY_ENDPOINT = import.meta.env.VITE_CONSUMER_CAMPAIGN_DEPLOY_URL || `${DEFAULT_CONSUMER_APP_URL}/api/campaigns/deploy`;
 const DEFAULT_STATUS_ENDPOINT = import.meta.env.VITE_CONSUMER_CAMPAIGN_STATUS_URL || `${DEFAULT_CONSUMER_APP_URL}/api/campaigns/status`;
 const INTEGRATION_TOKEN = import.meta.env.VITE_CONSUMER_INTEGRATION_TOKEN;
@@ -186,23 +186,36 @@ export async function dispatchCampaignToConsumer(payload: ConsumerCampaignPayloa
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  const data = await parseConsumerResponse(response);
 
   if (!response.ok) {
     throw new Error(data.error || 'Failed to dispatch campaign to consumer app');
   }
 
-  return data as ConsumerCampaignDispatchResponse;
+  return data as unknown as ConsumerCampaignDispatchResponse;
 }
 
 export async function fetchConsumerCampaignStatus(externalCampaignId: string): Promise<ConsumerCampaignDispatchResponse> {
   const params = new URLSearchParams({ externalCampaignId });
   const response = await fetch(`${DEFAULT_STATUS_ENDPOINT}?${params.toString()}`);
-  const data = await response.json();
+  const data = await parseConsumerResponse(response);
 
   if (!response.ok) {
     throw new Error(data.error || 'Failed to fetch consumer campaign status');
   }
 
-  return data as ConsumerCampaignDispatchResponse;
+  return data as unknown as ConsumerCampaignDispatchResponse;
+}
+
+async function parseConsumerResponse(response: Response): Promise<{ error?: string } & Record<string, unknown>> {
+  const contentType = response.headers.get('content-type') ?? '';
+
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+
+  const text = await response.text();
+  return {
+    error: text || `Consumer app returned ${response.status} ${response.statusText}`,
+  };
 }

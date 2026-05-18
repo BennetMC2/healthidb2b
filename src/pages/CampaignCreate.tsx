@@ -227,7 +227,7 @@ export default function CampaignCreate() {
       });
       setLaunchingState({
         campaignId: newCampaign.id,
-        status: dispatchSummary.dispatchStatus === 'error' ? 'error' : 'success',
+        status: dispatchSummary.dispatchStatus === 'dispatched' ? 'success' : 'error',
         summary: dispatchSummary,
         errorMessage: dispatchSummary.error,
       });

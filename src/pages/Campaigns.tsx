@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
-import { Plus, Target, Filter, Activity, Heart, Moon, Users, Repeat2, Megaphone } from 'lucide-react';
+import { Plus, Target, Filter, Activity, Heart, Moon, Users, Repeat2, Megaphone, Trash2 } from 'lucide-react';
 import EmptyState from '@/components/ui/EmptyState';
 import CampaignOnboardingModal from '@/components/campaigns/CampaignOnboardingModal';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useCampaignStore } from '@/stores/useCampaignStore';
+import { useToastStore } from '@/stores/useToastStore';
 import { StatusBadge, TypeBadge, MetricBadge } from '@/components/ui/Badge';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
@@ -301,12 +303,15 @@ export default function Campaigns() {
   const navigate = useNavigate();
   const loading = useSimulatedLoading(300);
   const allCampaigns = useCampaignStore((s) => s.campaigns);
+  const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
+  const addToast = useToastStore((s) => s.addToast);
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const [typeFilter, setTypeFilter] = useState<'all' | CampaignType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | CampaignStatus>('all');
   const [familyFilter, setFamilyFilter] = useState<CampaignFamily>('signal');
   const [selectedTemplateId, setSelectedTemplateId] = useState(campaignTemplates[0]?.id ?? '');
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(null);
+  const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Partner-scoped campaigns
@@ -387,6 +392,23 @@ export default function Campaigns() {
     <div className="flex flex-col gap-4">
       {showOnboarding && (
         <CampaignOnboardingModal onDismiss={() => setShowOnboarding(false)} />
+      )}
+      {campaignToDelete && (
+        <ConfirmDialog
+          title="Delete Campaign"
+          description={`Delete "${campaignToDelete.name}" from Campaign Studio? This removes it from this workspace view.`}
+          confirmLabel="Delete"
+          variant="destructive"
+          onConfirm={() => {
+            deleteCampaign(campaignToDelete.id);
+            if (selectedPortfolioId === campaignToDelete.id) {
+              setSelectedPortfolioId(null);
+            }
+            addToast({ message: 'Campaign deleted', variant: 'success' });
+            setCampaignToDelete(null);
+          }}
+          onCancel={() => setCampaignToDelete(null)}
+        />
       )}
 
       <div className="card-elevated border-accent/15" data-walkthrough="campaigns-hero">
@@ -496,6 +518,7 @@ export default function Campaigns() {
                   <th className="py-2 pr-3 font-mono">Budget</th>
                   <th className="py-2 pr-3 font-mono">Status</th>
                   <th className="py-2 pr-3 font-mono">Verified</th>
+                  <th className="py-2 pr-3 font-mono text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -524,6 +547,19 @@ export default function Campaigns() {
                     <td className="py-2 pr-3 font-mono text-secondary">{formatCurrencyCompact(campaign.rewards.budgetCeiling)}</td>
                     <td className="py-2 pr-3"><StatusBadge status={campaign.status} /></td>
                     <td className="py-2 pr-3 font-mono text-secondary">{formatNumber(campaign.funnel.verified)}</td>
+                    <td className="py-2 pr-3 text-right">
+                      <button
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setCampaignToDelete(campaign);
+                        }}
+                        className="btn-ghost p-1.5 text-error hover:bg-error-muted"
+                        aria-label={`Delete ${campaign.name}`}
+                        title="Delete campaign"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -125,7 +125,7 @@ export default function B2CPreviewPane({ campaign, partner }: B2CPreviewPaneProp
               {sync.inviteCount ?? 0} invited · {sync.acceptedCount ?? 0} accepted · {sync.verifiedCount ?? 0} verified
             </div>
             <div className="mt-1">
-              {sync.dispatchStatus === 'error'
+              {sync.dispatchStatus === 'error' || sync.dispatchStatus === 'partial'
                 ? sync.lastError || 'Consumer dispatch did not complete cleanly.'
                 : sync.proofOpportunityCreated
                   ? 'Verification opportunity created in HealthID.'

@@ -9,6 +9,7 @@ import {
   Play,
   Shield,
   Sparkles,
+  Trash2,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -145,8 +146,10 @@ export default function CampaignDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
   const updateStatus = useCampaignStore((s) => s.updateStatus);
+  const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
   const updateB2CSync = useCampaignStore((s) => s.updateB2CSync);
   const allPartners = usePartnerStore((s) => s.allPartners);
   const loading = useSimulatedLoading(400);
@@ -307,6 +310,13 @@ export default function CampaignDetail() {
                 {campaign.status === 'active' ? <><Pause size={12} /> Pause Campaign</> : <><Play size={12} /> Resume Campaign</>}
               </button>
             )}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="btn-destructive text-xs justify-center"
+            >
+              <Trash2 size={12} />
+              Delete Campaign
+            </button>
           </div>
         </div>
       </div>
@@ -326,6 +336,22 @@ export default function CampaignDetail() {
             setShowPauseConfirm(false);
           }}
           onCancel={() => setShowPauseConfirm(false)}
+        />
+      )}
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title="Delete Campaign"
+          description={`Delete "${campaign.name}" from Campaign Studio? This removes it from this workspace view.`}
+          confirmLabel="Delete"
+          variant="destructive"
+          onConfirm={() => {
+            deleteCampaign(campaign.id);
+            addToast({ message: 'Campaign deleted', variant: 'success' });
+            setShowDeleteConfirm(false);
+            navigate('/app/campaigns');
+          }}
+          onCancel={() => setShowDeleteConfirm(false)}
         />
       )}
 
