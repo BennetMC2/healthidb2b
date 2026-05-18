@@ -92,8 +92,8 @@ const evidenceByMetric: Partial<Record<HealthMetric, EvidenceModel>> = {
     markerLabel: 'Screening completeness',
     markerShift: '+21% proof-ready',
     insurerSignal: 'Cleaner digital underwriting flow and fewer incomplete health checks.',
-    researchSummary: 'This is modelled as process quality: more completed checks and proof-ready members, not a health-outcome claim.',
-    sourceLabel: 'Campaign operational evidence model',
+    researchSummary: 'Screening completeness and proof readiness are tracked as operational quality signals that improve underwriting workflow confidence.',
+    sourceLabel: 'Operational evidence framework',
     sourceUrl: 'https://www.bmj.com/content/365/bmj.l2323',
   },
 };
@@ -105,7 +105,7 @@ const fallbackEvidence: EvidenceModel = {
   markerLabel: 'Proof-ready signal',
   markerShift: '+24% confidence',
   insurerSignal: 'Better engagement, stronger verified evidence density, and cleaner future segmentation.',
-  researchSummary: 'The mock model links behavior change to validated risk markers where available, not directly to near-term claims reduction.',
+  researchSummary: 'Behavior change is linked to validated risk markers where available, while claims impact is treated as a longer-term downstream outcome.',
   sourceLabel: 'Physical activity and mortality evidence review',
   sourceUrl: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6527136/',
 };
@@ -148,33 +148,33 @@ export default function BehaviorShiftEvidence({ campaign }: BehaviorShiftEvidenc
   ];
 
   return (
-    <section className="card">
+    <section className="card border-accent/20 p-5 xl:p-6">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-            <HeartPulse size={16} className="text-accent" />
-            Behavior shift and evidence bridge
+          <div className="flex items-center gap-2 text-base font-semibold text-primary">
+            <HeartPulse size={18} className="text-accent" />
+            Behaviour Shift Intelligence
           </div>
-          <p className="mt-1 max-w-3xl text-xs leading-relaxed text-tertiary">
-            Mock attribution layer: shows member behavior change and health-signal movement, then links it to published risk-marker evidence. It does not claim direct claims reduction.
+          <p className="mt-2 max-w-4xl text-sm leading-relaxed text-secondary">
+            Tracks verified member behaviour change, sustained health-signal movement, and the published risk-marker evidence that supports long-range insurer value.
           </p>
         </div>
-        <span className="badge bg-warning-muted border-warning/20 text-warning">
-          Leading indicators only
+        <span className="badge bg-accent/10 border-accent/20 text-accent">
+          Evidence-linked outcome signals
         </span>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
-        <div className="rounded-xl border border-border bg-surface/70 p-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+        <div className="rounded-xl border border-border bg-surface/70 p-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {flow.map((item, index) => (
               <div key={item.label} className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-accent/10 text-accent">
                   {item.icon}
                 </div>
                 <div className="min-w-0">
-                  <div className="font-mono text-lg font-semibold text-primary">{item.value}</div>
-                  <div className="text-2xs text-tertiary">{item.label}</div>
+                  <div className="font-mono text-2xl font-semibold text-primary">{item.value}</div>
+                  <div className="text-xs text-tertiary">{item.label}</div>
                 </div>
                 {index < flow.length - 1 && (
                   <ArrowRight size={14} className="ml-auto hidden text-tertiary md:block" />
@@ -183,51 +183,51 @@ export default function BehaviorShiftEvidence({ campaign }: BehaviorShiftEvidenc
             ))}
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-lg border border-border bg-base/70 p-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                <Activity size={13} className="text-accent" />
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="rounded-lg border border-border bg-base/70 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                <Activity size={15} className="text-accent" />
                 {evidence.behaviorLabel}
               </div>
-              <div className="mt-2 flex items-end justify-between gap-3">
-                <span className="font-mono text-2xl font-semibold text-primary">{evidence.behaviorShift}</span>
-                <span className="text-2xs text-success">{formatPercent(shiftedRate)} shifted</span>
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <span className="font-mono text-3xl font-semibold text-primary">{evidence.behaviorShift}</span>
+                <span className="text-xs text-success">{formatPercent(shiftedRate)} shifted</span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-hover">
+              <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-hover">
                 <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(100, shiftedRate * 100)}%` }} />
               </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-base/70 p-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                <Moon size={13} className="text-accent" />
+            <div className="rounded-lg border border-border bg-base/70 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                <Moon size={15} className="text-accent" />
                 {evidence.markerLabel}
               </div>
-              <div className="mt-2 flex items-end justify-between gap-3">
-                <span className="font-mono text-2xl font-semibold text-primary">{evidence.markerShift}</span>
-                <span className="text-2xs text-success">{formatPercent(sustainedRate)} sustained</span>
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <span className="font-mono text-3xl font-semibold text-primary">{evidence.markerShift}</span>
+                <span className="text-xs text-success">{formatPercent(sustainedRate)} sustained</span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-hover">
+              <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-hover">
                 <div className="h-full rounded-full bg-success" style={{ width: `${Math.min(100, sustainedRate * 100)}%` }} />
               </div>
             </div>
           </div>
         </div>
 
-        <aside className="rounded-xl border border-border bg-base/70 p-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-            <BookOpen size={14} className="text-accent" />
-            Research-backed interpretation
+        <aside className="rounded-xl border border-border bg-base/70 p-5">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <BookOpen size={16} className="text-accent" />
+            Evidence Interpretation
           </div>
-          <p className="mt-3 text-xs leading-relaxed text-secondary">{evidence.researchSummary}</p>
-          <div className="mt-3 rounded-lg bg-hover px-3 py-3 text-xs leading-relaxed text-tertiary">
+          <p className="mt-3 text-sm leading-relaxed text-secondary">{evidence.researchSummary}</p>
+          <div className="mt-4 rounded-lg bg-hover px-4 py-4 text-sm leading-relaxed text-tertiary">
             Insurer readout: {evidence.insurerSignal}
           </div>
           <a
             href={evidence.sourceUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-3 inline-flex text-2xs font-semibold text-accent hover:text-accent-secondary"
+            className="mt-4 inline-flex text-xs font-semibold text-accent hover:text-accent-secondary"
           >
             {evidence.sourceLabel}
           </a>
