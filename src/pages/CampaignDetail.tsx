@@ -32,7 +32,7 @@ import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesCh
 import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
 import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
 import BehaviorShiftEvidence from '@/components/campaigns/BehaviorShiftEvidence';
-import { fetchConsumerCampaignStatus } from '@/lib/consumerCampaigns';
+import { deleteConsumerCampaign, fetchConsumerCampaignStatus } from '@/lib/consumerCampaigns';
 import {
   formatNumber,
   formatCurrency,
@@ -346,7 +346,14 @@ export default function CampaignDetail() {
           description={`Delete "${campaign.name}" from Campaign Studio? This removes it from this workspace view.`}
           confirmLabel="Delete"
           variant="destructive"
-          onConfirm={() => {
+          onConfirm={async () => {
+            const externalCampaignId = campaign.b2cSync?.externalCampaignId ?? campaign.id;
+            try {
+              await deleteConsumerCampaign(externalCampaignId);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : 'Consumer campaign delete failed';
+              addToast({ message, variant: 'default' });
+            }
             deleteCampaign(campaign.id);
             addToast({ message: 'Campaign deleted', variant: 'success' });
             setShowDeleteConfirm(false);

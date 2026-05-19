@@ -12,6 +12,7 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrencyCompact } from '@/utils/format';
 import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
+import { deleteConsumerCampaign } from '@/lib/consumerCampaigns';
 import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
@@ -399,7 +400,14 @@ export default function Campaigns() {
           description={`Delete "${campaignToDelete.name}" from Campaign Studio? This removes it from this workspace view.`}
           confirmLabel="Delete"
           variant="destructive"
-          onConfirm={() => {
+          onConfirm={async () => {
+            const externalCampaignId = campaignToDelete.b2cSync?.externalCampaignId ?? campaignToDelete.id;
+            try {
+              await deleteConsumerCampaign(externalCampaignId);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : 'Consumer campaign delete failed';
+              addToast({ message, variant: 'default' });
+            }
             deleteCampaign(campaignToDelete.id);
             if (selectedPortfolioId === campaignToDelete.id) {
               setSelectedPortfolioId(null);

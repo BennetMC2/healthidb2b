@@ -207,6 +207,20 @@ export async function fetchConsumerCampaignStatus(externalCampaignId: string): P
   return data as unknown as ConsumerCampaignDispatchResponse;
 }
 
+export async function deleteConsumerCampaign(externalCampaignId: string): Promise<void> {
+  const params = new URLSearchParams({ externalCampaignId });
+  const response = await fetch(`${DEFAULT_DEPLOY_ENDPOINT}?${params.toString()}`, {
+    method: 'DELETE',
+    headers: buildHeaders(),
+  });
+
+  const data = await parseConsumerResponse(response);
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to delete campaign from consumer app');
+  }
+}
+
 async function parseConsumerResponse(response: Response): Promise<{ error?: string } & Record<string, unknown>> {
   const contentType = response.headers.get('content-type') ?? '';
 
