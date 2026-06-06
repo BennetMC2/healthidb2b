@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ExplorerOnboarding from '@/components/onboarding/ExplorerOnboarding';
-import { Globe, Users, Activity, Database, SearchX, Download, ArrowUpRight, Shield } from 'lucide-react';
+import { Globe, Users, Activity, Database, SearchX, Download, ArrowUpRight, Shield, BarChart3 } from 'lucide-react';
 import IdentityDetailDrawer from '@/components/explorer/IdentityDetailDrawer';
+import CohortCard from '@/components/explorer/CohortCard';
+import CohortDetailView from '@/components/explorer/CohortDetailView';
 import { exportToCSV } from '@/utils/export';
 import { useToastStore } from '@/stores/useToastStore';
 import MetricCard from '@/components/ui/MetricCard';
@@ -11,6 +13,8 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 import { ReputationBadge } from '@/components/ui/Badge';
 import { identities } from '@/data';
+import { computeCohortSummaries } from '@/utils/cohorts';
+import type { CohortSummary } from '@/utils/cohorts';
 import { formatNumber, formatCompact, formatRelativeTime } from '@/utils/format';
 import { useSimulatedLoading } from '@/hooks/useSimulatedLoading';
 import {
@@ -20,6 +24,8 @@ import {
   REPUTATION_TIER_COLORS,
   TRUST_TIER_DESCRIPTIONS,
   AGE_RANGES,
+  getConfidenceLabel,
+  CONFIDENCE_COLORS,
 } from '@/utils/constants';
 import { useDemoStore } from '@/stores/useDemoStore';
 import { useCampaignStore } from '@/stores/useCampaignStore';
@@ -30,6 +36,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 
 const defaultFilters: FilterState = {
   healthScoreRange: [0, 100],
+  confidenceScoreRange: [0, 1],
   reputationTiers: [],
   dataSources: [],
   ageRanges: [],
@@ -37,9 +44,9 @@ const defaultFilters: FilterState = {
 };
 
 const presets = [
-  { label: 'High-Value Cohort', filters: { healthScoreRange: [75, 100] as [number, number], reputationTiers: ['high'] as ReputationTier[], dataSources: [], ageRanges: [], genders: [] } },
-  { label: 'Wearable-Verified', filters: { healthScoreRange: [0, 100] as [number, number], reputationTiers: [], dataSources: ['apple_health', 'fitbit', 'garmin', 'oura', 'whoop'] as DataSource[], ageRanges: [], genders: [] } },
-  { label: 'Lab-Confirmed', filters: { healthScoreRange: [0, 100] as [number, number], reputationTiers: [], dataSources: ['lab_results'] as DataSource[], ageRanges: [], genders: [] } },
+  { label: 'High-Value Cohort', filters: { healthScoreRange: [75, 100] as [number, number], confidenceScoreRange: [0, 1] as [number, number], reputationTiers: ['high'] as ReputationTier[], dataSources: [], ageRanges: [], genders: [] } },
+  { label: 'Wearable-Verified', filters: { healthScoreRange: [0, 100] as [number, number], confidenceScoreRange: [0, 1] as [number, number], reputationTiers: [], dataSources: ['apple_health', 'fitbit', 'garmin', 'oura', 'whoop'] as DataSource[], ageRanges: [], genders: [] } },
+  { label: 'Lab-Confirmed', filters: { healthScoreRange: [0, 100] as [number, number], confidenceScoreRange: [0, 1] as [number, number], reputationTiers: [], dataSources: ['lab_results'] as DataSource[], ageRanges: [], genders: [] } },
 ];
 
 export default function NetworkExplorer() {
@@ -55,7 +62,15 @@ export default function NetworkExplorer() {
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const loading = useSimulatedLoading(600);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [activeTab, setActiveTab] = useState<'cohorts' | 'browse'>('cohorts');
+  const [selectedCohort, setSelectedCohort] = useState<CohortSummary | null>(null);
   const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
+
+  const cohortSummaries = useMemo(() => computeCohortSummaries(identities), []);
+  const cohortMembers = useMemo(() => {
+    if (!selectedCohort) return [];
+    return identities.filter((id) => id.riskCohort === selectedCohort.name);
+  }, [selectedCohort]);
 
   const campaignId = new URLSearchParams(location.search).get('campaignId');
   const scopedCampaign = useMemo(
@@ -67,6 +82,7 @@ export default function NetworkExplorer() {
   const filtered = useMemo(() => {
     return identities.filter((id) => {
       if (id.healthScore < filters.healthScoreRange[0] || id.healthScore > filters.healthScoreRange[1]) return false;
+      if (id.confidenceScore < filters.confidenceScoreRange[0] || id.confidenceScore > filters.confidenceScoreRange[1]) return false;
       if (filters.reputationTiers.length > 0 && !filters.reputationTiers.includes(id.reputationTier)) return false;
       if (filters.dataSources.length > 0 && !filters.dataSources.some((ds) => id.connectedSources.includes(ds))) return false;
       if (filters.ageRanges.length > 0 && !filters.ageRanges.includes(id.demographics.ageRange)) return false;
@@ -115,6 +131,15 @@ export default function NetworkExplorer() {
       const color = v >= 80 ? 'text-health-excellent' : v >= 60 ? 'text-health-good' : v >= 40 ? 'text-health-moderate' : 'text-health-poor';
       return <span className={`font-mono text-sm ${color}`}>{v}</span>;
     }},
+    { accessorKey: 'confidenceScore', header: 'Confidence', cell: ({ getValue }) => {
+      const v = getValue<number>();
+      const tier = getConfidenceLabel(v);
+      return (
+        <span className="font-mono text-xs" style={{ color: CONFIDENCE_COLORS[tier] }}>
+          {v.toFixed(2)}
+        </span>
+      );
+    }},
     { accessorKey: 'reputationTier', header: 'Trust Tier', cell: ({ getValue }) => <ReputationBadge tier={getValue<ReputationTier>()} /> },
     { accessorKey: 'riskCohort', header: 'Risk Cohort', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<string>()}</span> },
     { accessorKey: 'connectedSources', header: 'Sources', cell: ({ getValue }) => <span className="text-xs text-secondary">{getValue<DataSource[]>().length}</span> },
@@ -155,12 +180,67 @@ export default function NetworkExplorer() {
       {/* Section Header */}
       <SectionHeader
         as="h1"
-        title="Member Pool"
-        description="Reachable members for Health Points campaigns, segmented by consented signals and trust tiers."
+        title="Cohorts"
+        description="Risk cohorts and reachable members for Health Points campaigns, segmented by consented signals and trust tiers."
         icon={<Globe size={16} />}
         className="xl:[&_p]:max-w-none xl:[&_p]:whitespace-nowrap"
       />
 
+      {/* Tabs */}
+      {!scopedCampaign && !selectedCohort && (
+        <div className="flex items-center gap-1 border-b border-border">
+          <button
+            onClick={() => setActiveTab('cohorts')}
+            className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+              activeTab === 'cohorts'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-tertiary hover:text-secondary'
+            }`}
+          >
+            <span className="flex items-center gap-1.5"><BarChart3 size={13} /> Risk Cohorts</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('browse')}
+            className={`px-3 py-2 text-xs font-medium border-b-2 transition-colors ${
+              activeTab === 'browse'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-tertiary hover:text-secondary'
+            }`}
+          >
+            <span className="flex items-center gap-1.5"><Users size={13} /> Browse All</span>
+          </button>
+        </div>
+      )}
+
+      {/* Cohort Detail View */}
+      {selectedCohort && (
+        <CohortDetailView
+          cohort={selectedCohort}
+          members={cohortMembers}
+          onBack={() => setSelectedCohort(null)}
+          onSelectIdentity={setSelectedIdentity}
+        />
+      )}
+
+      {/* Cohorts Tab */}
+      {activeTab === 'cohorts' && !selectedCohort && !scopedCampaign && (
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <MetricCard label="Total Cohorts" value={String(cohortSummaries.length)} icon={<BarChart3 size={14} />} />
+            <MetricCard label="Total Members" value={formatCompact(identities.length)} icon={<Users size={14} />} />
+            <MetricCard label="Avg Risk Score" value={(cohortSummaries.reduce((s, c) => s + c.riskScore, 0) / Math.max(cohortSummaries.length, 1) * 100).toFixed(0)} icon={<Activity size={14} />} />
+            <MetricCard label="Highest-Risk Cohort" value={cohortSummaries[0]?.name ?? '—'} icon={<Shield size={14} />} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+            {cohortSummaries.map((cohort) => (
+              <CohortCard key={cohort.name} cohort={cohort} onClick={() => setSelectedCohort(cohort)} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Browse All Tab / Scoped Campaign */}
+      {(activeTab === 'browse' || scopedCampaign) && !selectedCohort && (<>
       <div className="command-surface p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -325,6 +405,32 @@ export default function NetworkExplorer() {
                   max={100}
                   value={filters.healthScoreRange[1]}
                   onChange={(e) => setFilters({ ...filters, healthScoreRange: [filters.healthScoreRange[0], +e.target.value] })}
+                  className="input-field w-16 text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Confidence Score Range */}
+            <div>
+              <label className="metric-label block mb-1.5">Confidence Score</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={filters.confidenceScoreRange[0]}
+                  onChange={(e) => setFilters({ ...filters, confidenceScoreRange: [+e.target.value, filters.confidenceScoreRange[1]] })}
+                  className="input-field w-16 text-xs font-mono"
+                />
+                <span className="text-tertiary text-xs">—</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={filters.confidenceScoreRange[1]}
+                  onChange={(e) => setFilters({ ...filters, confidenceScoreRange: [filters.confidenceScoreRange[0], +e.target.value] })}
                   className="input-field w-16 text-xs font-mono"
                 />
               </div>
@@ -550,6 +656,8 @@ export default function NetworkExplorer() {
           </div>
         </div>
       </div>
+
+      </>)}
 
       {/* Identity Detail Drawer */}
       <IdentityDetailDrawer

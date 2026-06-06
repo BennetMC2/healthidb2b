@@ -79,6 +79,8 @@ export default function CampaignCreate() {
     duration: '90',
     healthScoreMin: '0',
     healthScoreMax: '100',
+    confidenceScoreMin: '0',
+    confidenceScoreMax: '1',
     reputationTiers: [] as ReputationTier[],
     dataSources: [] as DataSource[],
     ageRanges: [] as string[],
@@ -162,6 +164,8 @@ export default function CampaignCreate() {
       targeting: {
         healthScoreMin: Number(form.healthScoreMin) || 0,
         healthScoreMax: Number(form.healthScoreMax) || 100,
+        confidenceScoreMin: Number(form.confidenceScoreMin) || undefined,
+        confidenceScoreMax: Number(form.confidenceScoreMax) < 1 ? Number(form.confidenceScoreMax) : undefined,
         reputationTiers: form.reputationTiers.length > 0 ? form.reputationTiers : undefined,
         dataSources: form.dataSources.length > 0 ? form.dataSources : undefined,
         ageRanges: form.ageRanges.length > 0 ? form.ageRanges : undefined,
@@ -566,6 +570,31 @@ export default function CampaignCreate() {
                     max={100}
                     value={form.healthScoreMax}
                     onChange={(e) => setForm({ ...form, healthScoreMax: e.target.value })}
+                    className="input-field w-20 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="metric-label block mb-1.5">Confidence Score Range</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={form.confidenceScoreMin}
+                    onChange={(e) => setForm({ ...form, confidenceScoreMin: e.target.value })}
+                    className="input-field w-20 font-mono"
+                  />
+                  <span className="text-tertiary">—</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={form.confidenceScoreMax}
+                    onChange={(e) => setForm({ ...form, confidenceScoreMax: e.target.value })}
                     className="input-field w-20 font-mono"
                   />
                 </div>

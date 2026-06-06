@@ -22,6 +22,34 @@ export const TRUST_TIER_DESCRIPTIONS: Record<ReputationTier, string> = {
   low: 'Self-Reported Logs',
 };
 
+// ── Confidence Score ────────────────────────────────────────────────
+
+export const CONFIDENCE_THRESHOLDS = { high: 0.72, medium: 0.45 } as const;
+
+export const CONFIDENCE_COLORS: Record<'high' | 'medium' | 'low', string> = {
+  high: '#1D7A5E',
+  medium: '#B8860B',
+  low: '#8896AB',
+};
+
+export const CONFIDENCE_LABELS: Record<'high' | 'medium' | 'low', string> = {
+  high: 'High Confidence',
+  medium: 'Medium Confidence',
+  low: 'Low Confidence',
+};
+
+export function getConfidenceLabel(score: number): 'high' | 'medium' | 'low' {
+  if (score >= CONFIDENCE_THRESHOLDS.high) return 'high';
+  if (score >= CONFIDENCE_THRESHOLDS.medium) return 'medium';
+  return 'low';
+}
+
+export const SIGNAL_TYPE_WEIGHTS = {
+  clinical: 0.92,
+  device: 0.63,
+  selfReport: 0.28,
+} as const;
+
 export const RISK_COHORTS = [
   'Pre-Diabetic Watchlist',
   'Low-Risk Millennial',

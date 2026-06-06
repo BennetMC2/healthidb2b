@@ -21,6 +21,22 @@ import FuturePopulation from '@/future/pages/FuturePopulation';
 import FutureExecution from '@/future/pages/FutureExecution';
 import FutureDecisions from '@/future/pages/FutureDecisions';
 import FutureTrust from '@/future/pages/FutureTrust';
+import SimulatorLayout from '@/simulator/SimulatorLayout';
+import SimulatorOverview from '@/simulator/pages/Overview';
+import ScenarioBuilder from '@/simulator/pages/ScenarioBuilder';
+import CohortBuilder from '@/simulator/pages/CohortBuilder';
+import SignalConfidence from '@/simulator/pages/SignalConfidence';
+import EvidenceLibrary from '@/simulator/pages/EvidenceLibrary';
+import InterventionBuilder from '@/simulator/pages/InterventionBuilder';
+import RewardFunction from '@/simulator/pages/RewardFunction';
+import SimulationRunner from '@/simulator/pages/SimulationRunner';
+import OutputDashboard from '@/simulator/pages/OutputDashboard';
+import HealthToValueBridge from '@/simulator/pages/HealthToValueBridge';
+import AuditTrail from '@/simulator/pages/AuditTrail';
+import SimulatorSettings from '@/simulator/pages/SimulatorSettings';
+import ScenarioComparison from '@/simulator/pages/ScenarioComparison';
+import ArchitectureDiagram from '@/simulator/pages/ArchitectureDiagram';
+import ModelInspector from '@/simulator/pages/ModelInspector';
 
 export default function App() {
   const startDemo = useDemoStore((s) => s.startDemo);
@@ -44,8 +60,8 @@ export default function App() {
         description: 'Create Health Points campaigns for signal improvement, acquisition, retention, and engagement.',
         robots: 'noindex',
       },
-      '/app/explorer': {
-        title: 'Member Pool · HealthID',
+      '/app/cohorts': {
+        title: 'Cohorts · HealthID',
         description: 'Explore anonymized verified health cohorts and trust tiers.',
         robots: 'noindex',
       },
@@ -64,8 +80,8 @@ export default function App() {
     const exact = meta[path];
     const fallback = path.startsWith('/app/campaigns/')
       ? meta['/app/campaigns']
-      : path.startsWith('/app/explorer')
-        ? meta['/app/explorer']
+      : path.startsWith('/app/cohorts')
+        ? meta['/app/cohorts']
         : path.startsWith('/app/compliance')
           ? meta['/app/compliance']
           : exact;
@@ -101,7 +117,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/app/actuary" replace />} />
           <Route path="/overview" element={<Navigate to="/app/actuary" replace />} />
-          <Route path="/contact" element={<Navigate to="/app/explorer" replace />} />
+          <Route path="/contact" element={<Navigate to="/app/cohorts" replace />} />
           <Route path="/future" element={<FutureLayout />}>
             <Route index element={<Navigate to="/future/strategy" replace />} />
             <Route path="strategy" element={<FutureStrategy />} />
@@ -110,10 +126,29 @@ export default function App() {
             <Route path="decisions" element={<FutureDecisions />} />
             <Route path="trust" element={<FutureTrust />} />
           </Route>
+          <Route path="/simulator" element={<SimulatorLayout />}>
+            <Route index element={<Navigate to="/simulator/overview" replace />} />
+            <Route path="overview" element={<SimulatorOverview />} />
+            <Route path="architecture" element={<ArchitectureDiagram />} />
+            <Route path="inspector" element={<ModelInspector />} />
+            <Route path="scenario" element={<ScenarioBuilder />} />
+            <Route path="cohort" element={<CohortBuilder />} />
+            <Route path="signals" element={<SignalConfidence />} />
+            <Route path="evidence" element={<EvidenceLibrary />} />
+            <Route path="interventions" element={<InterventionBuilder />} />
+            <Route path="rewards" element={<RewardFunction />} />
+            <Route path="run" element={<SimulationRunner />} />
+            <Route path="output" element={<OutputDashboard />} />
+            <Route path="bridge" element={<HealthToValueBridge />} />
+            <Route path="audit" element={<AuditTrail />} />
+            <Route path="settings" element={<SimulatorSettings />} />
+            <Route path="compare" element={<ScenarioComparison />} />
+          </Route>
           <Route element={<Layout onTourStart={handleTourStart} />}>
             <Route path="/app" element={<Navigate to="/app/actuary" replace />} />
             <Route path="/app/actuary" element={<Actuary />} />
-            <Route path="/app/explorer" element={<NetworkExplorer />} />
+            <Route path="/app/cohorts" element={<NetworkExplorer />} />
+            <Route path="/app/explorer" element={<Navigate to="/app/cohorts" replace />} />
             <Route path="/app/campaigns" element={<Campaigns />} />
             <Route path="/app/campaigns/new" element={<CampaignCreate />} />
             <Route path="/app/campaigns/:id" element={<CampaignDetail />} />
@@ -126,7 +161,7 @@ export default function App() {
           <Route path="/campaigns" element={<Navigate to="/app/campaigns" replace />} />
           <Route path="/campaigns/new" element={<Navigate to="/app/campaigns/new" replace />} />
           <Route path="/campaigns/:id" element={<Navigate to="/app/campaigns" replace />} />
-          <Route path="/explorer" element={<Navigate to="/app/explorer" replace />} />
+          <Route path="/explorer" element={<Navigate to="/app/cohorts" replace />} />
           <Route path="/compliance" element={<Navigate to="/app/compliance" replace />} />
           <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
           <Route path="/treasury" element={<Navigate to="/app/treasury" replace />} />

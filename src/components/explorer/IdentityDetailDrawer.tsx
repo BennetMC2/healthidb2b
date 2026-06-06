@@ -1,9 +1,9 @@
-import { X, Activity, Shield, Database, Users, Calendar } from 'lucide-react';
+import { X, Activity, Shield, Database, Users, Calendar, Gauge } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReputationBadge } from '@/components/ui/Badge';
 import LiveProofButton from '@/components/proof/LiveProofButton';
 import { formatNumber, formatRelativeTime } from '@/utils/format';
-import { DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS } from '@/utils/constants';
+import { DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, getConfidenceLabel, CONFIDENCE_LABELS, CONFIDENCE_COLORS } from '@/utils/constants';
 import type { HealthIdentity } from '@/types';
 
 interface IdentityDetailDrawerProps {
@@ -72,6 +72,42 @@ export default function IdentityDetailDrawer({ identity, onClose }: IdentityDeta
                   </div>
                   <ReputationBadge tier={identity.reputationTier} />
                   <div className="text-2xs text-tertiary mt-0.5">{REPUTATION_TIER_LABELS[identity.reputationTier]}</div>
+                </div>
+              </div>
+
+              {/* Confidence Score */}
+              <div className="card-elevated">
+                <div className="flex items-center gap-1 mb-2">
+                  <Gauge size={11} className="text-accent" />
+                  <span className="text-2xs text-tertiary">Confidence Score</span>
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-mono text-xl font-bold" style={{ color: CONFIDENCE_COLORS[getConfidenceLabel(identity.confidenceScore)] }}>
+                    {identity.confidenceScore.toFixed(2)}
+                  </span>
+                  <span className="badge text-2xs" style={{
+                    color: CONFIDENCE_COLORS[getConfidenceLabel(identity.confidenceScore)],
+                    borderColor: CONFIDENCE_COLORS[getConfidenceLabel(identity.confidenceScore)] + '33',
+                    backgroundColor: CONFIDENCE_COLORS[getConfidenceLabel(identity.confidenceScore)] + '15',
+                  }}>
+                    {CONFIDENCE_LABELS[getConfidenceLabel(identity.confidenceScore)]}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  {[
+                    { label: 'Signal Quality', value: identity.connectedSources.some((s) => s === 'lab_results') ? 0.92 : 0.63 },
+                    { label: 'Source Depth', value: Math.min(1, 0.3 + (identity.connectedSources.length - 1) * 0.175) },
+                    { label: 'Freshness', value: identity.lastVerified ? (Math.floor((Date.now() - new Date(identity.lastVerified).getTime()) / 86400000) <= 30 ? 0.8 : 0.45) : 0.3 },
+                    { label: 'Consistency', value: Math.min(1, 0.2 + identity.verificationCount * 0.15) },
+                  ].map((dim) => (
+                    <div key={dim.label} className="flex items-center gap-2">
+                      <span className="text-2xs text-tertiary w-20">{dim.label}</span>
+                      <div className="flex-1 h-1.5 bg-base rounded-full overflow-hidden">
+                        <div className="h-full bg-accent/50 rounded-full" style={{ width: `${dim.value * 100}%` }} />
+                      </div>
+                      <span className="text-2xs font-mono text-tertiary w-8 text-right">{dim.value.toFixed(2)}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
 

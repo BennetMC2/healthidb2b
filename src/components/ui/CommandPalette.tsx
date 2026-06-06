@@ -75,7 +75,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           label: i.anonymizedId,
           sublabel: `Identity \u00b7 ${i.reputationTier} \u00b7 Score ${i.healthScore}`,
           icon: Globe,
-          route: '/app/explorer',
+          route: '/app/cohorts',
         });
       });
 
@@ -102,7 +102,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     { id: 'ask', label: 'Ask the Actuary Copilot', sublabel: 'Open the AI Actuary command center and focus the input', icon: BrainCircuit, action: () => navigate('/app/actuary?focusCopilot=1') },
     { id: 'plays', label: "Show today's opportunities", sublabel: 'Review wearable signal campaigns', icon: Target, action: () => navigate('/app/actuary') },
     { id: 'campaigns', label: 'Go to Campaign Studio', sublabel: 'Open campaign portfolio and builder', icon: Target, action: () => navigate('/app/campaigns') },
-    { id: 'pool', label: 'Go to Member Pool', sublabel: 'Explore anonymous cohorts', icon: Globe, action: () => navigate('/app/explorer') },
+    { id: 'pool', label: 'Go to Cohorts', sublabel: 'Explore risk cohorts and anonymous members', icon: Globe, action: () => navigate('/app/cohorts') },
     { id: 'trail', label: 'Go to Verification Trail', sublabel: 'Audit proof receipts', icon: ShieldCheck, action: () => navigate('/app/compliance') },
     { id: 'theme', label: 'Toggle dark mode', sublabel: 'Switch presentation theme', icon: Moon, action: () => toggleTheme() },
   ];

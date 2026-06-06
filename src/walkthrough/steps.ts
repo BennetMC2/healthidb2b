@@ -33,8 +33,8 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'explorer-nav',
-    route: '/app/explorer',
-    title: 'Member Pool',
+    route: '/app/cohorts',
+    title: 'Cohorts',
     narration:
       'The Member Pool shows who is reachable with enough trust and signal quality to be commercially relevant, without exposing raw health records.',
     targetSelector: '[data-tour="explorer-nav"]',
@@ -43,7 +43,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'explorer-metrics',
-    route: '/app/explorer',
+    route: '/app/cohorts',
     title: 'Cohort readiness',
     narration:
       'These top-line metrics frame reach, verification readiness, and signal density before any programme is designed.',
@@ -53,7 +53,7 @@ export const walkthroughSteps: WalkthroughStep[] = [
   },
   {
     id: 'explorer-presets',
-    route: '/app/explorer',
+    route: '/app/cohorts',
     title: 'Preset cohorts',
     narration:
       'These controls shape the reachable audience quickly. Teams can move from broad pool to high-trust cohort without turning the product into a generic data explorer.',

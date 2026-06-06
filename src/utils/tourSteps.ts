@@ -10,8 +10,8 @@ export const tourSteps: Step[] = [
   },
   {
     target: '[data-tour="explorer-nav"]',
-    content: 'The member pool shows reachable cohorts the insurer can target without turning the app into a generic identity explorer.',
-    title: 'Member Pool',
+    content: 'Cohorts show reachable risk groups the insurer can target without turning the app into a generic identity explorer.',
+    title: 'Cohorts',
     disableBeacon: true,
     placement: 'right',
   },

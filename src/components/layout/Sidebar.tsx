@@ -47,7 +47,7 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
 const navItems = [
   { path: '/app/actuary', label: 'AI Actuary', icon: BrainCircuit, tourId: 'actuary-nav' },
   { path: '/app/campaigns', label: 'Campaign Studio', icon: Target, tourId: 'campaigns-nav' },
-  { path: '/app/explorer', label: 'Member Pool', icon: Globe, tourId: 'explorer-nav' },
+  { path: '/app/cohorts', label: 'Cohorts', icon: Globe, tourId: 'explorer-nav' },
   { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
   { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
 ];

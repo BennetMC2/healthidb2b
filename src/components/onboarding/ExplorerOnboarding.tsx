@@ -33,7 +33,7 @@ export default function ExplorerOnboarding({ onDismiss }: ExplorerOnboardingProp
   return (
     <OnboardingModal
       storageKey="healthid_explorer_onboarded"
-      headerTitle="How the Network Explorer Works"
+      headerTitle="How Cohorts Work"
       headerDescription="Full cohort intelligence without personal data exposure. Here's how:"
       steps={steps}
       punchline="Full cohort intelligence. Zero personal data exposure."

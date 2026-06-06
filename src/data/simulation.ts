@@ -80,6 +80,7 @@ interface MemberState {
   riskCohort: string;
   reputationTier: HealthIdentity['reputationTier'];
   healthScore: number;
+  confidenceScore: number;
   metricValues: Partial<Record<HealthMetric, number>>;
   verificationCount: number;
   enrolledCampaigns: number;
@@ -215,6 +216,37 @@ function computeReputationTier(connectedSources: DataSource[], createdAt: string
   return 'low';
 }
 
+function computeConfidenceScore(
+  connectedSources: DataSource[],
+  verificationCount: number,
+  lastVerified: string | null,
+): number {
+  // Signal type (40%): weighted avg of source types
+  const sourceScores = connectedSources.map((s) => {
+    if (s === 'lab_results') return 0.92; // clinical
+    return 0.63; // device/wearable
+  });
+  const signalType = sourceScores.length > 0
+    ? sourceScores.reduce((a, b) => a + b, 0) / sourceScores.length
+    : 0.28; // self-report baseline
+
+  // Source depth (25%): scales 0.3→1.0 based on connected source count
+  const sourceDepth = clamp(0.3 + (connectedSources.length - 1) * 0.175, 0.3, 1.0);
+
+  // Freshness (20%): based on lastVerified recency
+  let freshness = 0.3;
+  if (lastVerified) {
+    const daysSince = Math.max(0, (Date.now() - new Date(lastVerified).getTime()) / 86400000);
+    freshness = daysSince <= 7 ? 1.0 : daysSince <= 30 ? 0.8 : daysSince <= 90 ? 0.55 : 0.3;
+  }
+
+  // Consistency (15%): based on verificationCount
+  const consistency = clamp(0.2 + verificationCount * 0.15, 0.2, 1.0);
+
+  const score = signalType * 0.4 + sourceDepth * 0.25 + freshness * 0.2 + consistency * 0.15;
+  return Number(clamp(score, 0, 1).toFixed(3));
+}
+
 function buildMembers(now: Date, seedOffset: number): MemberState[] {
   const rng = seededRandom(BASE_SEED + seedOffset);
   const members: MemberState[] = [];
@@ -244,6 +276,7 @@ function buildMembers(now: Date, seedOffset: number): MemberState[] {
       0.18,
       0.94,
     );
+    const confidenceScore = computeConfidenceScore(connectedSources, 0, null);
 
     members.push({
       id: generateId(rng, 'hid'),
@@ -254,6 +287,7 @@ function buildMembers(now: Date, seedOffset: number): MemberState[] {
       riskCohort,
       reputationTier,
       healthScore,
+      confidenceScore,
       metricValues,
       verificationCount: 0,
       enrolledCampaigns: 0,
@@ -269,6 +303,8 @@ function matchesTargeting(member: MemberState, campaign: Campaign): boolean {
   const { targeting } = campaign;
   if (targeting.healthScoreMin !== undefined && member.healthScore < targeting.healthScoreMin) return false;
   if (targeting.healthScoreMax !== undefined && member.healthScore > targeting.healthScoreMax) return false;
+  if (targeting.confidenceScoreMin !== undefined && member.confidenceScore < targeting.confidenceScoreMin) return false;
+  if (targeting.confidenceScoreMax !== undefined && member.confidenceScore > targeting.confidenceScoreMax) return false;
   if (targeting.reputationTiers?.length && !targeting.reputationTiers.includes(member.reputationTier)) return false;
   if (targeting.dataSources?.length && !targeting.dataSources.some((source) => member.connectedSources.includes(source))) return false;
   if (targeting.ageRanges?.length && !targeting.ageRanges.includes(member.demographics.ageRange)) return false;
@@ -569,6 +605,7 @@ function buildSimulation() {
       id: member.id,
       anonymizedId: member.anonymizedId,
       healthScore: member.healthScore,
+      confidenceScore: computeConfidenceScore(member.connectedSources, member.verificationCount, member.lastVerified),
       reputationTier: member.reputationTier,
       connectedSources: member.connectedSources,
       demographics: member.demographics,

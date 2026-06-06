@@ -8,8 +8,9 @@ import {
   Pause,
   Play,
   Shield,
+  Skull,
   Sparkles,
-  Trash2,
+  TrendingUp,
   Users,
   Wallet,
 } from 'lucide-react';
@@ -18,6 +19,8 @@ import { useCampaignStore } from '@/stores/useCampaignStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useToastStore } from '@/stores/useToastStore';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import KillCampaignModal from '@/components/campaigns/KillCampaignModal';
+import ScaleCampaignModal from '@/components/campaigns/ScaleCampaignModal';
 import {
   StatusBadge,
   TypeBadge,
@@ -32,6 +35,7 @@ import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesCh
 import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
 import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
 import BehaviorShiftEvidence from '@/components/campaigns/BehaviorShiftEvidence';
+import LossRatioDelta from '@/components/campaigns/LossRatioDelta';
 import { deleteConsumerCampaign, fetchConsumerCampaignStatus } from '@/lib/consumerCampaigns';
 import {
   formatNumber,
@@ -148,9 +152,12 @@ export default function CampaignDetail() {
   const navigate = useNavigate();
   const [showPauseConfirm, setShowPauseConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showKillModal, setShowKillModal] = useState(false);
+  const [showScaleModal, setShowScaleModal] = useState(false);
   const addToast = useToastStore((s) => s.addToast);
   const updateStatus = useCampaignStore((s) => s.updateStatus);
   const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
+  const updateBudgetCeiling = useCampaignStore((s) => s.updateBudgetCeiling);
   const updateB2CSync = useCampaignStore((s) => s.updateB2CSync);
   const allPartners = usePartnerStore((s) => s.allPartners);
   const loading = useSimulatedLoading(400);
@@ -300,24 +307,35 @@ export default function CampaignDetail() {
                 {commercialModel.signalDescription}
               </p>
             </div>
-            {(campaign.status === 'active' || campaign.status === 'paused') && (
+            {campaign.status === 'active' && (
               <button
-                onClick={() => setShowPauseConfirm(true)}
-                className={`btn ${campaign.status === 'active'
-                  ? 'bg-warning-muted text-warning border border-warning/20 hover:bg-warning-muted'
-                  : 'bg-success-muted text-success border border-success/20 hover:bg-success-muted'
-                } text-xs justify-center`}
+                onClick={() => setShowScaleModal(true)}
+                className="btn-primary text-xs justify-center"
               >
-                {campaign.status === 'active' ? <><Pause size={12} /> Pause Campaign</> : <><Play size={12} /> Resume Campaign</>}
+                <TrendingUp size={12} />
+                Scale Campaign
               </button>
             )}
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="btn-destructive text-xs justify-center"
-            >
-              <Trash2 size={12} />
-              Delete Campaign
-            </button>
+            {(campaign.status === 'active' || campaign.status === 'paused') && (
+              <>
+                <button
+                  onClick={() => setShowPauseConfirm(true)}
+                  className={`btn ${campaign.status === 'active'
+                    ? 'bg-warning-muted text-warning border border-warning/20 hover:bg-warning-muted'
+                    : 'bg-success-muted text-success border border-success/20 hover:bg-success-muted'
+                  } text-2xs justify-center`}
+                >
+                  {campaign.status === 'active' ? <><Pause size={11} /> Pause</> : <><Play size={11} /> Resume</>}
+                </button>
+                <button
+                  onClick={() => setShowKillModal(true)}
+                  className="btn-destructive text-xs justify-center"
+                >
+                  <Skull size={12} />
+                  Kill Campaign
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -363,6 +381,38 @@ export default function CampaignDetail() {
         />
       )}
 
+      {showKillModal && (
+        <KillCampaignModal
+          campaign={campaign}
+          onConfirm={async () => {
+            const externalCampaignId = campaign.b2cSync?.externalCampaignId ?? campaign.id;
+            try {
+              await deleteConsumerCampaign(externalCampaignId);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : 'Consumer campaign delete failed';
+              addToast({ message, variant: 'default' });
+            }
+            deleteCampaign(campaign.id);
+            addToast({ message: 'Campaign killed and budget reallocated', variant: 'success' });
+            setShowKillModal(false);
+            navigate('/app/campaigns');
+          }}
+          onCancel={() => setShowKillModal(false)}
+        />
+      )}
+
+      {showScaleModal && (
+        <ScaleCampaignModal
+          campaign={campaign}
+          onConfirm={(newBudget) => {
+            updateBudgetCeiling(campaign.id, newBudget);
+            addToast({ message: `Budget updated to $${newBudget.toLocaleString()}`, variant: 'success' });
+            setShowScaleModal(false);
+          }}
+          onCancel={() => setShowScaleModal(false)}
+        />
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
         <MetricCard label={commercialModel.cards.reachable} value={formatNumber(funnel.eligible)} icon={<Users size={14} />} />
         <MetricCard label={commercialModel.cards.activation} value={formatPercent(cohortActivation)} subValue={`${formatNumber(funnel.enrolled)} enrolled`} icon={<Activity size={14} />} />
@@ -371,6 +421,8 @@ export default function CampaignDetail() {
         <MetricCard label={commercialModel.cards.signal} value={campaign.challenge.target} subValue={campaign.challenge.unit} icon={<LineChart size={14} />} />
         <MetricCard label="Business Motion" value={commercialModel.cards.value} />
       </div>
+
+      <LossRatioDelta campaign={campaign} />
 
       <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-4">
         <div className="card">
@@ -542,10 +594,10 @@ export default function CampaignDetail() {
           />
           <div className="mb-3 flex justify-end">
             <button
-              onClick={() => navigate(`/app/explorer?campaignId=${campaign.id}`)}
+              onClick={() => navigate(`/app/cohorts?campaignId=${campaign.id}`)}
               className="btn-ghost text-xs"
             >
-              Open in Member Pool
+              Open in Cohorts
             </button>
           </div>
           <div className="space-y-3">

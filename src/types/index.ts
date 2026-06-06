@@ -38,6 +38,7 @@ export interface HealthIdentity {
   id: string;
   anonymizedId: string;
   healthScore: number;
+  confidenceScore: number;
   reputationTier: ReputationTier;
   connectedSources: DataSource[];
   demographics: {
@@ -71,6 +72,8 @@ export interface ChallengeCriteria {
 export interface CohortTargeting {
   healthScoreMin?: number;
   healthScoreMax?: number;
+  confidenceScoreMin?: number;
+  confidenceScoreMax?: number;
   reputationTiers?: ReputationTier[];
   dataSources?: DataSource[];
   ageRanges?: string[];
@@ -349,6 +352,7 @@ export interface CampaignDailySnapshot {
 
 export interface FilterState {
   healthScoreRange: [number, number];
+  confidenceScoreRange: [number, number];
   reputationTiers: ReputationTier[];
   dataSources: DataSource[];
   ageRanges: string[];

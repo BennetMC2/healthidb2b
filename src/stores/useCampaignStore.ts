@@ -10,6 +10,7 @@ interface CampaignStore {
   deleteCampaign: (id: string) => void;
   updateStatus: (id: string, status: CampaignStatus) => void;
   updateBudget: (id: string, budgetSpent: number) => void;
+  updateBudgetCeiling: (id: string, budgetCeiling: number) => void;
   updateB2CSync: (id: string, sync: Partial<CampaignB2CSyncState>) => void;
   getCampaign: (id: string) => Campaign | undefined;
 }
@@ -67,6 +68,15 @@ export const useCampaignStore = create<CampaignStore>()(
           campaigns: s.campaigns.map((c) =>
             c.id === id
               ? { ...c, rewards: { ...c.rewards, budgetSpent } }
+              : c,
+          ),
+        })),
+
+      updateBudgetCeiling: (id, budgetCeiling) =>
+        set((s) => ({
+          campaigns: s.campaigns.map((c) =>
+            c.id === id
+              ? { ...c, rewards: { ...c.rewards, budgetCeiling } }
               : c,
           ),
         })),

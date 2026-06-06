@@ -37,7 +37,7 @@ const industrySpecific: Record<PartnerIndustry, Suggestion[]> = {
 };
 
 const pageSuggestions: Record<string, Suggestion[]> = {
-  '/app/explorer': [
+  '/app/cohorts': [
     { label: 'Identity breakdown', prompt: 'How are identities distributed across trust tiers?' },
     { label: 'Source penetration', prompt: 'Which data sources have the highest penetration?' },
   ],

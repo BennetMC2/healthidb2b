@@ -283,6 +283,83 @@ export function getMetricComparisons(
   return top;
 }
 
+// ── Loss-Ratio Delta Model ──────────────────────────────────────────
+
+export interface LossRatioDeltaResult {
+  baselineLossRatio: number;
+  projectedLossRatio: number;
+  deltaPercent: number;
+  costPerCompliantMember: number;
+  complianceLiftTimeSeries: { month: number; observed: number | null; predicted: number | null }[];
+  annualizedSavings: number;
+  confidence: number;
+}
+
+export function calculateLossRatioDelta(params: {
+  metric: HealthMetric;
+  useCase: CampaignUseCase;
+  type: CampaignType;
+  enrolled: number;
+  verified: number;
+  budgetSpent: number;
+  budgetCeiling: number;
+  campaignAgeMonths: number;
+}): LossRatioDeltaResult {
+  const { metric, useCase, type, enrolled, verified, budgetSpent, budgetCeiling, campaignAgeMonths } = params;
+  const metricConfig = METRIC_ACTUARIAL_CONFIG[metric];
+  const useCaseConfig = USE_CASE_CONFIG[useCase];
+
+  // Baseline loss ratio: 0.62 + riskSignalRate × 0.15
+  const baselineLossRatio = 0.62 + metricConfig.riskSignalRate * 0.15;
+
+  // Delta from expectedImprovementRate × realizationFactor
+  const streamMultiplier = type === 'stream' ? STREAM_REALIZATION_MULTIPLIER : SNAPSHOT_REALIZATION_MULTIPLIER;
+  const effectiveImprovement = metricConfig.expectedImprovementRate * metricConfig.realizationFactor * streamMultiplier * useCaseConfig.realizationMultiplier;
+  const deltaPercent = -(effectiveImprovement * 100);
+  const projectedLossRatio = baselineLossRatio + deltaPercent / 100;
+
+  // Cost per compliant member
+  const costPerCompliantMember = verified > 0 ? budgetSpent / verified : budgetCeiling / Math.max(enrolled * 0.25, 1);
+
+  // Compliance lift time series: 12 months
+  // Observed months use logistic curve, predicted months use linear extrapolation
+  const observedMonths = Math.min(campaignAgeMonths, 12);
+  const timeSeries: LossRatioDeltaResult['complianceLiftTimeSeries'] = [];
+  const latencyMonths = metricConfig.outcomeLatencyMonths;
+  const maxLift = effectiveImprovement;
+
+  for (let m = 1; m <= 12; m++) {
+    if (m <= observedMonths) {
+      // Logistic curve for observed
+      const t = m - latencyMonths * 0.5;
+      const lift = maxLift / (1 + Math.exp(-0.8 * t));
+      timeSeries.push({ month: m, observed: Number((lift * 100).toFixed(2)), predicted: null });
+    } else {
+      // Linear extrapolation for predicted
+      const lastObserved = timeSeries.length > 0 ? (timeSeries[timeSeries.length - 1].observed ?? 0) : 0;
+      const slope = lastObserved / Math.max(observedMonths, 1);
+      const predicted = Math.min(maxLift * 100, lastObserved + slope * (m - observedMonths));
+      timeSeries.push({ month: m, observed: null, predicted: Number(predicted.toFixed(2)) });
+    }
+  }
+
+  // Annualized savings
+  const annualizedSavings = enrolled * metricConfig.baselineClaimCostPerMember * effectiveImprovement;
+
+  // Model confidence
+  const confidence = EVIDENCE_CONFIDENCE[metricConfig.evidenceLevel] * (type === 'stream' ? 1.05 : 0.97);
+
+  return {
+    baselineLossRatio: Number(baselineLossRatio.toFixed(4)),
+    projectedLossRatio: Number(projectedLossRatio.toFixed(4)),
+    deltaPercent: Number(deltaPercent.toFixed(2)),
+    costPerCompliantMember: Math.round(costPerCompliantMember),
+    complianceLiftTimeSeries: timeSeries,
+    annualizedSavings: Math.round(annualizedSavings),
+    confidence: Number(Math.min(0.88, Math.max(0.2, confidence)).toFixed(2)),
+  };
+}
+
 export function suggestUseCase(metric: HealthMetric): CampaignUseCase {
   return METRIC_ACTUARIAL_CONFIG[metric].inferredUseCase;
 }

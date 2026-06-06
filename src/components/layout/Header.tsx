@@ -19,7 +19,8 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
   const sectionLabel = (() => {
     if (location.pathname.startsWith('/app/actuary')) return 'AI Actuary';
     if (location.pathname.startsWith('/app/campaigns')) return 'Campaign Studio';
-    if (location.pathname.startsWith('/app/explorer')) return 'Member Pool';
+    if (location.pathname.startsWith('/app/cohorts')) return 'Cohorts';
+    if (location.pathname.startsWith('/app/explorer')) return 'Cohorts';
     if (location.pathname.startsWith('/app/compliance')) return 'Verification Trail';
     if (location.pathname.startsWith('/app/settings')) return 'Settings';
     return 'HealthID';
