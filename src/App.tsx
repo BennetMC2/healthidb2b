@@ -22,21 +22,16 @@ import FutureExecution from '@/future/pages/FutureExecution';
 import FutureDecisions from '@/future/pages/FutureDecisions';
 import FutureTrust from '@/future/pages/FutureTrust';
 import SimulatorLayout from '@/simulator/SimulatorLayout';
-import SimulatorOverview from '@/simulator/pages/Overview';
-import ScenarioBuilder from '@/simulator/pages/ScenarioBuilder';
-import CohortBuilder from '@/simulator/pages/CohortBuilder';
-import SignalConfidence from '@/simulator/pages/SignalConfidence';
+import SimulatorOverview from '@/simulator/pages/SimulatorOverview';
 import EvidenceLibrary from '@/simulator/pages/EvidenceLibrary';
-import InterventionBuilder from '@/simulator/pages/InterventionBuilder';
-import RewardFunction from '@/simulator/pages/RewardFunction';
-import SimulationRunner from '@/simulator/pages/SimulationRunner';
-import OutputDashboard from '@/simulator/pages/OutputDashboard';
-import HealthToValueBridge from '@/simulator/pages/HealthToValueBridge';
-import AuditTrail from '@/simulator/pages/AuditTrail';
-import SimulatorSettings from '@/simulator/pages/SimulatorSettings';
-import ScenarioComparison from '@/simulator/pages/ScenarioComparison';
-import ArchitectureDiagram from '@/simulator/pages/ArchitectureDiagram';
-import ModelInspector from '@/simulator/pages/ModelInspector';
+import SimulatorPresentation from '@/simulator/pages/SimulatorPresentation';
+import PopulationChapter from '@/simulator/pages/chapters/PopulationChapter';
+import OpportunityChapter from '@/simulator/pages/chapters/OpportunityChapter';
+import CampaignSelectChapter from '@/simulator/pages/chapters/CampaignSelectChapter';
+import BehaviourChapter from '@/simulator/pages/chapters/BehaviourChapter';
+import HealthImpactChapter from '@/simulator/pages/chapters/HealthImpactChapter';
+import FinancialChapter from '@/simulator/pages/chapters/FinancialChapter';
+import SensitivityChapter from '@/simulator/pages/chapters/SensitivityChapter';
 
 export default function App() {
   const startDemo = useDemoStore((s) => s.startDemo);
@@ -127,22 +122,35 @@ export default function App() {
             <Route path="trust" element={<FutureTrust />} />
           </Route>
           <Route path="/simulator" element={<SimulatorLayout />}>
-            <Route index element={<Navigate to="/simulator/overview" replace />} />
-            <Route path="overview" element={<SimulatorOverview />} />
-            <Route path="architecture" element={<ArchitectureDiagram />} />
-            <Route path="inspector" element={<ModelInspector />} />
-            <Route path="scenario" element={<ScenarioBuilder />} />
-            <Route path="cohort" element={<CohortBuilder />} />
-            <Route path="signals" element={<SignalConfidence />} />
+            <Route index element={<SimulatorOverview />} />
+            {/* Chapter-based build flow */}
+            <Route path="build" element={<Navigate to="/simulator/build/1" replace />} />
+            <Route path="build/1" element={<PopulationChapter />} />
+            <Route path="build/2" element={<OpportunityChapter />} />
+            <Route path="build/3" element={<CampaignSelectChapter />} />
+            <Route path="build/4" element={<BehaviourChapter />} />
+            <Route path="build/5" element={<HealthImpactChapter />} />
+            <Route path="build/6" element={<FinancialChapter />} />
+            <Route path="build/7" element={<SensitivityChapter />} />
+            {/* Results + Evidence */}
+            <Route path="results" element={<SimulatorPresentation />} />
             <Route path="evidence" element={<EvidenceLibrary />} />
-            <Route path="interventions" element={<InterventionBuilder />} />
-            <Route path="rewards" element={<RewardFunction />} />
-            <Route path="run" element={<SimulationRunner />} />
-            <Route path="output" element={<OutputDashboard />} />
-            <Route path="bridge" element={<HealthToValueBridge />} />
-            <Route path="audit" element={<AuditTrail />} />
-            <Route path="settings" element={<SimulatorSettings />} />
-            <Route path="compare" element={<ScenarioComparison />} />
+            {/* Redirects from old routes */}
+            <Route path="overview" element={<Navigate to="/simulator" replace />} />
+            <Route path="configure" element={<Navigate to="/simulator/build/3" replace />} />
+            <Route path="run" element={<Navigate to="/simulator/build/5" replace />} />
+            <Route path="inspector" element={<Navigate to="/simulator/evidence" replace />} />
+            <Route path="scenario" element={<Navigate to="/simulator/build/3" replace />} />
+            <Route path="cohort" element={<Navigate to="/simulator/build/1" replace />} />
+            <Route path="signals" element={<Navigate to="/simulator/build/1" replace />} />
+            <Route path="interventions" element={<Navigate to="/simulator/build/3" replace />} />
+            <Route path="rewards" element={<Navigate to="/simulator/build/6" replace />} />
+            <Route path="output" element={<Navigate to="/simulator/results" replace />} />
+            <Route path="bridge" element={<Navigate to="/simulator/results" replace />} />
+            <Route path="audit" element={<Navigate to="/simulator/evidence" replace />} />
+            <Route path="settings" element={<Navigate to="/simulator/build/3" replace />} />
+            <Route path="compare" element={<Navigate to="/simulator" replace />} />
+            <Route path="architecture" element={<Navigate to="/simulator/evidence" replace />} />
           </Route>
           <Route element={<Layout onTourStart={handleTourStart} />}>
             <Route path="/app" element={<Navigate to="/app/actuary" replace />} />

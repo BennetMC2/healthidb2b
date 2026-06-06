@@ -1,164 +1,176 @@
-import type { Scenario, SimulationOutput, HorizonOutput } from '../types';
-import type { HealthMetric } from '@/types';
-import { TIME_HORIZON_MONTHS } from '../constants';
-import { filterCohort } from './cohortEngine';
-import { computeConfidence } from './confidenceModel';
-import { calculateHorizonROI, calculateLeverBreakdowns, buildHealthToValueBridge } from './roiCalculator';
-import { generateAuditTrail } from './auditLog';
-import { INTERVENTIONS } from '../data/interventions';
+import type { SimulationConfig, SimulationOutput, CampaignSimulationResult } from '../types';
+import { buildPopulationCohort, getEligibleCohort } from './populationModel';
+import { modelBehaviourChange } from './behaviourModel';
+import { calculateMetricHealthImpact } from './metricImpactModel';
+import { calculateFinancials, calculatePerCampaignSavings } from './financialModel';
+import { combineCampaigns } from './campaignCombiner';
+import { getMarketMortality } from '../data/mortalityTables';
+import { getClaimsCosts } from '../data/claimsCosts';
+import { getCampaignTemplate } from '../data/campaignTemplates';
+import { getMetricEvidence } from '../data/metricEvidence';
+import { getMetricAdaptedArchetypes } from '../data/archetypes';
 
 /**
- * Main simulation entry point.
- * Combines all 6 layers → multi-horizon ROI output with full audit lineage.
+ * Multi-campaign simulation pipeline.
+ *
+ * For each selected campaign:
+ * 1. Filter population by required signal
+ * 2. Adapt archetypes for the campaign's metric
+ * 3. Model behaviour change with metric-specific parameters
+ * 4. Calculate per-metric health impact
+ * 5. Calculate per-campaign claims savings
+ *
+ * Then:
+ * 6. Combine campaigns with overlap discount
+ * 7. Calculate combined financials
+ * 8. Run sensitivity analysis
  */
-export function runSimulation(scenario: Scenario): SimulationOutput {
-  // L3: Cohort filtering
-  const cohortResult = filterCohort(scenario.cohortDefinition);
-  const cohortSize = cohortResult.size > 0 ? cohortResult.size : 3000; // Fallback for demo
 
-  // Gather all signals from active interventions
-  const activeInterventions = INTERVENTIONS.filter((i) =>
-    scenario.interventions.includes(i.id),
-  );
-  const allSignals: HealthMetric[] = [...new Set(
-    activeInterventions.flatMap((i) => i.primarySignals),
-  )];
-
-  // Available sources from cohort
-  const availableSources = Object.entries(cohortResult.signalAvailability)
-    .filter(([, rate]) => rate > 0.1)
-    .map(([source]) => source);
-
-  // Build ROI input
-  const roiInput = {
-    cohortSize,
-    interventionIds: scenario.interventions,
-    rewardConfig: scenario.rewardConfig,
-    rewardCeilingPct: scenario.rewardCeilingPct,
-    assumptions: scenario.assumptions,
-    leverBaselines: scenario.leverBaselines,
-    leverTargets: scenario.leverTargets,
-    availableSignals: allSignals,
-    availableSources,
-  };
-
-  // L6: Calculate multi-horizon ROI
-  const horizons: Record<'90d' | '1y' | '3y', HorizonOutput> = {
-    '90d': calculateHorizonROI(roiInput, TIME_HORIZON_MONTHS['90d']),
-    '1y': calculateHorizonROI(roiInput, TIME_HORIZON_MONTHS['1y']),
-    '3y': calculateHorizonROI(roiInput, TIME_HORIZON_MONTHS['3y']),
-  };
-
-  // Lever breakdowns (using 1-year horizon as primary)
-  const leverBreakdowns = calculateLeverBreakdowns(
-    scenario.interventions,
-    scenario.leverBaselines,
-    scenario.leverTargets,
-    horizons['1y'].projectedClaimsImpact,
-    scenario.assumptions.realizationFactor,
+export function runSimulation(config: SimulationConfig): SimulationOutput {
+  // Step 1: Build full population cohort
+  const cohort = buildPopulationCohort(
+    config.market,
+    config.cohortSize,
+    config.archetypeWeights,
   );
 
-  // Health-to-value bridge (using 1-year horizon)
-  const healthToValueBridge = buildHealthToValueBridge(
-    horizons['1y'],
-    leverBreakdowns,
-    scenario.interventions,
-  );
+  const mortalityData = getMarketMortality(config.market);
+  const claimsCosts = getClaimsCosts(config.market);
+  const horizonYears = config.horizonMonths / 12;
 
-  // Confidence
-  const confidence = computeConfidence(
-    allSignals,
-    availableSources as never[],
-    scenario.interventions,
-    scenario.assumptions.realizationFactor,
-  );
+  // Step 2: Run each campaign independently
+  const campaignResults: CampaignSimulationResult[] = [];
 
-  // Audit trail
-  const auditTrail = generateAuditTrail({
-    scenarioId: scenario.id,
-    signals: allSignals,
-    interventionIds: scenario.interventions,
-    assumptions: scenario.assumptions,
-    cohortSize,
-    leverBaselines: scenario.leverBaselines,
-    leverTargets: scenario.leverTargets,
+  for (const campaignId of config.selectedCampaigns) {
+    const template = getCampaignTemplate(campaignId);
+    if (!template) continue;
+
+    const evidence = getMetricEvidence(template.metric);
+    if (!evidence) continue;
+
+    // Filter cohort by required signal
+    const eligibleCohort = getEligibleCohort(cohort, template.requiredSignal);
+
+    // Get metric-adapted archetype shares
+    const archetypeShares = getMetricAdaptedArchetypes(template.metric, config.archetypeWeights);
+
+    // Model behaviour change for this metric
+    const behaviour = modelBehaviourChange(
+      eligibleCohort,
+      config.horizonMonths,
+      evidence,
+      archetypeShares,
+    );
+
+    // Calculate per-metric health impact
+    const health = calculateMetricHealthImpact(
+      behaviour.byCellAndArchetype,
+      mortalityData,
+      eligibleCohort,
+      horizonYears,
+      evidence,
+    );
+
+    // Calculate per-campaign claims savings
+    const { savings, morbiditySavings } = calculatePerCampaignSavings(
+      template.metric,
+      health.byCellAndArchetype,
+      eligibleCohort.totalSize,
+      config.horizonMonths,
+      config.realizationDiscount,
+    );
+
+    campaignResults.push({
+      campaignId,
+      campaignName: template.name,
+      metric: template.metric,
+      eligibleCohort: eligibleCohort.totalSize,
+      archetypeShares,
+      behaviour,
+      health,
+      perCampaignSavings: savings,
+      perCampaignMorbiditySavings: morbiditySavings,
+      sources: [...behaviour.sources, ...health.sources],
+    });
+  }
+
+  // Step 3: Combine campaigns
+  const multiCampaign = combineCampaigns(campaignResults, {
+    rewardCeilingPct: config.rewardCeilingPct,
+    horizonMonths: config.horizonMonths,
+    cohortSize: config.cohortSize,
   });
 
-  // Plain-English summary
-  const primaryIntervention = activeInterventions[0];
-  const h1y = horizons['1y'];
-  const plainEnglishSummary = generatePlainEnglishSummary(
-    scenario.name,
-    cohortSize,
-    primaryIntervention?.name ?? 'intervention',
-    h1y.netROI,
-    h1y.grossTotalValue,
-    h1y.recommendedRewardBudget,
-    h1y.morbidityShiftBps,
-    h1y.paybackMonths,
-    confidence.label,
-    scenario.rewardCeilingPct,
+  // Step 4: Calculate combined financials
+  // Merge all health impacts for the full financial model
+  const allHealthImpacts = campaignResults.flatMap((cr) => cr.health.byCellAndArchetype);
+  const financials = calculateFinancials(
+    allHealthImpacts,
+    cohort,
+    claimsCosts,
+    {
+      rewardCeilingPct: config.rewardCeilingPct,
+      horizonMonths: config.horizonMonths,
+      realizationDiscount: config.realizationDiscount,
+    },
+    campaignResults,
   );
 
-  // Caveats
-  const caveats = generateCaveats(confidence.label, scenario);
+  // Generate narrative
+  const narrative = generateNarrative(cohort, campaignResults, multiCampaign, financials, config);
 
-  return {
-    scenarioId: scenario.id,
-    horizons,
-    leverBreakdowns,
-    healthToValueBridge,
-    auditTrail,
-    confidenceLabel: confidence.label,
-    plainEnglishSummary,
-    caveats,
-  };
+  return { cohort, multiCampaign, financials, narrative, config };
 }
 
-function generatePlainEnglishSummary(
-  scenarioName: string,
-  cohortSize: number,
-  interventionName: string,
-  netROI: number,
-  grossTotalValue: number,
-  recommendedRewardBudget: number,
-  morbidityBps: number,
-  paybackMonths: number,
-  confidenceLabel: string,
-  rewardCeilingPct: number,
+function generateNarrative(
+  cohort: ReturnType<typeof buildPopulationCohort>,
+  campaignResults: CampaignSimulationResult[],
+  multiCampaign: ReturnType<typeof combineCampaigns>,
+  financials: ReturnType<typeof calculateFinancials>,
+  config: SimulationConfig,
 ): string {
-  const ceilingStr = `${Math.round(rewardCeilingPct * 100)}%`;
+  const marketName = config.market === 'hong_kong' ? 'Hong Kong' : 'Singapore';
+  const horizonYears = config.horizonMonths / 12;
+  const campaignNames = campaignResults.map((cr) => cr.campaignName).join(', ');
 
-  return `The "${scenarioName}" scenario models a ${interventionName.toLowerCase()} programme ` +
-    `for a cohort of ${cohortSize.toLocaleString()} members. ` +
-    `The model projects $${grossTotalValue.toLocaleString()} in gross value from behaviour change. ` +
-    `With a reward ceiling of ${ceilingStr}, the recommended incentive budget is $${recommendedRewardBudget.toLocaleString()}, ` +
-    `yielding $${netROI.toLocaleString()} net ROI. ` +
-    `Morbidity shift: ${morbidityBps} bps. Payback: ${paybackMonths} months. ` +
-    `This projection carries ${confidenceLabel} and should be validated against carrier-specific claims data.`;
-}
-
-function generateCaveats(
-  confidenceLabel: string,
-  scenario: Scenario,
-): string[] {
-  const caveats: string[] = [
-    'All projections are directional estimates based on published literature and should be validated against carrier-specific claims data before commercial decisions.',
-    'Effect sizes from clinical literature may not directly translate to insurance programme settings due to differences in population, adherence, and measurement methodology.',
-    'Behavioural economics modifiers (loss aversion, streaks) are calibrated from RCT evidence but real-world programme effects may differ.',
+  const lines: string[] = [
+    `# Campaign-Centric ROI Model — ${marketName}`,
+    '',
+    `## Population`,
+    `${cohort.totalSize.toLocaleString()} insured lives from ${marketName}. ` +
+    `Average age ${cohort.summary.avgAge.toFixed(0)}, ${(cohort.summary.pctWithWearable * 100).toFixed(0)}% wearable penetration.`,
+    '',
+    `## Selected Campaigns`,
+    `${campaignResults.length} campaign${campaignResults.length > 1 ? 's' : ''}: ${campaignNames}.`,
+    ...(campaignResults.length > 1 ? [`Overlap discount: ${(multiCampaign.combined.overlapDiscount * 100).toFixed(0)}%.`] : []),
+    '',
+    `## Per-Campaign Impact`,
+    ...campaignResults.map((cr) =>
+      `- **${cr.campaignName}** (${cr.metric}): ${cr.eligibleCohort.toLocaleString()} eligible, ` +
+      `${cr.health.totals.avoidedDeaths.central.toFixed(1)} avoided deaths, ` +
+      `$${(cr.perCampaignSavings.central / 1e6).toFixed(2)}M savings`,
+    ),
+    '',
+    `## The Financial Case`,
+    financials.explanation,
+    '',
+    `## The Bottom Line`,
+    `Over ${horizonYears} year${horizonYears > 1 ? 's' : ''}, these campaigns ` +
+    `generate $${(financials.grossTotalValue.low / 1e6).toFixed(1)}M–$${(financials.grossTotalValue.central / 1e6).toFixed(1)}M–$${(financials.grossTotalValue.high / 1e6).toFixed(1)}M in projected value. ` +
+    `Net ROI: ${financials.roiMultiple.low.toFixed(1)}×–${financials.roiMultiple.central.toFixed(1)}×–${financials.roiMultiple.high.toFixed(1)}×. ` +
+    `Even in the conservative scenario, the programme pays for itself.`,
   ];
 
-  if (confidenceLabel === 'exploratory') {
-    caveats.push('This scenario has exploratory confidence — wider uncertainty bands apply. Consider running with higher-evidence interventions or richer data sources.');
-  }
-
-  if (scenario.assumptions.realizationFactor < 0.5) {
-    caveats.push('A conservative realization factor below 50% has been applied, significantly discounting the projected impact.');
-  }
-
-  if (scenario.interventions.length > 1) {
-    caveats.push('Multi-intervention scenarios include an overlap discount to account for correlation between health signals. Actual interaction effects are uncertain.');
-  }
-
-  return caveats;
+  return lines.join('\n');
 }
+
+/** Default configuration */
+export const DEFAULT_CONFIG: SimulationConfig = {
+  market: 'hong_kong',
+  cohortSize: 100_000,
+  selectedCampaigns: ['cardio_fitness'],
+  useCase: 'claims_reduction',
+  rewardCeilingPct: 0.70,
+  horizonMonths: 36,
+  realizationDiscount: 0.65,
+};

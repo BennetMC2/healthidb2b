@@ -97,8 +97,8 @@ export default function EvidenceLibrary() {
       )}
 
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/simulator/interventions')} className="btn-primary text-sm">Next: Interventions →</button>
-        <button onClick={() => navigate('/simulator/signals')} className="btn-ghost text-sm">← Back</button>
+        <button onClick={() => navigate('/simulator/build/3')} className="btn-primary text-sm">Select Campaigns →</button>
+        <button onClick={() => navigate('/simulator')} className="btn-ghost text-sm">← Overview</button>
       </div>
     </div>
   );

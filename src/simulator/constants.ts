@@ -1,66 +1,9 @@
-import type { Market, ProductType, DeviceClass, EngagementTier, BaselineRisk, BehaviourLeverId, InterventionId, TimeHorizon, StudyDesign, RewardType, RewardOutcomeTarget, ScenarioStatus } from './types';
+import type { Market, StudyDesign, ChapterId } from './types';
+import type { MetricCategory } from './data/metricEvidence';
 
 export const MARKET_LABELS: Record<Market, string> = {
   hong_kong: 'Hong Kong',
   singapore: 'Singapore',
-  apac_generic: 'APAC Generic',
-  global: 'Global',
-};
-
-export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
-  individual_life: 'Individual Life',
-  group_life: 'Group Life',
-  health: 'Health',
-  corporate_wellness: 'Corporate Wellness',
-};
-
-export const DEVICE_CLASS_LABELS: Record<DeviceClass, string> = {
-  advanced_wearable: 'Advanced Wearable',
-  basic_wearable: 'Basic Wearable',
-  ring: 'Ring / Watch',
-  clinical: 'Clinical Devices',
-  mixed: 'Mixed',
-};
-
-export const ENGAGEMENT_TIER_LABELS: Record<EngagementTier, string> = {
-  high: 'High Engagement',
-  medium: 'Medium Engagement',
-  low: 'Low Engagement',
-};
-
-export const BASELINE_RISK_LABELS: Record<BaselineRisk, string> = {
-  high: 'High Risk',
-  medium: 'Medium Risk',
-  low: 'Low Risk',
-};
-
-export const BEHAVIOUR_LEVER_LABELS: Record<BehaviourLeverId, string> = {
-  activity: 'Activity',
-  sleep: 'Sleep',
-  cardiovascular: 'Cardiovascular',
-  body_composition: 'Body Composition',
-  stress: 'Stress',
-  smoking: 'Smoking',
-};
-
-export const INTERVENTION_LABELS: Record<InterventionId, string> = {
-  activity_uplift: 'Activity Uplift',
-  sleep_recovery: 'Sleep & Recovery',
-  cv_risk_reduction: 'CV Risk Reduction',
-};
-
-export const TIME_HORIZON_LABELS: Record<TimeHorizon, string> = {
-  '90d': '90 Days',
-  '1y': '1 Year',
-  '3y': '3 Years',
-  '5y': '5 Years',
-};
-
-export const TIME_HORIZON_MONTHS: Record<TimeHorizon, number> = {
-  '90d': 3,
-  '1y': 12,
-  '3y': 36,
-  '5y': 60,
 };
 
 export const STUDY_DESIGN_LABELS: Record<StudyDesign, string> = {
@@ -70,43 +13,60 @@ export const STUDY_DESIGN_LABELS: Record<StudyDesign, string> = {
   industry_review: 'Industry Review',
 };
 
-export const REWARD_TYPE_LABELS: Record<RewardType, string> = {
-  cash: 'Cash',
-  loyalty: 'Loyalty Points',
-  health_aspirational: 'Health Aspirational',
-  status: 'Status / Tier',
-};
+export const HORIZON_OPTIONS = [
+  { label: '1 Year', months: 12 },
+  { label: '3 Years', months: 36 },
+  { label: '5 Years', months: 60 },
+] as const;
 
-export const REWARD_OUTCOME_LABELS: Record<RewardOutcomeTarget, string> = {
-  ltv: 'Lifetime Value',
-  retention: 'Retention',
-  claims: 'Claims Reduction',
-  cross_sell: 'Cross-Sell',
-};
-
-export const SCENARIO_STATUS_LABELS: Record<ScenarioStatus, string> = {
-  draft: 'Draft',
-  configured: 'Configured',
-  completed: 'Completed',
-};
-
-export const MODEL_VERSION = 'ABM-v1.0';
-
-export const DEFAULT_ASSUMPTIONS = {
-  discountRate: 0.08,
-  dropoutRate: 0.25,
-  verificationRate: 0.31,
-  claimsInflation: 0.04,
-  realizationFactor: 0.65,
-} as const;
+export const MODEL_VERSION = 'EBM-v3.0';
 
 export const DEFAULT_REWARD_CEILING_PCT = 0.70;
 
-export const LEVER_COLORS: Record<BehaviourLeverId, string> = {
-  activity: '#22c55e',
-  sleep: '#8b5cf6',
-  cardiovascular: '#ef4444',
-  body_composition: '#f59e0b',
-  stress: '#06b6d4',
-  smoking: '#6b7280',
+export const DEFAULT_REALIZATION_DISCOUNT = 0.65;
+
+export const ARCHETYPE_COLORS: Record<string, string> = {
+  non_starters: '#94a3b8',
+  early_dropouts: '#f97316',
+  sporadic_engagers: '#eab308',
+  steady_movers: '#22c55e',
+  super_engagers: '#3b82f6',
+  already_active: '#8b5cf6',
 };
+
+export const METRIC_CATEGORY_COLORS: Record<MetricCategory, string> = {
+  cardiac: '#ef4444',
+  sleep: '#8b5cf6',
+  respiratory: '#06b6d4',
+  activity: '#22c55e',
+  clinical: '#f59e0b',
+};
+
+export const METRIC_CATEGORY_LABELS: Record<MetricCategory, string> = {
+  cardiac: 'Cardiac',
+  sleep: 'Sleep',
+  respiratory: 'Respiratory',
+  activity: 'Activity',
+  clinical: 'Clinical',
+};
+
+export interface ChapterDefinition {
+  id: ChapterId;
+  title: string;
+  subtitle: string;
+  path: string;
+}
+
+export const CHAPTERS: ChapterDefinition[] = [
+  { id: 1, title: 'Your Population', subtitle: 'Market demographics and signal coverage', path: '/simulator/build/1' },
+  { id: 2, title: 'The Health Opportunity', subtitle: 'Population risk by metric and evidence strength', path: '/simulator/build/2' },
+  { id: 3, title: 'Select Your Campaigns', subtitle: 'Pick 1-3 campaigns matching your objectives', path: '/simulator/build/3' },
+  { id: 4, title: 'How People Actually Behave', subtitle: '6 archetypes adapted per metric', path: '/simulator/build/4' },
+  { id: 5, title: 'The Health Impact', subtitle: 'Per-campaign dose-response and avoided deaths', path: '/simulator/build/5' },
+  { id: 6, title: 'The Financial Case', subtitle: 'Combined ROI — it pays for itself', path: '/simulator/build/6' },
+  { id: 7, title: 'What If We\'re Wrong?', subtitle: 'Sensitivity analysis and stress testing', path: '/simulator/build/7' },
+];
+
+export function getChapter(id: ChapterId): ChapterDefinition {
+  return CHAPTERS.find((c) => c.id === id)!;
+}

@@ -1,161 +1,159 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Scenario, ScenarioAssumptions, CohortDefinition, InterventionId, RewardConfig, BehaviourLeverId, TimeHorizon, Market, ProductType } from '../types';
-import { DEMO_SCENARIOS } from '../data/demoScenarios';
+import type { SimulationConfig, SimulationOutput, RunState, RunStep, ChapterId } from '../types';
+import { DEFAULT_CONFIG } from '../engine/simulate';
 
 interface SimulatorStore {
-  scenarios: Scenario[];
-  activeScenarioId: string | null;
+  config: SimulationConfig;
+  result: SimulationOutput | null;
+  runState: RunState;
+  currentStep: RunStep | null;
+  stepProgress: Record<RunStep, boolean>;
+  error: string | null;
+
+  // Chapter navigation
+  currentChapter: ChapterId;
+  chapterCompletion: Record<ChapterId, boolean>;
 
   // Actions
-  setActiveScenario: (id: string | null) => void;
-  getActiveScenario: () => Scenario | undefined;
-  addScenario: (scenario: Scenario) => void;
-  updateScenario: (id: string, updates: Partial<Scenario>) => void;
-  deleteScenario: (id: string) => void;
-  duplicateScenario: (id: string) => Scenario | undefined;
+  updateConfig: (updates: Partial<SimulationConfig>) => void;
+  setResult: (result: SimulationOutput) => void;
+  resetResult: () => void;
+  startRun: () => void;
+  advanceStep: (step: RunStep) => void;
+  completeRun: (result: SimulationOutput) => void;
+  failRun: (error: string) => void;
+  resetRun: () => void;
 
-  // Wizard helpers
-  updateCohort: (id: string, definition: CohortDefinition) => void;
-  updateInterventions: (id: string, interventions: InterventionId[]) => void;
-  updateReward: (id: string, config: RewardConfig) => void;
-  updateAssumptions: (id: string, assumptions: Partial<ScenarioAssumptions>) => void;
-  updateLeverTargets: (id: string, targets: Partial<Record<BehaviourLeverId, number>>) => void;
-  updateTimeHorizons: (id: string, horizons: TimeHorizon[]) => void;
-  updateRewardCeiling: (id: string, pct: number) => void;
-  updateMarket: (id: string, market: Market) => void;
-  updateProductType: (id: string, productType: ProductType) => void;
+  // Chapter actions
+  setCurrentChapter: (chapter: ChapterId) => void;
+  completeChapter: (chapter: ChapterId) => void;
+  resetChapters: () => void;
+
+  // Campaign selection
+  toggleCampaign: (campaignId: string) => void;
 }
+
+const INITIAL_PROGRESS: Record<RunStep, boolean> = {
+  population: false,
+  activity: false,
+  behaviour: false,
+  health: false,
+  claims: false,
+  economics: false,
+};
+
+const INITIAL_CHAPTER_COMPLETION: Record<ChapterId, boolean> = {
+  1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false,
+};
 
 export const useSimulatorStore = create<SimulatorStore>()(
   persist(
-    (set, get) => ({
-      scenarios: [...DEMO_SCENARIOS],
-      activeScenarioId: null,
+    (set) => ({
+      config: { ...DEFAULT_CONFIG },
+      result: null,
+      runState: 'idle',
+      currentStep: null,
+      stepProgress: { ...INITIAL_PROGRESS },
+      error: null,
+      currentChapter: 1 as ChapterId,
+      chapterCompletion: { ...INITIAL_CHAPTER_COMPLETION },
 
-      setActiveScenario: (id) => set({ activeScenarioId: id }),
-
-      getActiveScenario: () => {
-        const { scenarios, activeScenarioId } = get();
-        return scenarios.find((s) => s.id === activeScenarioId);
-      },
-
-      addScenario: (scenario) =>
-        set((s) => ({ scenarios: [...s.scenarios, scenario] })),
-
-      updateScenario: (id, updates) =>
+      updateConfig: (updates) =>
         set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, ...updates } : sc,
-          ),
+          config: { ...s.config, ...updates },
+          result: null,
+          runState: 'idle',
         })),
 
-      deleteScenario: (id) =>
+      setResult: (result) =>
+        set({ result, runState: 'complete' }),
+
+      resetResult: () =>
+        set({ result: null, runState: 'idle', currentStep: null, stepProgress: { ...INITIAL_PROGRESS }, error: null }),
+
+      startRun: () =>
+        set({
+          runState: 'running',
+          currentStep: 'population',
+          stepProgress: { ...INITIAL_PROGRESS },
+          error: null,
+          result: null,
+        }),
+
+      advanceStep: (step) =>
         set((s) => ({
-          scenarios: s.scenarios.filter((sc) => sc.id !== id),
-          activeScenarioId: s.activeScenarioId === id ? null : s.activeScenarioId,
+          currentStep: step,
+          stepProgress: { ...s.stepProgress, [step]: true },
         })),
 
-      duplicateScenario: (id) => {
-        const scenario = get().scenarios.find((s) => s.id === id);
-        if (!scenario) return undefined;
-        const dup: Scenario = {
-          ...scenario,
-          id: `sim_${Date.now()}`,
-          name: `${scenario.name} (copy)`,
-          status: 'draft',
-          result: undefined,
-          createdAt: new Date().toISOString(),
-        };
-        set((s) => ({ scenarios: [...s.scenarios, dup] }));
-        return dup;
-      },
+      completeRun: (result) =>
+        set({
+          runState: 'complete',
+          currentStep: null,
+          stepProgress: {
+            population: true,
+            activity: true,
+            behaviour: true,
+            health: true,
+            claims: true,
+            economics: true,
+          },
+          result,
+        }),
 
-      updateCohort: (id, definition) =>
+      failRun: (error) =>
+        set({ runState: 'error', error }),
+
+      resetRun: () =>
+        set({
+          runState: 'idle',
+          currentStep: null,
+          stepProgress: { ...INITIAL_PROGRESS },
+          error: null,
+        }),
+
+      setCurrentChapter: (chapter) =>
+        set({ currentChapter: chapter }),
+
+      completeChapter: (chapter) =>
         set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, cohortDefinition: definition, status: 'draft' as const } : sc,
-          ),
+          chapterCompletion: { ...s.chapterCompletion, [chapter]: true },
         })),
 
-      updateInterventions: (id, interventions) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, interventions, status: 'draft' as const } : sc,
-          ),
-        })),
+      resetChapters: () =>
+        set({
+          currentChapter: 1 as ChapterId,
+          chapterCompletion: { ...INITIAL_CHAPTER_COMPLETION },
+        }),
 
-      updateReward: (id, config) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, rewardConfig: config, rewardConfigId: config.id, status: 'draft' as const } : sc,
-          ),
-        })),
-
-      updateAssumptions: (id, assumptions) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id
-              ? { ...sc, assumptions: { ...sc.assumptions, ...assumptions } }
-              : sc,
-          ),
-        })),
-
-      updateLeverTargets: (id, targets) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id
-              ? { ...sc, leverTargets: { ...sc.leverTargets, ...targets } }
-              : sc,
-          ),
-        })),
-
-      updateTimeHorizons: (id, horizons) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, timeHorizons: horizons } : sc,
-          ),
-        })),
-
-      updateRewardCeiling: (id, pct) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, rewardCeilingPct: pct, status: 'draft' as const } : sc,
-          ),
-        })),
-
-      updateMarket: (id, market) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, market } : sc,
-          ),
-        })),
-
-      updateProductType: (id, productType) =>
-        set((s) => ({
-          scenarios: s.scenarios.map((sc) =>
-            sc.id === id ? { ...sc, productType } : sc,
-          ),
-        })),
+      toggleCampaign: (campaignId) =>
+        set((s) => {
+          const current = s.config.selectedCampaigns;
+          const isSelected = current.includes(campaignId);
+          let next: string[];
+          if (isSelected) {
+            next = current.filter((id) => id !== campaignId);
+          } else if (current.length < 3) {
+            next = [...current, campaignId];
+          } else {
+            return s; // Max 3 campaigns
+          }
+          return {
+            config: { ...s.config, selectedCampaigns: next },
+            result: null,
+            runState: 'idle' as const,
+          };
+        }),
     }),
     {
       name: 'healthid-simulator-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        scenarios: state.scenarios,
-        activeScenarioId: state.activeScenarioId,
+        config: state.config,
+        currentChapter: state.currentChapter,
+        chapterCompletion: state.chapterCompletion,
       }),
-      merge: (persisted, current) => {
-        const p = persisted as Partial<SimulatorStore> | undefined;
-        const persistedScenarios = p?.scenarios ?? [];
-        const demoIds = new Set(DEMO_SCENARIOS.map((d) => d.id));
-        const userScenarios = persistedScenarios.filter((s) => !demoIds.has(s.id));
-        return {
-          ...current,
-          scenarios: [...DEMO_SCENARIOS, ...userScenarios],
-          activeScenarioId: p?.activeScenarioId ?? null,
-        };
-      },
     },
   ),
 );
