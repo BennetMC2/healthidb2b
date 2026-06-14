@@ -37,7 +37,7 @@
     "date-fns": "^3.3.1",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.45.2",
-    "drizzle-zod": "^0.8.3",
+    "drizzle-zod": "^0.7.0",
     "express": "^5.0.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^0.323.0",
