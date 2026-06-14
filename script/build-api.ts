@@ -8,6 +8,8 @@ const allowlist = [
   "zod-validation-error",
   "dotenv",
   "date-fns",
+  "drizzle-zod",
+  "drizzle-orm",
 ];
 
 // Native or heavy packages not in package.json but imported by server code
