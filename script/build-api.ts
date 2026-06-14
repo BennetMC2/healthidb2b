@@ -1,5 +1,6 @@
 import { build as esbuild } from "esbuild";
 import { readFile } from "node:fs/promises";
+import path from "node:path";
 
 const allowlist = [
   "express",
