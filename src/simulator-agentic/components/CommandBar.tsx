@@ -173,7 +173,7 @@ export default function CommandBar({
         </div>
         <button
           onClick={submit}
-          disabled={running || !goal.trim() || rewardPmpm === null}
+          disabled={running || !goal.trim()}
           className="flex items-center justify-center gap-2 rounded-lg bg-primary px-5 py-2.5 font-mono text-sm font-semibold text-primary-foreground transition-all hover-elevate active-elevate-2 disabled:opacity-50 sm:w-44"
           data-testid="button-run"
         >
@@ -183,7 +183,7 @@ export default function CommandBar({
             </>
           ) : (
             <>
-              {rewardPmpm === null ? "Set reward first" : "Run simulation"} <ArrowRight className="h-4 w-4" />
+              Run simulation <ArrowRight className="h-4 w-4" />
             </>
           )}
         </button>

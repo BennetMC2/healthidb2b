@@ -152,6 +152,7 @@ export default function Compliance() {
       pending,
       piiEvents: 0,
       liabilityAvoided: liabilityAvoidedFromReceipts(totalProofs),
+      successRate: totalProofs + totalFailed > 0 ? totalProofs / (totalProofs + totalFailed) : 0,
     };
   }, [partnerRecords]);
 
@@ -215,8 +216,8 @@ export default function Compliance() {
           />
         </div>
         <MetricCard
-          label="Failed Proofs"
-          value={formatNumber(stats.totalFailed)}
+          label="Proof Success Rate"
+          value={`${(stats.successRate * 100).toFixed(0)}%`}
           icon={<Clock size={14} />}
         />
         <MetricCard

@@ -15,11 +15,11 @@ export default function NotFound() {
         The page you're looking for doesn't exist or has been moved.
       </p>
       <button
-        onClick={() => navigate('/app/campaigns')}
+        onClick={() => navigate('/app/actuary')}
         className="btn-primary text-xs mt-2"
       >
         <ArrowLeft size={13} />
-        Back to Campaign Studio
+        Back to HealthID dashboard
       </button>
     </div>
   );

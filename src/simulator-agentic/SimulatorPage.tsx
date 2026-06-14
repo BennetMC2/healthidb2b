@@ -100,7 +100,7 @@ export default function SimulatorPage() {
 
   // Prefill insight from Actuary page navigation
   const prefillInsight = (location.state as { prefillInsight?: { campaignName: string; signal: string; cohortSize: number; outputs: { projectedSavingsUsd: number; budgetRoiMultiple: number; paybackMonths: number }; healthPointsPricing: { suggestedHpPerMember: number; maxBudgetUsd: number } } } | null)?.prefillInsight ?? null;
-  const [selectedReward, setSelectedReward] = useState<number | null>(null);
+  const [selectedReward, setSelectedReward] = useState<number | null>(4);
   const stopRef = useRef<(() => void) | null>(null);
   const verifyStopRef = useRef<(() => void) | null>(null);
   const lastGoalRef = useRef<string>("");

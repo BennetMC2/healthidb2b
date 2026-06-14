@@ -23,7 +23,7 @@ interface StudioCampaignTemplate extends CampaignTemplate {
   familyLabel: string;
   audience: string;
   action: string;
-  source: 'AI recommended' | 'Studio template';
+  source: 'Model-ranked' | 'Studio template';
   metrics: Array<{ label: string; value: string }>;
   consentNote?: string;
 }
@@ -47,8 +47,8 @@ function computeSignalMetrics(
   const r = calculateActuarialROI({ metric, type, useCase, maxParticipants: cohortSize, budgetCeiling: budget, applyAdjustments: false });
   return {
     metrics: [
-      { label: 'Book value', value: formatCurrencyCompact(r.totalProjectedSavings) },
-      { label: 'ROI', value: `${r.budgetROI.toFixed(1)}x` },
+      { label: 'Est. book value', value: formatCurrencyCompact(r.totalProjectedSavings) },
+      { label: 'Modelled ROI', value: `${r.budgetROI.toFixed(1)}x` },
       { label: 'Payback', value: `${r.paybackMonths} mo` },
     ],
     bookValue: r.totalProjectedSavings,
@@ -76,7 +76,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     familyLabel: 'Signal improvement',
     audience: '3,847 addressable existing members',
     action: '650 HP/member for 8 weeks of verified Zone 2 consistency.',
-    source: 'AI recommended',
+    source: 'Model-ranked',
     metrics: vo2Metrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
@@ -99,7 +99,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     familyLabel: 'Signal improvement',
     audience: '1,204 members with HRV drift',
     action: '520 HP/member for 21 verified recovery days.',
-    source: 'AI recommended',
+    source: 'Model-ranked',
     metrics: hrvMetrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
@@ -122,7 +122,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     familyLabel: 'Signal improvement',
     audience: '2,186 members with sleep debt',
     action: '480 HP/member for 30 verified regular sleep nights.',
-    source: 'AI recommended',
+    source: 'Model-ranked',
     metrics: sleepMetrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
@@ -145,7 +145,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     familyLabel: 'Signal improvement',
     audience: '946 members with elevated resting HR',
     action: '600 HP/member for 12 active weeks and a 3 bpm improvement.',
-    source: 'AI recommended',
+    source: 'Model-ranked',
     metrics: rhrMetrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
@@ -434,7 +434,7 @@ export default function Campaigns() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Campaign studio
+              Campaign Studio
             </div>
             <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary xl:whitespace-nowrap">
               Launch campaigns that acquire, retain, and improve members.
@@ -457,10 +457,10 @@ export default function Campaigns() {
               Create Campaign
             </button>
             <button
-              onClick={() => navigate('/app/explorer')}
+              onClick={() => navigate('/app/cohorts')}
               className="btn-ghost text-xs"
             >
-              View Member Pool
+              View Cohorts
             </button>
           </div>
         </div>

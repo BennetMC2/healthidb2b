@@ -385,7 +385,7 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
               <FlaskConical size={10} />
               Estimated
             </span>
-            <span className="text-2xs text-tertiary">Engine estimates — run simulation for proven numbers</span>
+            <span className="text-2xs text-tertiary">Engine estimates — run simulation for modelled, agent-tested numbers</span>
           </>
         )}
       </div>
@@ -393,8 +393,8 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
         <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
         <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
-        <OutputTile label="Book value" value={formatCurrencyCompact(bookValue)} />
-        <OutputTile label="ROI" value={isSimulated ? `${(roi + 1).toFixed(1)}x` : `${roi.toFixed(1)}x`} />
+        <OutputTile label="Est. book-value opportunity" value={formatCurrencyCompact(bookValue)} />
+        <OutputTile label="Modelled ROI" value={isSimulated ? `${(roi + 1).toFixed(1)}x` : `${roi.toFixed(1)}x`} />
         <OutputTile label="Payback" value={`${payback} mo`} />
       </div>
 
@@ -409,8 +409,8 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
 
       {!isSimulated && (
         <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <OutputTile label="Claims reduction" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
-          <OutputTile label="Morbidity shift" value={`${insight.outputs.morbidityShiftBps} bps`} />
+          <OutputTile label="Modelled claims impact" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
+          <OutputTile label="Potential morbidity movement" value={`${insight.outputs.morbidityShiftBps} bps`} />
           <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
         </div>
       )}
@@ -548,7 +548,7 @@ export default function Actuary() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
             <div className="mt-4 grid gap-2">
               <OutputTile label="Verified outcomes" value={formatNumber(portfolio.verifiedOutcomes)} />
-              <OutputTile label="Liability avoided" value={formatCurrencyCompact(portfolio.liabilityAvoided)} />
+              <OutputTile label="Modelled liability opportunity" value={formatCurrencyCompact(portfolio.liabilityAvoided)} />
               <OutputTile label="Avg trust" value={portfolio.avgTrust} />
             </div>
           </section>

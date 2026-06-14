@@ -450,7 +450,7 @@ export default function Treasury() {
             <div className="h-px bg-border" />
 
             <div>
-              <span className="text-2xs text-tertiary block uppercase tracking-wider font-medium">Total Annual Savings</span>
+              <span className="text-2xs text-tertiary block uppercase tracking-wider font-medium">Scenario annual savings estimate</span>
               <span className="font-mono text-xl font-bold text-success mt-0.5 block">
                 {multiRoi.isReady ? formatCurrency(portfolioAnnualSavings) : '—'}
               </span>

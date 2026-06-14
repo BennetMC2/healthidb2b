@@ -179,7 +179,7 @@ export default function Settings() {
           </button>
         </div>
         <p className="text-2xs text-tertiary">
-          Use this key to authenticate API requests. Keep it confidential.
+          Demo key. Production keys are issued through secure key management and never displayed after creation.
         </p>
       </section>
 
