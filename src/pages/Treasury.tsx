@@ -499,7 +499,7 @@ export default function Treasury() {
             <ChevronDown size={14} className="text-tertiary" />
           )}
           {!showYieldMechanics && (
-            <span className="text-2xs text-tertiary ml-1">T-bill yield mechanics, value multiplier, growth projections</span>
+            <span className="text-2xs text-tertiary ml-1">Yield mechanics, value multiplier, growth projections</span>
           )}
         </button>
 
@@ -549,11 +549,11 @@ export default function Treasury() {
               <div className="card">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="metric-label">Budget Growth</span>
-                  <InfoTooltip content="Budget value over time, including accrued T-Bill yield." />
+                  <InfoTooltip content="Budget value over time, including accrued yield." />
                 </div>
                 <GrowthChart data={partnerSnapshots} />
                 <p className="text-2xs text-tertiary mt-2 leading-relaxed">
-                  Funds held in tokenized T-Bills (BlackRock BUIDL / Ondo USDY). Principal protected, yield recycled into the reward pool.
+                  Illustrative treasury model, subject to approved instruments and legal review.
                 </p>
               </div>
               <div id="roi-calculator" className="mt-3">

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function Footer() {
   return (
     <footer className="flex items-center justify-between border-t border-border bg-surface px-4 py-2.5 text-2xs text-tertiary">
@@ -11,9 +13,9 @@ export default function Footer() {
         <a href="https://healthid.life" target="_blank" rel="noreferrer" className="hover:text-accent">
           Consumer site ↗
         </a>
-        <span>Privacy</span>
-        <span>Terms</span>
-        <span>Security</span>
+        <Link to="/app/privacy" className="hover:text-accent">Privacy</Link>
+        <Link to="/app/terms" className="hover:text-accent">Terms</Link>
+        <Link to="/app/security" className="hover:text-accent">Security</Link>
       </div>
     </footer>
   );

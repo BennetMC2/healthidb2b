@@ -4,7 +4,7 @@ const sources = [
   {
     icon: TrendingUp,
     title: 'Yield Generation',
-    description: 'Idle funds earn 4–5% APY in tokenized T-Bills (BUIDL/USDY)',
+    description: 'Idle funds earn yield via approved treasury instruments',
     metric: '4.5% APY',
     color: 'text-accent',
     bg: 'bg-accent/10',

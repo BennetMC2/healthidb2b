@@ -305,9 +305,8 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
             <Activity size={13} />
             Simulate this
           </button>
-          <button className="btn-ghost text-xs">Save to watchlist</button>
-          <button className="btn-ghost text-xs">Export signed evidence pack</button>
-          <button className="btn-ghost text-xs">Dismiss with reason</button>
+          <button className="btn-ghost text-xs opacity-50 cursor-not-allowed" disabled title="Coming soon">Save to watchlist</button>
+          <button className="btn-ghost text-xs opacity-50 cursor-not-allowed" disabled title="Coming soon">Export evidence pack</button>
         </div>
       </aside>
     </div>
@@ -435,7 +434,7 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
           <ExternalLink size={13} />
           See evidence & methodology
         </button>
-        <button className="btn-ghost text-xs">
+        <button className="btn-ghost text-xs opacity-50 cursor-not-allowed" disabled title="Coming soon">
           Dismiss
         </button>
       </div>
@@ -505,6 +504,9 @@ export default function Actuary() {
         <div className="mt-5">
           <PartnerPortfolioBand portfolio={partnerPortfolio} />
         </div>
+        <p className="mt-3 font-mono text-[0.65rem] text-tertiary leading-relaxed">
+          Decision support only. Not actuarial certification. Human review required.
+        </p>
       </section>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">

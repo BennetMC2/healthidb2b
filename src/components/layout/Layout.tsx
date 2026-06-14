@@ -65,6 +65,12 @@ export default function Layout({ onTourStart }: LayoutProps) {
         </div>
       )}
 
+      {/* Synthetic demo disclosure — persistent */}
+      <div className="fixed bottom-3 left-16 z-30 hidden sm:flex items-center gap-2 rounded-full border border-border bg-elevated/90 backdrop-blur-sm px-3 py-1.5 font-mono text-[0.6rem] text-tertiary shadow-sm">
+        <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
+        Synthetic demo — modelled examples
+      </div>
+
       {!copilotOpen && !widgetDismissed && !hideActuaryWidget && (
         <div className="group fixed bottom-4 right-3 z-30 w-[min(420px,calc(100vw-24px))] rounded-xl border border-border bg-elevated px-3 py-2 shadow-none sm:bottom-5 sm:right-4 sm:w-[min(420px,calc(100vw-32px))] sm:px-4 sm:py-3">
           <button

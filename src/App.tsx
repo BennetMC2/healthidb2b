@@ -15,6 +15,9 @@ import ToastContainer from '@/components/ui/Toast';
 import { useDemoStore } from '@/stores/useDemoStore';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import NotFound from '@/pages/NotFound';
+import Privacy from '@/pages/legal/Privacy';
+import Terms from '@/pages/legal/Terms';
+import Security from '@/pages/legal/Security';
 import FutureLayout from '@/future/FutureLayout';
 import FutureStrategy from '@/future/pages/FutureStrategy';
 import FuturePopulation from '@/future/pages/FuturePopulation';
@@ -128,6 +131,9 @@ export default function App() {
             <Route path="/app/treasury" element={<Treasury />} />
             <Route path="/app/compliance" element={<Compliance />} />
             <Route path="/app/settings" element={<Settings />} />
+            <Route path="/app/privacy" element={<Privacy />} />
+            <Route path="/app/terms" element={<Terms />} />
+            <Route path="/app/security" element={<Security />} />
             <Route path="/app/simulator" element={<div className="simulator-scope contents"><SimulatorPage /></div>} />
             <Route path="/app/simulator/operator" element={<div className="simulator-scope contents"><OperatorPage /></div>} />
             <Route path="/app/simulator/growth" element={<div className="simulator-scope contents"><GrowthPage /></div>} />

@@ -523,7 +523,7 @@ export default function CampaignCreate() {
               <div className="rounded-xl border border-border bg-hover/60 px-4 py-3">
                 <div className="text-2xs uppercase tracking-wider text-tertiary">Receipt contract</div>
                 <p className="mt-1 text-sm text-secondary leading-relaxed">
-                  The insurer does not receive a raw metric history. It receives a yes/no verification outcome against the rule configured here.
+                  In the intended pilot architecture, the insurer receives a yes/no verification receipt — not raw metric history.
                 </p>
               </div>
             </div>
@@ -722,7 +722,7 @@ export default function CampaignCreate() {
               <div>
                 <span className="metric-label block">Review & Launch</span>
                 <p className="mt-1 text-sm text-secondary">
-                  Final buyer-facing summary. This should read like a credible executive brief for a life insurer.
+                  Review the campaign summary before launch.
                 </p>
               </div>
 
