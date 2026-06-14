@@ -216,35 +216,58 @@ function computeReputationTier(connectedSources: DataSource[], createdAt: string
   return 'low';
 }
 
+// Per-cohort confidence bias to spread cohort averages realistically
+// Higher-risk cohorts with more clinical data → higher confidence
+// Lower-risk with fewer verifications → lower confidence
+const COHORT_CONFIDENCE_BIAS: Record<string, number> = {
+  'Pre-Diabetic Watchlist': 0.12,
+  'Cardiac Risk Pool': 0.15,
+  'Chronic Care Management': 0.08,
+  'Senior Wellness': -0.04,
+  'Mental Health Monitoring': -0.08,
+  'Maternity Track': 0.04,
+  'Low-Risk Millennial': -0.12,
+  'Active Lifestyle': -0.06,
+};
+
 function computeConfidenceScore(
   connectedSources: DataSource[],
   verificationCount: number,
   lastVerified: string | null,
+  riskCohort?: string,
+  noise?: number,
 ): number {
-  // Signal type (40%): weighted avg of source types
+  // Signal type (35%): differentiate between source quality tiers
   const sourceScores = connectedSources.map((s) => {
-    if (s === 'lab_results') return 0.92; // clinical
-    return 0.63; // device/wearable
+    if (s === 'lab_results') return 0.93;
+    if (s === 'oura' || s === 'whoop') return 0.72; // high-quality wearables
+    if (s === 'apple_health' || s === 'garmin') return 0.65; // mid-tier
+    if (s === 'fitbit') return 0.58;
+    return 0.45; // google_fit, samsung_health — lighter integration
   });
   const signalType = sourceScores.length > 0
     ? sourceScores.reduce((a, b) => a + b, 0) / sourceScores.length
-    : 0.28; // self-report baseline
+    : 0.22;
 
-  // Source depth (25%): scales 0.3→1.0 based on connected source count
-  const sourceDepth = clamp(0.3 + (connectedSources.length - 1) * 0.175, 0.3, 1.0);
+  // Source depth (25%): scales 0.25→1.0 based on connected source count
+  const sourceDepth = clamp(0.25 + (connectedSources.length - 1) * 0.19, 0.25, 1.0);
 
   // Freshness (20%): based on lastVerified recency
-  let freshness = 0.3;
+  let freshness = 0.2;
   if (lastVerified) {
     const daysSince = Math.max(0, (Date.now() - new Date(lastVerified).getTime()) / 86400000);
-    freshness = daysSince <= 7 ? 1.0 : daysSince <= 30 ? 0.8 : daysSince <= 90 ? 0.55 : 0.3;
+    freshness = daysSince <= 7 ? 1.0 : daysSince <= 30 ? 0.82 : daysSince <= 90 ? 0.55 : 0.3;
   }
 
   // Consistency (15%): based on verificationCount
-  const consistency = clamp(0.2 + verificationCount * 0.15, 0.2, 1.0);
+  const consistency = clamp(0.15 + verificationCount * 0.18, 0.15, 1.0);
 
-  const score = signalType * 0.4 + sourceDepth * 0.25 + freshness * 0.2 + consistency * 0.15;
-  return Number(clamp(score, 0, 1).toFixed(3));
+  // Cohort bias (5%): spreads averages across cohorts
+  const cohortBias = riskCohort ? (COHORT_CONFIDENCE_BIAS[riskCohort] ?? 0) : 0;
+
+  const base = signalType * 0.35 + sourceDepth * 0.25 + freshness * 0.20 + consistency * 0.15 + cohortBias * 0.05;
+  const score = base + (noise ?? 0);
+  return Number(clamp(score, 0.08, 0.98).toFixed(3));
 }
 
 function buildMembers(now: Date, seedOffset: number): MemberState[] {
@@ -276,7 +299,8 @@ function buildMembers(now: Date, seedOffset: number): MemberState[] {
       0.18,
       0.94,
     );
-    const confidenceScore = computeConfidenceScore(connectedSources, 0, null);
+    const confidenceNoise = normalDistribution(rng, 0, 0.06);
+    const confidenceScore = computeConfidenceScore(connectedSources, 0, null, riskCohort, confidenceNoise);
 
     members.push({
       id: generateId(rng, 'hid'),
@@ -605,7 +629,7 @@ function buildSimulation() {
       id: member.id,
       anonymizedId: member.anonymizedId,
       healthScore: member.healthScore,
-      confidenceScore: computeConfidenceScore(member.connectedSources, member.verificationCount, member.lastVerified),
+      confidenceScore: computeConfidenceScore(member.connectedSources, member.verificationCount, member.lastVerified, member.riskCohort),
       reputationTier: member.reputationTier,
       connectedSources: member.connectedSources,
       demographics: member.demographics,

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BrainCircuit, ExternalLink, Sparkles, Target, X } from 'lucide-react';
+import { BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X } from 'lucide-react';
 import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
@@ -285,6 +285,14 @@ function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onE
         <p className="mt-1 text-sm leading-relaxed text-secondary">{insight.behaviourToReward}</p>
       </div>
 
+      <div className="mt-3 flex items-center gap-2">
+        <span className="inline-flex items-center gap-1 rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-2xs font-medium text-warning">
+          <FlaskConical size={10} />
+          Projected
+        </span>
+        <span className="text-2xs text-tertiary">Pre-campaign modelled estimates</span>
+      </div>
+
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
         <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
         <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
@@ -309,7 +317,7 @@ function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onE
         </button>
         <button onClick={() => onEvidence(insight)} className="btn-ghost text-xs">
           <ExternalLink size={13} />
-          See evidence
+          See evidence & methodology
         </button>
         <button className="btn-ghost text-xs">
           Dismiss

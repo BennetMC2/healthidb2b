@@ -21,17 +21,10 @@ import FuturePopulation from '@/future/pages/FuturePopulation';
 import FutureExecution from '@/future/pages/FutureExecution';
 import FutureDecisions from '@/future/pages/FutureDecisions';
 import FutureTrust from '@/future/pages/FutureTrust';
-import SimulatorLayout from '@/simulator/SimulatorLayout';
-import SimulatorOverview from '@/simulator/pages/SimulatorOverview';
-import EvidenceLibrary from '@/simulator/pages/EvidenceLibrary';
-import SimulatorPresentation from '@/simulator/pages/SimulatorPresentation';
-import PopulationChapter from '@/simulator/pages/chapters/PopulationChapter';
-import OpportunityChapter from '@/simulator/pages/chapters/OpportunityChapter';
-import CampaignSelectChapter from '@/simulator/pages/chapters/CampaignSelectChapter';
-import BehaviourChapter from '@/simulator/pages/chapters/BehaviourChapter';
-import HealthImpactChapter from '@/simulator/pages/chapters/HealthImpactChapter';
-import FinancialChapter from '@/simulator/pages/chapters/FinancialChapter';
-import SensitivityChapter from '@/simulator/pages/chapters/SensitivityChapter';
+import Allocator from '@/pages/Allocator';
+import SimulatorPage from '@/simulator-agentic/SimulatorPage';
+import OperatorPage from '@/simulator-agentic/OperatorPage';
+import GrowthPage from '@/simulator-agentic/GrowthPage';
 
 export default function App() {
   const startDemo = useDemoStore((s) => s.startDemo);
@@ -48,6 +41,11 @@ export default function App() {
       '/app/actuary': {
         title: 'AI Actuary · HealthID',
         description: 'AI Actuary cockpit for wearable signal campaigns priced with Health Points and measured against expected book value.',
+        robots: 'noindex',
+      },
+      '/app/allocator': {
+        title: 'Portfolio Allocator · HealthID',
+        description: 'Allocate incentive budget across your book of lives with objective-weighted portfolio optimization.',
         robots: 'noindex',
       },
       '/app/campaigns': {
@@ -121,42 +119,15 @@ export default function App() {
             <Route path="decisions" element={<FutureDecisions />} />
             <Route path="trust" element={<FutureTrust />} />
           </Route>
-          <Route path="/simulator" element={<SimulatorLayout />}>
-            <Route index element={<SimulatorOverview />} />
-            {/* Chapter-based build flow */}
-            <Route path="build" element={<Navigate to="/simulator/build/1" replace />} />
-            <Route path="build/1" element={<PopulationChapter />} />
-            <Route path="build/2" element={<OpportunityChapter />} />
-            <Route path="build/3" element={<CampaignSelectChapter />} />
-            <Route path="build/4" element={<BehaviourChapter />} />
-            <Route path="build/5" element={<HealthImpactChapter />} />
-            <Route path="build/6" element={<FinancialChapter />} />
-            <Route path="build/7" element={<SensitivityChapter />} />
-            {/* Results + Evidence */}
-            <Route path="results" element={<SimulatorPresentation />} />
-            <Route path="evidence" element={<EvidenceLibrary />} />
-            {/* Redirects from old routes */}
-            <Route path="overview" element={<Navigate to="/simulator" replace />} />
-            <Route path="configure" element={<Navigate to="/simulator/build/3" replace />} />
-            <Route path="run" element={<Navigate to="/simulator/build/5" replace />} />
-            <Route path="inspector" element={<Navigate to="/simulator/evidence" replace />} />
-            <Route path="scenario" element={<Navigate to="/simulator/build/3" replace />} />
-            <Route path="cohort" element={<Navigate to="/simulator/build/1" replace />} />
-            <Route path="signals" element={<Navigate to="/simulator/build/1" replace />} />
-            <Route path="interventions" element={<Navigate to="/simulator/build/3" replace />} />
-            <Route path="rewards" element={<Navigate to="/simulator/build/6" replace />} />
-            <Route path="output" element={<Navigate to="/simulator/results" replace />} />
-            <Route path="bridge" element={<Navigate to="/simulator/results" replace />} />
-            <Route path="audit" element={<Navigate to="/simulator/evidence" replace />} />
-            <Route path="settings" element={<Navigate to="/simulator/build/3" replace />} />
-            <Route path="compare" element={<Navigate to="/simulator" replace />} />
-            <Route path="architecture" element={<Navigate to="/simulator/evidence" replace />} />
-          </Route>
+          {/* Old simulator routes redirect to the new agentic simulator */}
+          <Route path="/simulator" element={<Navigate to="/app/simulator" replace />} />
+          <Route path="/simulator/*" element={<Navigate to="/app/simulator" replace />} />
           <Route element={<Layout onTourStart={handleTourStart} />}>
             <Route path="/app" element={<Navigate to="/app/actuary" replace />} />
             <Route path="/app/actuary" element={<Actuary />} />
             <Route path="/app/cohorts" element={<NetworkExplorer />} />
             <Route path="/app/explorer" element={<Navigate to="/app/cohorts" replace />} />
+            <Route path="/app/allocator" element={<Allocator />} />
             <Route path="/app/campaigns" element={<Campaigns />} />
             <Route path="/app/campaigns/new" element={<CampaignCreate />} />
             <Route path="/app/campaigns/:id" element={<CampaignDetail />} />
@@ -164,6 +135,9 @@ export default function App() {
             <Route path="/app/treasury" element={<Treasury />} />
             <Route path="/app/compliance" element={<Compliance />} />
             <Route path="/app/settings" element={<Settings />} />
+            <Route path="/app/simulator" element={<div className="simulator-scope contents"><SimulatorPage /></div>} />
+            <Route path="/app/simulator/operator" element={<div className="simulator-scope contents"><OperatorPage /></div>} />
+            <Route path="/app/simulator/growth" element={<div className="simulator-scope contents"><GrowthPage /></div>} />
             <Route path="*" element={<NotFound />} />
           </Route>
           <Route path="/campaigns" element={<Navigate to="/app/campaigns" replace />} />

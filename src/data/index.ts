@@ -37,3 +37,6 @@ export {
 export { industryContexts } from './partnerContext';
 
 export { campaignTimeSeries } from './campaignTimeSeries';
+
+export { cohortTrajectories, campaignTrajectories } from './cohortTrajectories';
+export type { TrajectoryData, TrajectoryPoint } from './cohortTrajectories';

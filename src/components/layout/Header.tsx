@@ -18,6 +18,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
   const location = useLocation();
   const sectionLabel = (() => {
     if (location.pathname.startsWith('/app/actuary')) return 'AI Actuary';
+    if (location.pathname.startsWith('/app/simulator')) return 'Incentive Simulator';
     if (location.pathname.startsWith('/app/campaigns')) return 'Campaign Studio';
     if (location.pathname.startsWith('/app/cohorts')) return 'Cohorts';
     if (location.pathname.startsWith('/app/explorer')) return 'Cohorts';

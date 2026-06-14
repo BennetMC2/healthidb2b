@@ -33,9 +33,12 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
 import CampaignTimeSeriesChart from '@/components/campaigns/CampaignTimeSeriesChart';
 import ActuarialROICalculator from '@/components/campaigns/ActuarialROICalculator';
+import CohortTrajectoryChart from '@/components/charts/CohortTrajectoryChart';
+import DeliveryLoopPreview from '@/components/campaigns/DeliveryLoopPreview';
 import B2CPreviewPane from '@/components/campaigns/B2CPreviewPane';
 import BehaviorShiftEvidence from '@/components/campaigns/BehaviorShiftEvidence';
 import LossRatioDelta from '@/components/campaigns/LossRatioDelta';
+import { campaignTrajectories } from '@/data';
 import { deleteConsumerCampaign, fetchConsumerCampaignStatus } from '@/lib/consumerCampaigns';
 import {
   formatNumber,
@@ -422,6 +425,11 @@ export default function CampaignDetail() {
         <MetricCard label="Business Motion" value={commercialModel.cards.value} />
       </div>
 
+      {/* Hero: cohort trajectory chart */}
+      {campaignTrajectories[campaign.id] && (
+        <CohortTrajectoryChart trajectory={campaignTrajectories[campaign.id]} />
+      )}
+
       <LossRatioDelta campaign={campaign} />
 
       <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-4">
@@ -498,7 +506,10 @@ export default function CampaignDetail() {
         />
       </div>
 
-      <BehaviorShiftEvidence campaign={campaign} />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <BehaviorShiftEvidence campaign={campaign} />
+        <DeliveryLoopPreview campaign={campaign} partner={partner} />
+      </div>
 
       <div className="flex flex-col 2xl:flex-row gap-4">
         <div className="card w-full 2xl:w-[300px] flex-shrink-0">

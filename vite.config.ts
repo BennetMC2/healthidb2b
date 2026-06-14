@@ -57,6 +57,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@sim': path.resolve(__dirname, './src/simulator-agentic'),
+      '@shared': path.resolve(__dirname, './shared'),
     },
   },
   server: {

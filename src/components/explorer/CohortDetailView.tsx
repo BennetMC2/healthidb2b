@@ -1,9 +1,11 @@
 import { ArrowLeft, Users, Activity, Shield, Gauge } from 'lucide-react';
 import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
+import CohortTrajectoryChart from '@/components/charts/CohortTrajectoryChart';
 import { ReputationBadge } from '@/components/ui/Badge';
 import { formatNumber, formatPercent, formatRelativeTime } from '@/utils/format';
 import { getConfidenceLabel, CONFIDENCE_COLORS } from '@/utils/constants';
+import { cohortTrajectories } from '@/data';
 import type { CohortSummary } from '@/utils/cohorts';
 import type { HealthIdentity, ReputationTier } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -47,6 +49,7 @@ const columns: ColumnDef<HealthIdentity, unknown>[] = [
 
 export default function CohortDetailView({ cohort, members, onBack, onSelectIdentity }: CohortDetailViewProps) {
   const riskColor = cohort.riskScore >= 0.65 ? 'text-error' : cohort.riskScore >= 0.45 ? 'text-warning' : 'text-success';
+  const trajectory = cohortTrajectories[cohort.name];
 
   return (
     <div className="flex flex-col gap-4">
@@ -61,6 +64,9 @@ export default function CohortDetailView({ cohort, members, onBack, onSelectIden
           </p>
         </div>
       </div>
+
+      {/* Hero: Cohort trajectory chart */}
+      {trajectory && <CohortTrajectoryChart trajectory={trajectory} />}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <MetricCard label="Members" value={formatNumber(cohort.memberCount)} icon={<Users size={14} />} />

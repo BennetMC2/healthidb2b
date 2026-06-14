@@ -8,6 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        // ── B2B neutrals ──────────────────────────────────
         base: 'rgb(var(--n-base) / <alpha-value>)',
         surface: 'rgb(var(--n-surface) / <alpha-value>)',
         elevated: 'rgb(var(--n-elevated) / <alpha-value>)',
@@ -16,8 +17,22 @@ export default {
         'border-light': 'rgb(var(--n-border-light) / <alpha-value>)',
         zebra: 'rgb(var(--n-elevated) / <alpha-value>)',
 
-        primary: 'rgb(var(--n-primary) / <alpha-value>)',
-        secondary: 'rgb(var(--n-secondary) / <alpha-value>)',
+        // `primary` – object so both B2B (`text-primary`) and simulator
+        // (`bg-primary`, `text-primary-foreground`) classes resolve.
+        // DEFAULT keeps the B2B navy text; simulator rust lives on `primary.sim`.
+        // `primary` – unified design: the rust accent color (matches both platforms).
+        // B2B body text uses `text-primary` (now rust-accented) or `text-secondary`/`text-tertiary`.
+        primary: {
+          DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
+          foreground: 'hsl(var(--primary-foreground) / <alpha-value>)',
+        },
+
+        // `secondary` – same strategy
+        secondary: {
+          DEFAULT: 'rgb(var(--n-secondary) / <alpha-value>)',
+          foreground: 'hsl(var(--secondary-foreground) / <alpha-value>)',
+        },
+
         tertiary: 'rgb(var(--n-tertiary) / <alpha-value>)',
 
         accent: {
@@ -25,6 +40,7 @@ export default {
           hover: 'rgb(var(--a-accent-hover) / <alpha-value>)',
           muted: 'rgb(var(--a-accent-muted) / <alpha-value>)',
           dim: 'rgb(var(--a-accent-dim) / <alpha-value>)',
+          foreground: 'hsl(var(--accent-foreground) / <alpha-value>)',
         },
 
         'accent-secondary': {
@@ -72,6 +88,34 @@ export default {
           'activity-light':    'rgb(var(--s-metric-activity-light) / <alpha-value>)',
           'body-light':        'rgb(var(--s-metric-body-light) / <alpha-value>)',
           'clinical-light':    'rgb(var(--s-metric-clinical-light) / <alpha-value>)',
+        },
+
+        // ── Simulator design system colors (HSL-based) ────
+        background: 'hsl(var(--background) / <alpha-value>)',
+        foreground: 'hsl(var(--foreground) / <alpha-value>)',
+        'card-border': 'hsl(var(--card-border) / <alpha-value>)',
+        card: {
+          DEFAULT: 'hsl(var(--card) / <alpha-value>)',
+          foreground: 'hsl(var(--card-foreground) / <alpha-value>)',
+          border: 'hsl(var(--card-border) / <alpha-value>)',
+        },
+        'muted-foreground': 'hsl(var(--muted-foreground) / <alpha-value>)',
+        muted: {
+          DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
+          foreground: 'hsl(var(--muted-foreground) / <alpha-value>)',
+        },
+        destructive: {
+          DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
+          foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
+        },
+        ring: 'hsl(var(--ring) / <alpha-value>)',
+        input: 'hsl(var(--input) / <alpha-value>)',
+        chart: {
+          '1': 'hsl(var(--chart-1) / <alpha-value>)',
+          '2': 'hsl(var(--chart-2) / <alpha-value>)',
+          '3': 'hsl(var(--chart-3) / <alpha-value>)',
+          '4': 'hsl(var(--chart-4) / <alpha-value>)',
+          '5': 'hsl(var(--chart-5) / <alpha-value>)',
         },
       },
       fontFamily: {
@@ -203,5 +247,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tailwindcss-animate'),
+  ],
 }
