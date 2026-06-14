@@ -4,6 +4,7 @@ import { Activity, BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X
 import { actuaryInsights, engineAssumptionSetMeta, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import { ENGINE_ECONOMICS } from '@shared/engineConstants';
 import type { SeededRunResult } from '@shared/campaigns';
+import { SEEDED_RESULTS } from '@shared/seeded-results';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
@@ -454,14 +455,8 @@ export default function Actuary() {
   const scanClock = useScanClock();
   const chatPreview = messages.slice(-4);
 
-  // Fetch real simulation results from seeded background runs
-  const [seededResults, setSeededResults] = useState<SeededRunResult[]>([]);
-  useEffect(() => {
-    fetch('/api/scenarios/seeded')
-      .then((r) => (r.ok ? r.json() : []))
-      .then((data) => setSeededResults(Array.isArray(data) ? data : []))
-      .catch(() => setSeededResults([]));
-  }, []);
+  // Pre-computed simulation results (from real agent-based Monte Carlo runs)
+  const seededResults = SEEDED_RESULTS;
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
