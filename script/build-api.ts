@@ -1,33 +1,13 @@
 import { build as esbuild } from "esbuild";
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-const allowlist = [
-  "express",
-  "zod",
-  "zod-validation-error",
-  "dotenv",
-  "date-fns",
-  "drizzle-zod",
-  "drizzle-orm",
-];
-
-// Native or heavy packages not in package.json but imported by server code
-const alwaysExternal = [
+// Only native modules stay external — everything else gets bundled
+const external = [
   "better-sqlite3",
 ];
 
 async function buildApi() {
   console.log("building vercel api...");
-  const pkg = JSON.parse(await readFile("package.json", "utf-8"));
-  const allDeps = [
-    ...Object.keys(pkg.dependencies || {}),
-    ...Object.keys(pkg.devDependencies || {}),
-  ];
-  const externals = [
-    ...allDeps.filter((dep) => !allowlist.includes(dep)),
-    ...alwaysExternal,
-  ];
 
   await esbuild({
     entryPoints: ["server/vercel.ts"],
@@ -39,7 +19,7 @@ async function buildApi() {
       "process.env.NODE_ENV": '"production"',
     },
     minify: true,
-    external: externals,
+    external,
     logLevel: "info",
   });
 }
