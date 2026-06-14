@@ -258,7 +258,7 @@ function PlainStep({ idx, state }: { idx: number; state: SimState }) {
       "The model is built to survive an actuary's review, not to flatter the result. Four questions any reviewer would ask — and how it answers:",
     steps: [
       {
-        q: "Is the evidence strong enough to book value?",
+        q: "Is the evidence strong enough to estimate book value?",
         a: "Every pathway is gated by its evidence tier: Proven pathways earn full credit, Emerging ones are haircut, Experimental signals earn engagement value only — enthusiasm is not a valuation basis.",
       },
       {

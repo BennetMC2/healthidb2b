@@ -220,14 +220,14 @@ function computeReputationTier(connectedSources: DataSource[], createdAt: string
 // Higher-risk cohorts with more clinical data → higher confidence
 // Lower-risk with fewer verifications → lower confidence
 const COHORT_CONFIDENCE_BIAS: Record<string, number> = {
-  'Pre-Diabetic Watchlist': 0.12,
-  'Cardiac Risk Pool': 0.15,
-  'Chronic Care Management': 0.08,
-  'Senior Wellness': -0.04,
-  'Mental Health Monitoring': -0.08,
-  'Maternity Track': 0.04,
-  'Low-Risk Millennial': -0.12,
-  'Active Lifestyle': -0.06,
+  'Pre-Diabetic Watchlist': 0.18,
+  'Cardiac Risk Pool': 0.22,
+  'Chronic Care Management': 0.12,
+  'Senior Wellness': -0.06,
+  'Mental Health Monitoring': -0.11,
+  'Maternity Track': 0.07,
+  'Low-Risk Millennial': -0.16,
+  'Active Lifestyle': -0.09,
 };
 
 function computeConfidenceScore(
@@ -262,10 +262,10 @@ function computeConfidenceScore(
   // Consistency (15%): based on verificationCount
   const consistency = clamp(0.15 + verificationCount * 0.18, 0.15, 1.0);
 
-  // Cohort bias (5%): spreads averages across cohorts
+  // Cohort bias (15%): spreads averages across cohorts
   const cohortBias = riskCohort ? (COHORT_CONFIDENCE_BIAS[riskCohort] ?? 0) : 0;
 
-  const base = signalType * 0.35 + sourceDepth * 0.25 + freshness * 0.20 + consistency * 0.15 + cohortBias * 0.05;
+  const base = signalType * 0.30 + sourceDepth * 0.22 + freshness * 0.18 + consistency * 0.15 + cohortBias * 0.15;
   const score = base + (noise ?? 0);
   return Number(clamp(score, 0.08, 0.98).toFixed(3));
 }

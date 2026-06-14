@@ -24,9 +24,9 @@ const EVIDENCE_COLORS: Record<string, { dot: string; value: string }> = {
 function getProjectionCopy(useCase: CampaignUseCase | '') {
   if (useCase === 'acquisition') {
     return {
-      description: 'The model prices Health Points against verified signup quality and projected acquired book value.',
+      description: 'The model prices Health Points against verified signup quality and projected acquired est. book value.',
       primaryRate: 'Verified Signup Rate',
-      valueLabel: 'Acquired Book Value',
+      valueLabel: 'Est. Acquired Book Value',
       shiftLabel: 'Quality Shift',
       verifiedDetail: 'verified signups',
       framingLabel: 'acquired value',
@@ -35,9 +35,9 @@ function getProjectionCopy(useCase: CampaignUseCase | '') {
 
   if (useCase === 'renewal') {
     return {
-      description: 'The model prices Health Points against engagement recovery, renewal lift, and retained book value.',
+      description: 'The model prices Health Points against engagement recovery, renewal lift, and retained est. book value.',
       primaryRate: 'Renewal Lift',
-      valueLabel: 'Retained Book Value',
+      valueLabel: 'Est. Retained Book Value',
       shiftLabel: 'Retention Shift',
       verifiedDetail: 'verified streaks',
       framingLabel: 'retained value',

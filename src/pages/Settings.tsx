@@ -203,6 +203,9 @@ export default function Settings() {
             <span className="text-sm text-secondary font-mono">1</span>
           </div>
         </div>
+        <p className="text-2xs text-tertiary/70">
+          Prototype auth — org and role are derived from request headers. Production will use SSO with scoped API tokens.
+        </p>
       </section>
 
       {/* Webhooks */}

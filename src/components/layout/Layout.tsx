@@ -8,6 +8,7 @@ import Footer from './Footer';
 import CopilotPanel from '@/components/copilot/CopilotPanel';
 import { useDemoStore } from '@/stores/useDemoStore';
 import { useExperienceStore } from '@/stores/useExperienceStore';
+import { actuaryInsights } from '@/data/actuaryInsights';
 
 interface LayoutProps {
   onTourStart?: () => void;
@@ -87,10 +88,10 @@ export default function Layout({ onTourStart }: LayoutProps) {
           >
             <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-              AI Actuary · 4 signal plays
+              AI Actuary · {actuaryInsights.length} signal plays
             </div>
             <div className="mt-1 hidden text-sm leading-snug text-secondary sm:block">
-              VO2 Max, HRV, sleep, and resting HR campaigns are priced against book value.
+              {actuaryInsights.map(i => i.signal).join(', ')} campaigns modelled against est. book value.
               <span className="ml-1 font-medium text-accent">View {'->'}</span>
             </div>
           </button>

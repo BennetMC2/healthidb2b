@@ -49,7 +49,7 @@ export default function SankeyDiagram({ budget, yield_, buyingPower, totalValue 
 
     const nodes: SankeyNode[] = [
       { name: 'Budget' },
-      { name: 'Secure Vault (T-Bills)' },
+      { name: 'Secure Vault' },
       { name: 'Buying Power' },
       { name: 'User Value' },
     ];

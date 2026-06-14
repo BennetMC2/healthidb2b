@@ -232,11 +232,11 @@ export default function SimulatorPage() {
             </div>
             <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">Book value</div>
+                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">Est. book value</div>
                 <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">${(prefillInsight.outputs.projectedSavingsUsd / 1000).toFixed(0)}K</div>
               </div>
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">ROI</div>
+                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">Modelled ROI</div>
                 <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{prefillInsight.outputs.budgetRoiMultiple.toFixed(1)}x</div>
               </div>
               <div>

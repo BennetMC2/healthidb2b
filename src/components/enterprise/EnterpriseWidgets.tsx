@@ -1,4 +1,5 @@
 import { CalendarClock, Check, Hexagon, Radio, ShieldCheck, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { formatNumber } from '@/utils/format';
 import type { PartnerPortfolio } from '@/data/partnerPortfolios';
 
@@ -90,24 +91,25 @@ export function ResearchFeed({ portfolio }: { portfolio: PartnerPortfolio }) {
 }
 
 export function PartnerPortfolioBand({ portfolio }: { portfolio: PartnerPortfolio }) {
+  const navigate = useNavigate();
   return (
     <div className="grid gap-2 sm:grid-cols-4">
-      <div className="rounded-xl border border-border bg-surface px-3 py-3">
+      <button onClick={() => navigate('/app/cohorts')} className="rounded-xl border border-border bg-surface px-3 py-3 text-left transition-colors hover:border-accent/30">
         <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Lives monitored</div>
         <div className="mt-1 font-mono text-lg font-semibold text-primary">{formatNumber(portfolio.lives)}</div>
-      </div>
+      </button>
       <div className="rounded-xl border border-border bg-surface px-3 py-3">
-        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Data sources</div>
+        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Connected devices</div>
         <div className="mt-1 font-mono text-lg font-semibold text-primary">{formatNumber(portfolio.dataSources)}</div>
       </div>
       <div className="rounded-xl border border-border bg-surface px-3 py-3">
         <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Lead signal</div>
         <div className="mt-1 font-mono text-lg font-semibold text-primary">{portfolio.leadSignal}</div>
       </div>
-      <div className="rounded-xl border border-border bg-surface px-3 py-3">
-        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Indexed papers</div>
-        <div className="mt-1 font-mono text-lg font-semibold text-primary">{formatNumber(portfolio.indexedPapers)}</div>
-      </div>
+      <button onClick={() => navigate('/app/compliance')} className="rounded-xl border border-border bg-surface px-3 py-3 text-left transition-colors hover:border-accent/30">
+        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">Verified receipts</div>
+        <div className="mt-1 font-mono text-lg font-semibold text-primary">{formatNumber(portfolio.verifiedReceipts)}</div>
+      </button>
     </div>
   );
 }

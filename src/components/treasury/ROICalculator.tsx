@@ -147,7 +147,7 @@ export default function ROICalculator() {
     <div className="card" data-walkthrough="roi-calculator">
       <SectionHeader
         title="ROI Projection"
-        description="Model the return on your verification budget including T-Bill yield and enterprise buying power."
+        description="Model the return on your verification budget including treasury yield and enterprise buying power."
         icon={<Calculator size={16} />}
       />
 
@@ -203,7 +203,7 @@ export default function ROICalculator() {
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <label className="text-2xs text-tertiary">Yield Rate (APY)</label>
-              <InfoTooltip content="Annual percentage yield from US Treasury Bills. Current short-term T-Bill rates range 4–5%." />
+              <InfoTooltip content="Annual percentage yield from approved treasury instruments." />
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -228,7 +228,7 @@ export default function ROICalculator() {
             <div className="card-elevated">
               <div className="flex items-center gap-1.5">
                 <span className="text-2xs text-tertiary">Projected Yield</span>
-                <InfoTooltip content="Estimated yield earned from T-Bills over the selected time horizon." />
+                <InfoTooltip content="Estimated yield earned over the selected time horizon." />
               </div>
               <div className="font-mono text-lg font-semibold text-accent mt-0.5">
                 {formatCurrency(results.projectedYield)}

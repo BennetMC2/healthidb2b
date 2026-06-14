@@ -362,7 +362,7 @@ export default function Campaigns() {
       let summary = `${formatNumber(rows.reduce((sum, campaign) => sum + campaign.funnel.eligible, 0))} reachable`;
 
       if (family.id === 'signal') {
-        summary = `${formatCurrencyCompact(rows.reduce((sum, campaign) => sum + (signalBookValues[campaign.name] ?? 0), 0))} book value`;
+        summary = `${formatCurrencyCompact(rows.reduce((sum, campaign) => sum + (signalBookValues[campaign.name] ?? 0), 0))} est. book value`;
       }
       if (family.id === 'acquisition') {
         summary = `${formatNumber(rows.reduce((sum, campaign) => sum + campaign.funnel.eligible, 0))} anonymous pool`;
