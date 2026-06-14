@@ -21,7 +21,6 @@ import FuturePopulation from '@/future/pages/FuturePopulation';
 import FutureExecution from '@/future/pages/FutureExecution';
 import FutureDecisions from '@/future/pages/FutureDecisions';
 import FutureTrust from '@/future/pages/FutureTrust';
-import Allocator from '@/pages/Allocator';
 import SimulatorPage from '@/simulator-agentic/SimulatorPage';
 import OperatorPage from '@/simulator-agentic/OperatorPage';
 import GrowthPage from '@/simulator-agentic/GrowthPage';
@@ -41,11 +40,6 @@ export default function App() {
       '/app/actuary': {
         title: 'AI Actuary · HealthID',
         description: 'AI Actuary cockpit for wearable signal campaigns priced with Health Points and measured against expected book value.',
-        robots: 'noindex',
-      },
-      '/app/allocator': {
-        title: 'Portfolio Allocator · HealthID',
-        description: 'Allocate incentive budget across your book of lives with objective-weighted portfolio optimization.',
         robots: 'noindex',
       },
       '/app/campaigns': {
@@ -127,7 +121,6 @@ export default function App() {
             <Route path="/app/actuary" element={<Actuary />} />
             <Route path="/app/cohorts" element={<NetworkExplorer />} />
             <Route path="/app/explorer" element={<Navigate to="/app/cohorts" replace />} />
-            <Route path="/app/allocator" element={<Allocator />} />
             <Route path="/app/campaigns" element={<Campaigns />} />
             <Route path="/app/campaigns/new" element={<CampaignCreate />} />
             <Route path="/app/campaigns/:id" element={<CampaignDetail />} />

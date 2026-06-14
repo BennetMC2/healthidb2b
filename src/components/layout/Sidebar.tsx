@@ -4,7 +4,6 @@ import {
   Activity,
   BrainCircuit,
   Globe,
-  PieChart,
   Target,
   ShieldCheck,
   Settings,
@@ -48,7 +47,6 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
 
 const navItems = [
   { path: '/app/actuary', label: 'AI Actuary', icon: BrainCircuit, tourId: 'actuary-nav' },
-  { path: '/app/allocator', label: 'Plan', icon: PieChart, tourId: 'allocator-nav' },
   { path: '/app/simulator', label: 'Simulator', icon: Activity, tourId: 'simulator-nav' },
   { path: '/app/campaigns', label: 'Campaign Studio', icon: Target, tourId: 'campaigns-nav' },
   { path: '/app/cohorts', label: 'Cohorts', icon: Globe, tourId: 'explorer-nav' },

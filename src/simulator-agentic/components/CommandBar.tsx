@@ -1,18 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 import type { IncentiveDesign, LifeAssumptionOverrides, ModelInputVersion, RewardStrategyConfig } from "@shared/schema";
+import { CAMPAIGN_REGISTRY } from "@shared/campaigns";
 import { Sparkles, ArrowRight, Loader2, Users, Banknote, Target, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { apiRequest, queryClient } from "@sim/lib/queryClient";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@sim/ui/collapsible";
 import SignalLibrary from "@sim/components/SignalLibrary";
 
-const EXAMPLES = [
+// Open-ended examples for users who want to write custom scenarios
+const OPEN_EXAMPLES = [
   "Cut cardiovascular claims in our 250K Singapore book over 18 months using the best combination of signals we can verify.",
-  "Reduce diabetes and pre-diabetes risk across a 180K HK book, blending verified HbA1c with continuous-glucose behaviour.",
-  "Improve recovery and resilience for a 40K employer group, rewarding sleep regularity, HRV and resting-heart-rate trends together.",
-  "Pilot a passive frailty and fall-risk early-warning program for our senior segment using walking-speed and gait signals — engagement first, prove the claims impact on our own data.",
-  "Acquire pre-verified high-trust members from the open pool to lower our 120K SG book's average risk, prioritising clinically-anchored proofs.",
-  "Design a continuous-verification stream that lets us re-price premiums on a mixed individual and group book as members improve VO2 max and resting heart rate.",
+  "Design a continuous-verification stream that lets us re-price premiums as members improve VO2 max and resting heart rate.",
 ];
 
 const MIN_AGENTS = 12;
@@ -39,8 +38,19 @@ export default function CommandBar({
   running: boolean;
   rewardPmpm: number | null;
 }) {
+  const location = useLocation();
   const [goal, setGoal] = useState("");
   const [sample, setSample] = useState(100);
+
+  // Accept pre-fill from Actuary page navigation state
+  useEffect(() => {
+    const state = location.state as { prefillGoal?: string } | null;
+    if (state?.prefillGoal) {
+      setGoal(state.prefillGoal);
+      // Clear navigation state so refreshes don't re-fill
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [configureIncentive, setConfigureIncentive] = useState(true);
   const [adminCostPmpm, setAdminCostPmpm] = useState(0);
@@ -179,8 +189,34 @@ export default function CommandBar({
         </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {EXAMPLES.map((ex, i) => (
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+        {CAMPAIGN_REGISTRY.map((campaign) => (
+          <button
+            key={campaign.id}
+            onClick={() => !running && setGoal(campaign.simulatorGoal)}
+            disabled={running}
+            className="group/card rounded-lg border border-card-border bg-background/50 px-3 py-2.5 text-left transition-all hover:border-primary/30 hover:bg-background/80 disabled:opacity-50"
+            data-testid={`chip-campaign-${campaign.id}`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="rounded-full border border-card-border bg-card px-2 py-0.5 font-mono text-[0.6rem] uppercase tracking-wider text-muted-foreground">
+                {campaign.signal}
+              </span>
+              <span className="font-mono text-[0.6rem] text-muted-foreground">
+                {campaign.cohortSize.toLocaleString()} members
+              </span>
+            </div>
+            <div className="mt-1.5 text-xs font-medium text-foreground/90 group-hover/card:text-foreground">
+              {campaign.campaignName}
+            </div>
+            <div className="mt-0.5 font-mono text-[0.6rem] text-muted-foreground">
+              {campaign.targetWindow} · {campaign.market}
+            </div>
+          </button>
+        ))}
+      </div>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {OPEN_EXAMPLES.map((ex, i) => (
           <button
             key={i}
             onClick={() => !running && setGoal(ex)}
@@ -188,7 +224,7 @@ export default function CommandBar({
             className="rounded-full border border-card-border bg-background/50 px-3 py-1 text-left font-mono text-[0.7rem] text-muted-foreground hover-elevate disabled:opacity-50"
             data-testid={`chip-example-${i}`}
           >
-            {ex.length > 58 ? ex.slice(0, 56) + "…" : ex}
+            {ex.length > 72 ? ex.slice(0, 70) + "…" : ex}
           </button>
         ))}
       </div>

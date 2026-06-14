@@ -68,6 +68,18 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api\/anthropic/, ''),
       },
+      // Proxy simulator API calls to the agentic-simulator server
+      '/api/simulate': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/growth': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/signals': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/citations': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/scenarios': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/segments': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/backtest': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/governance': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/audit': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/health': { target: 'http://localhost:5001', changeOrigin: true },
+      '/api/operator': { target: 'http://localhost:5001', changeOrigin: true },
     },
   },
 })

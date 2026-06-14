@@ -1,4 +1,5 @@
 import { useReducer, useCallback, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import type { StreamEvent, IncentiveDesign, LifeAssumptionOverrides, ResolvedPlan, RewardRoiPoint, RewardStrategyConfig } from "@shared/schema";
 import { streamSimulation, initialSimState, type SimState } from "@sim/lib/sim";
 import CommandBar from "@sim/components/CommandBar";
@@ -92,9 +93,13 @@ export interface VerifyResult {
 }
 
 export default function SimulatorPage() {
+  const location = useLocation();
   const [state, dispatch] = useReducer(reducer, initialSimState);
   const [showExplainer, setShowExplainer] = useState(true);
   const [activeTab, setActiveTab] = useState<SimTab>("command");
+
+  // Prefill insight from Actuary page navigation
+  const prefillInsight = (location.state as { prefillInsight?: { campaignName: string; signal: string; cohortSize: number; outputs: { projectedSavingsUsd: number; budgetRoiMultiple: number; paybackMonths: number }; healthPointsPricing: { suggestedHpPerMember: number; maxBudgetUsd: number } } } | null)?.prefillInsight ?? null;
   const [selectedReward, setSelectedReward] = useState<number | null>(null);
   const stopRef = useRef<(() => void) | null>(null);
   const verifyStopRef = useRef<(() => void) | null>(null);
@@ -216,6 +221,36 @@ export default function SimulatorPage() {
         {state.mode && state.mode !== "llm" && (
           <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-sm text-amber-800" data-testid="banner-degraded-mode">
             <span className="font-semibold">Degraded mode:</span> {state.modeMessage}
+          </div>
+        )}
+
+        {prefillInsight && state.status === "idle" && (
+          <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+              <Activity className="h-3.5 w-3.5" />
+              Quick estimate from AI Actuary — {prefillInsight.campaignName}
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">Book value</div>
+                <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">${(prefillInsight.outputs.projectedSavingsUsd / 1000).toFixed(0)}K</div>
+              </div>
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">ROI</div>
+                <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{prefillInsight.outputs.budgetRoiMultiple.toFixed(1)}x</div>
+              </div>
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">Cohort</div>
+                <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{prefillInsight.cohortSize.toLocaleString()}</div>
+              </div>
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">Payback</div>
+                <div className="mt-0.5 font-mono text-sm font-semibold text-foreground">{prefillInsight.outputs.paybackMonths} mo</div>
+              </div>
+            </div>
+            <p className="mt-2 text-2xs text-muted-foreground">
+              Static engine projection. Run the simulation below to stress-test with live agent behaviour and Monte Carlo uncertainty.
+            </p>
           </div>
         )}
 

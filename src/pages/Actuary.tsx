@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X } from 'lucide-react';
+import { Activity, BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X, Zap } from 'lucide-react';
 import { actuaryInsights, engineAssumptionSetMeta, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import { ENGINE_ECONOMICS } from '@shared/engineConstants';
+import type { SeededRunResult } from '@shared/campaigns';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
@@ -68,6 +69,18 @@ function unitForInsight(insight: ActuaryInsight): string {
   if (insight.signal === 'HRV') return 'ms recovery';
   if (insight.signal === 'Sleep') return 'hrs';
   return 'bpm improvement';
+}
+
+/** Build a natural-language scenario goal that pre-fills the simulator. */
+function simulatorGoalForInsight(insight: ActuaryInsight): string {
+  const signalMap: Record<string, string> = {
+    'VO2 Max': 'VO2 max and cardiorespiratory fitness',
+    'HRV': 'HRV recovery and autonomic resilience',
+    'Sleep': 'sleep regularity and sleep consistency',
+    'Resting HR': 'resting heart rate improvement through sustained activity',
+  };
+  const signalDesc = signalMap[insight.signal] ?? insight.signal;
+  return `${insight.campaignName}: reward verified improvement in ${signalDesc} across ${insight.cohortSize.toLocaleString('en-US')} addressable members over ${insight.healthPointsPricing.targetWindow}. Target: ${insight.behaviourToReward}`;
 }
 
 function templateForInsight(insight: ActuaryInsight): CampaignTemplate {
@@ -284,6 +297,13 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
           >
             Create campaign from this insight
           </button>
+          <button
+            onClick={() => { onClose(); navigate('/app/simulator', { state: { prefillGoal: simulatorGoalForInsight(insight), prefillInsight: insight } }); }}
+            className="btn-ghost text-xs border-accent/20 hover:border-accent/40"
+          >
+            <Activity size={13} />
+            Simulate this
+          </button>
           <button className="btn-ghost text-xs">Save to watchlist</button>
           <button className="btn-ghost text-xs">Export signed evidence pack</button>
           <button className="btn-ghost text-xs">Dismiss with reason</button>
@@ -293,8 +313,24 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
   );
 }
 
-function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onEvidence: (insight: ActuaryInsight) => void }) {
+function formatSimulatedAgo(ts: number): string {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 2) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return new Date(ts).toLocaleDateString('en-HK', { month: 'short', day: 'numeric' });
+}
+
+function OpportunityCard({ insight, onEvidence, seededResult }: { insight: ActuaryInsight; onEvidence: (insight: ActuaryInsight) => void; seededResult?: SeededRunResult }) {
   const navigate = useNavigate();
+
+  // Use real simulation numbers when available, fall back to engine estimates
+  const bookValue = seededResult ? seededResult.finance.claimsSavingsP50 : insight.outputs.projectedSavingsUsd;
+  const roi = seededResult ? seededResult.finance.roiP50 : insight.outputs.budgetRoiMultiple;
+  const payback = seededResult?.paybackMonths ?? insight.outputs.paybackMonths;
+  const isSimulated = !!seededResult;
 
   return (
     <article className="group relative overflow-hidden rounded-lg border border-border bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/30">
@@ -329,26 +365,55 @@ function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onE
       </div>
 
       <div className="mt-3 flex items-center gap-2">
-        <span className="inline-flex items-center gap-1 rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-2xs font-medium text-warning">
-          <FlaskConical size={10} />
-          Projected
-        </span>
-        <span className="text-2xs text-tertiary">Pre-campaign modelled estimates</span>
+        {isSimulated ? (
+          <>
+            <span className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-2xs font-medium text-accent">
+              <Zap size={10} />
+              Simulated
+            </span>
+            <span className="text-2xs text-tertiary">
+              {seededResult.behavior.behaviorChangeRate > 0
+                ? `${(seededResult.behavior.behaviorChangeRate * 100).toFixed(0)}% behavior change · ${(seededResult.finance.downsideProbability * 100).toFixed(0)}% downside risk`
+                : 'Agent-driven Monte Carlo'}
+              {' · '}
+              {formatSimulatedAgo(seededResult.simulatedAt)}
+            </span>
+          </>
+        ) : (
+          <>
+            <span className="inline-flex items-center gap-1 rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-2xs font-medium text-warning">
+              <FlaskConical size={10} />
+              Estimated
+            </span>
+            <span className="text-2xs text-tertiary">Engine estimates — run simulation for proven numbers</span>
+          </>
+        )}
       </div>
 
       <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
         <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
         <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
-        <OutputTile label="Book value" value={formatCurrencyCompact(insight.outputs.projectedSavingsUsd)} />
-        <OutputTile label="ROI" value={`${insight.outputs.budgetRoiMultiple.toFixed(1)}x`} />
-        <OutputTile label="Payback" value={`${insight.outputs.paybackMonths} mo`} />
+        <OutputTile label="Book value" value={formatCurrencyCompact(bookValue)} />
+        <OutputTile label="ROI" value={isSimulated ? `${(roi + 1).toFixed(1)}x` : `${roi.toFixed(1)}x`} />
+        <OutputTile label="Payback" value={`${payback} mo`} />
       </div>
 
-      <div className="mt-3 grid gap-2 md:grid-cols-3">
-        <OutputTile label="Claims reduction" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
-        <OutputTile label="Morbidity shift" value={`${insight.outputs.morbidityShiftBps} bps`} />
-        <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
-      </div>
+      {isSimulated && (
+        <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          <OutputTile label="Net value" value={formatCurrencyCompact(seededResult.finance.netValueP50)} />
+          <OutputTile label="ROI band" value={`${(seededResult.finance.roiP5 + 1).toFixed(1)}x – ${(seededResult.finance.roiP95 + 1).toFixed(1)}x`} />
+          <OutputTile label="Enrollment" value={`${(seededResult.behavior.enrollmentRate * 100).toFixed(0)}%`} />
+          <OutputTile label="Persistence" value={`${(seededResult.behavior.persistenceRate * 100).toFixed(0)}%`} />
+        </div>
+      )}
+
+      {!isSimulated && (
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          <OutputTile label="Claims reduction" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
+          <OutputTile label="Morbidity shift" value={`${insight.outputs.morbidityShiftBps} bps`} />
+          <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
+        </div>
+      )}
 
       <div className="mt-5 flex flex-wrap gap-2">
         <button
@@ -357,6 +422,13 @@ function OpportunityCard({ insight, onEvidence }: { insight: ActuaryInsight; onE
         >
           <Target size={13} />
           Create Campaign
+        </button>
+        <button
+          onClick={() => navigate('/app/simulator', { state: { prefillGoal: simulatorGoalForInsight(insight), prefillInsight: insight } })}
+          className="btn-ghost text-xs border-accent/20 hover:border-accent/40"
+        >
+          <Activity size={13} />
+          {isSimulated ? 'Re-simulate' : 'Simulate this'}
         </button>
         <button onClick={() => onEvidence(insight)} className="btn-ghost text-xs">
           <ExternalLink size={13} />
@@ -381,6 +453,15 @@ export default function Actuary() {
   const partnerPortfolio = getPartnerPortfolio(currentPartner.id);
   const scanClock = useScanClock();
   const chatPreview = messages.slice(-4);
+
+  // Fetch real simulation results from seeded background runs
+  const [seededResults, setSeededResults] = useState<SeededRunResult[]>([]);
+  useEffect(() => {
+    fetch('/api/scenarios/seeded')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data) => setSeededResults(Array.isArray(data) ? data : []))
+      .catch(() => setSeededResults([]));
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -442,7 +523,7 @@ export default function Actuary() {
             </div>
           </div>
           {actuaryInsights.map((insight) => (
-            <OpportunityCard key={insight.id} insight={insight} onEvidence={setEvidenceInsight} />
+            <OpportunityCard key={insight.id} insight={insight} onEvidence={setEvidenceInsight} seededResult={seededResults.find((r) => r.campaignId === insight.id)} />
           ))}
 
           <section className="card" data-walkthrough="actuary-log">
