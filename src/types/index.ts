@@ -51,6 +51,12 @@ export interface HealthIdentity {
   lastVerified: string | null;
   enrolledCampaigns: number;
   createdAt: string;
+  /** Current metric snapshot — actual biometric values per connected source */
+  metricValues: Partial<Record<HealthMetric, number>>;
+  /** 12-week longitudinal health score trend (oldest → newest) */
+  healthTrend: number[];
+  /** Per-metric 12-week trends for key signals (only for members with that source) */
+  metricTrends?: Partial<Record<HealthMetric, number[]>>;
 }
 
 // ── Campaigns ───────────────────────────────────────────────────────

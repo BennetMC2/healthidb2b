@@ -6,6 +6,9 @@ import { treasuryState } from '@/data/treasury';
 import { complianceRecords } from '@/data/compliance';
 import { useCampaignStore } from '@/stores/useCampaignStore';
 import { getPartnerPortfolio } from '@/data/partnerPortfolios';
+import { actuaryInsights } from '@/data/actuaryInsights';
+import { SIGNALS } from '@shared/signals';
+import { ENGINE_CLAIMS_BRIDGE, ENGINE_ECONOMICS, ENGINE_ASSUMPTION_SET_META } from '@shared/engineConstants';
 
 export function buildDataContext(partner: Partner, currentPage?: string): DataContext {
   // ── Campaigns scoped to partner ──
@@ -76,6 +79,12 @@ export function buildDataContext(partner: Partner, currentPage?: string): DataCo
     }
   }
 
+  // ── Actuarial insight values (computed, not hardcoded) ──
+  const leadInsight = actuaryInsights[0];
+  const secondInsight = actuaryInsights.length > 1 ? actuaryInsights[1] : undefined;
+  const sleepInsight = actuaryInsights.find((i) => i.signalId === 'sleep_regularity');
+  const rhrInsight = actuaryInsights.find((i) => i.signalId === 'resting_hr');
+
   return {
     currentPage,
     partner: {
@@ -85,6 +94,69 @@ export function buildDataContext(partner: Partner, currentPage?: string): DataCo
       portfolioBrief: portfolio.morningBrief,
       lives: portfolio.lives,
       leadSignal: portfolio.leadSignal,
+    },
+    engine: {
+      assumptionSetVersion: ENGINE_ASSUMPTION_SET_META.version,
+      assumptionSetLabel: ENGINE_ASSUMPTION_SET_META.label,
+      signals: SIGNALS.filter((s) => s.evidenceTier !== 'Experimental').map((s) => ({
+        signalId: s.signalId,
+        displayName: s.displayName,
+        evidenceTier: s.evidenceTier,
+        trustCeiling: s.trustCeiling,
+        attributionConfidence: s.attributionConfidence,
+        claimsPathway: s.claimsPathway,
+        doseEffectP50: s.doseResponse?.effectP50 ?? null,
+      })),
+      claimsBridge: Object.entries(ENGINE_CLAIMS_BRIDGE).map(([key, b]) => ({
+        key,
+        annualDeltaUsd: b.annualClaimsDeltaUSD,
+        prevalence: b.applicablePrevalence,
+        attribution: b.attributionFactor,
+      })),
+      economics: {
+        valuationHorizonYears: ENGINE_ECONOMICS.valuationHorizonYears,
+        discountRatePct: ENGINE_ECONOMICS.discountRatePct,
+        persistedSavingsYears: ENGINE_ECONOMICS.persistedSavingsYears,
+        rewardCostRatio: ENGINE_ECONOMICS.rewardCostRatio,
+        lapseReduction: ENGINE_ECONOMICS.lapseReduction,
+        ltvPerMember: ENGINE_ECONOMICS.ltvPerMember,
+      },
+    },
+    actuarial: {
+      leadInsight: {
+        campaignName: leadInsight.campaignName,
+        cohortSize: leadInsight.cohortSize,
+        bookValueUsd: leadInsight.outputs.projectedSavingsUsd,
+        roiMultiple: leadInsight.outputs.budgetRoiMultiple,
+        claimsReductionPct: leadInsight.outputs.claimsReductionPct,
+        paybackMonths: leadInsight.outputs.paybackMonths,
+        budgetUsd: leadInsight.healthPointsPricing.maxBudgetUsd,
+        hpPerMember: leadInsight.healthPointsPricing.suggestedHpPerMember,
+      },
+      ...(secondInsight && {
+        secondInsight: {
+          campaignName: secondInsight.campaignName,
+          bookValueUsd: secondInsight.outputs.projectedSavingsUsd,
+          roiMultiple: secondInsight.outputs.budgetRoiMultiple,
+          paybackMonths: secondInsight.outputs.paybackMonths,
+        },
+      }),
+      ...(sleepInsight && {
+        sleepInsight: {
+          campaignName: sleepInsight.campaignName,
+          bookValueUsd: sleepInsight.outputs.projectedSavingsUsd,
+          roiMultiple: sleepInsight.outputs.budgetRoiMultiple,
+          paybackMonths: sleepInsight.outputs.paybackMonths,
+        },
+      }),
+      ...(rhrInsight && {
+        rhrInsight: {
+          campaignName: rhrInsight.campaignName,
+          bookValueUsd: rhrInsight.outputs.projectedSavingsUsd,
+          roiMultiple: rhrInsight.outputs.budgetRoiMultiple,
+          paybackMonths: rhrInsight.outputs.paybackMonths,
+        },
+      }),
     },
     campaigns: {
       total: partnerCampaigns.length,

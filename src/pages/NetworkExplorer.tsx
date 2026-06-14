@@ -8,6 +8,7 @@ import CohortDetailView from '@/components/explorer/CohortDetailView';
 import { exportToCSV } from '@/utils/export';
 import { useToastStore } from '@/stores/useToastStore';
 import MetricCard from '@/components/ui/MetricCard';
+import Sparkline from '@/components/ui/Sparkline';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
 import InfoTooltip from '@/components/ui/InfoTooltip';
@@ -130,6 +131,12 @@ export default function NetworkExplorer() {
       const v = getValue<number>();
       const color = v >= 80 ? 'text-health-excellent' : v >= 60 ? 'text-health-good' : v >= 40 ? 'text-health-moderate' : 'text-health-poor';
       return <span className={`font-mono text-sm ${color}`}>{v}</span>;
+    }},
+    { accessorKey: 'healthTrend', header: 'Trend', cell: ({ getValue, row }) => {
+      const trend = getValue<number[]>();
+      if (!trend || trend.length < 2) return <span className="text-2xs text-tertiary">—</span>;
+      const score = row.original.healthScore;
+      return <Sparkline data={trend} width={56} height={18} color={score >= 60 ? 'var(--a-accent)' : 'var(--a-warning)'} />;
     }},
     { accessorKey: 'confidenceScore', header: 'Confidence', cell: ({ getValue }) => {
       const v = getValue<number>();

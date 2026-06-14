@@ -54,6 +54,63 @@ interface DataContextLike {
     recentFailures?: number;
     verifiedReceipts?: number;
   };
+  actuarial?: {
+    leadInsight?: {
+      campaignName?: string;
+      cohortSize?: number;
+      bookValueUsd?: number;
+      roiMultiple?: number;
+      claimsReductionPct?: number;
+      paybackMonths?: number;
+      budgetUsd?: number;
+      hpPerMember?: number;
+    };
+    secondInsight?: {
+      campaignName?: string;
+      bookValueUsd?: number;
+      roiMultiple?: number;
+      paybackMonths?: number;
+    };
+    sleepInsight?: {
+      campaignName?: string;
+      bookValueUsd?: number;
+      roiMultiple?: number;
+      paybackMonths?: number;
+    };
+    rhrInsight?: {
+      campaignName?: string;
+      bookValueUsd?: number;
+      roiMultiple?: number;
+      paybackMonths?: number;
+    };
+  };
+  engine?: {
+    assumptionSetVersion?: string;
+    assumptionSetLabel?: string;
+    signals?: Array<{
+      signalId: string;
+      displayName: string;
+      evidenceTier: string;
+      trustCeiling: string;
+      attributionConfidence: number;
+      claimsPathway: string;
+      doseEffectP50: number | null;
+    }>;
+    claimsBridge?: Array<{
+      key: string;
+      annualDeltaUsd: number;
+      prevalence: number;
+      attribution: number;
+    }>;
+    economics?: {
+      valuationHorizonYears: number;
+      discountRatePct: number;
+      persistedSavingsYears: number;
+      rewardCostRatio: number;
+      lapseReduction: number;
+      ltvPerMember: number;
+    };
+  };
 }
 
 interface CopilotRequestBody {
@@ -94,6 +151,33 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
   const failedProofs = numberValue(context.compliance?.recentFailures);
   const topCampaign = context.campaigns?.topCampaign ?? 'Q4 HbA1c Underwriting Screen';
 
+  // ── Actuarial values from the client-side calculator (engine-derived) ──
+  const lead = context.actuarial?.leadInsight;
+  const leadBookValue = lead ? formatUsd(lead.bookValueUsd) : 'the projected book value';
+  const leadROI = lead ? `${lead.roiMultiple}x` : 'the projected ROI';
+  const leadCohort = lead ? lead.cohortSize.toLocaleString('en-US') : '~3,800';
+  const leadClaimsReduction = lead ? `${lead.claimsReductionPct}%` : 'the projected';
+  const leadPayback = lead ? `${lead.paybackMonths}-month` : '~8-month';
+  const leadBudget = lead ? formatUsd(lead.budgetUsd) : '$58K';
+  const leadHP = lead ? lead.hpPerMember : 650;
+  const leadCampaignName = lead?.campaignName ?? 'Cardio Fitness Activation';
+
+  const second = context.actuarial?.secondInsight;
+  const secondBookValue = second ? formatUsd(second.bookValueUsd) : 'the projected book value';
+  const secondROI = second ? `${second.roiMultiple}x` : 'the projected ROI';
+  const secondPayback = second ? `${second.paybackMonths}-month` : '~12-month';
+  const secondCampaignName = second?.campaignName ?? 'HRV Recovery';
+
+  const sleep = context.actuarial?.sleepInsight;
+  const sleepBookValue = sleep ? formatUsd(sleep.bookValueUsd) : 'the projected book value';
+  const sleepROI = sleep ? `${sleep.roiMultiple}x` : 'the projected ROI';
+  const sleepPayback = sleep ? `${sleep.paybackMonths}-month` : '~14-month';
+
+  const rhr = context.actuarial?.rhrInsight;
+  const rhrBookValue = rhr ? formatUsd(rhr.bookValueUsd) : 'the projected book value';
+  const rhrROI = rhr ? `${rhr.roiMultiple}x` : 'the projected ROI';
+  const rhrPayback = rhr ? `${rhr.paybackMonths}-month` : '~18-month';
+
   if (/^(hi|hello|hey|good morning|good afternoon)\b/.test(normalized)) {
     return `Hello. I can help ${partnerName} turn verified wearable signals into priced campaign decisions across ${lives ? `**${lives.toLocaleString('en-US')} lives**` : 'the current book'}. The current lead signal is **${leadSignal}**. Ask me which signal to act on, where modifiable risk is building, or how to price Health Points against expected book value.`;
   }
@@ -101,9 +185,9 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
   if (/(underpriced|which cohort.*underpriced|cohort.*underpriced)/.test(normalized)) {
     return [
       `The stronger campaign question is not underpricing; it is **which modifiable risk is worth funding**.`,
-      `The best current answer is **Cardio Fitness Activation**: 3,847 addressable members show low or declining VO2 Max signals but are still active enough to respond to an 8-week intervention.`,
-      `I would price it at **650 Health Points per member**, cap the initial budget at **$58K**, and target verified Zone 2 consistency plus a positive VO2 Max trend.`,
-      `Expected book impact: **$4.2M** value opportunity, **4.2x ROI**, **3.3% claims reduction**, and **8-month payback**.`,
+      `The best current answer is **${leadCampaignName}**: ${leadCohort} addressable members show low or declining VO2 Max signals but are still active enough to respond to an 8-week intervention.`,
+      `I would price it at **${leadHP} Health Points per member**, cap the initial budget at **${leadBudget}**, and target verified Zone 2 consistency plus a positive VO2 Max trend.`,
+      `Expected book impact: **${leadBookValue}** value opportunity, **${leadROI} ROI**, **${leadClaimsReduction} claims reduction**, and **${leadPayback} payback**.`,
     ].join(' ');
   }
 
@@ -128,28 +212,28 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
 
   if (/(best next|next programme|next program|what should we launch|recommend.*campaign|best campaign|wearable campaign|modifiable risk|biggest risk)/.test(normalized)) {
     return [
-      `Launch **Cardio Fitness Activation** first.`,
-      `It targets VO2 Max, which is the strongest modifiable wearable signal in the current demo book: 3,847 members, high confidence, 650 Health Points per member, $58K initial reward budget, and $4.2M expected book value.`,
+      `Launch **${leadCampaignName}** first.`,
+      `It targets VO2 Max, which is the strongest modifiable wearable signal in the current demo book: ${leadCohort} members, high confidence, ${leadHP} Health Points per member, ${leadBudget} initial reward budget, and ${leadBookValue} expected book value.`,
       `The campaign mechanic is simple: reward 8 weeks of verified Zone 2 activity consistency and a positive VO2 Max trend.`,
-      `Second priority is **HRV Recovery**, because it catches recovery drift before it becomes more expensive claims risk.`,
+      `Second priority is **${secondCampaignName}**, because it catches recovery drift before it becomes more expensive claims risk.`,
     ].join(' ');
   }
 
   if (/(vo2|cardio|fitness)/.test(normalized)) {
     return [
-      `For VO2 Max, I would run **Cardio Fitness Activation**.`,
-      `Target 3,847 addressable members with low or declining cardio-fitness signals who still have enough activity baseline to respond.`,
-      `Price the campaign at **650 Health Points per member** over **8 weeks**. Reward verified Zone 2 activity consistency and a positive VO2 Max trend.`,
-      `Expected impact: **$4.2M** book value, **4.2x ROI**, **3.3% claims reduction**, and **-140 bps morbidity shift**.`,
+      `For VO2 Max, I would run **${leadCampaignName}**.`,
+      `Target ${leadCohort} addressable members with low or declining cardio-fitness signals who still have enough activity baseline to respond.`,
+      `Price the campaign at **${leadHP} Health Points per member** over **8 weeks**. Reward verified Zone 2 activity consistency and a positive VO2 Max trend.`,
+      `Expected impact: **${leadBookValue}** book value, **${leadROI} ROI**, **${leadClaimsReduction} claims reduction**, and **${leadPayback} payback**.`,
     ].join(' ');
   }
 
   if (/(hrv|recovery|stress)/.test(normalized)) {
     return [
-      `For HRV, I would run **HRV Recovery**.`,
+      `For HRV, I would run **${secondCampaignName}**.`,
       `The target is 1,204 members with sustained HRV decline, rising training stress, and inconsistent recovery windows.`,
       `Reward 21 verified recovery days across sleep consistency, lighter movement, and stabilised resting heart rate.`,
-      `Expected impact: **$1.8M** book value, **3.4x ROI**, and **12-month payback**. This is prevention: stop manageable recovery drift before it becomes claims risk.`,
+      `Expected impact: **${secondBookValue}** book value, **${secondROI} ROI**, and **${secondPayback} payback**. This is prevention: stop manageable recovery drift before it becomes claims risk.`,
     ].join(' ');
   }
 
@@ -158,7 +242,7 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
       `For sleep, I would run **Sleep Regularity**.`,
       `The target is 2,186 members with persistent sleep debt or irregular sleep timing across the last 45 days.`,
       `Reward 30 nights with verified sleep regularity and at least 6.5 hours average sleep duration.`,
-      `Expected impact: **$1.25M** book value, **3.1x ROI**, and **11-month payback**. It is broad, but Health Points pricing needs discipline so the partner does not over-reward low-value behaviour.`,
+      `Expected impact: **${sleepBookValue}** book value, **${sleepROI} ROI**, and **${sleepPayback} payback**. It is broad, but Health Points pricing needs discipline so the partner does not over-reward low-value behaviour.`,
     ].join(' ');
   }
 
@@ -167,7 +251,7 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
       `For resting heart rate, I would keep **Resting Heart Rate Improvement** as a controlled pilot.`,
       `The target is 946 members with elevated or worsening resting heart rate and enough device coverage to verify improvement.`,
       `Reward 12 active weeks with verified activity consistency and a 3 bpm resting heart rate improvement.`,
-      `Expected impact: **$840K** book value, **2.7x ROI**, and **14-month payback**. It is useful, but not the first campaign I would scale.`,
+      `Expected impact: **${rhrBookValue}** book value, **${rhrROI} ROI**, and **${rhrPayback} payback**. It is useful, but not the first campaign I would scale.`,
     ].join(' ');
   }
 
@@ -183,8 +267,8 @@ function buildDemoAnswer(question: string, context: DataContextLike = {}): strin
 
   if (/(top campaign|strongest campaign|best performing campaign)/.test(normalized)) {
     return [
-      `The strongest campaign play is **Cardio Fitness Activation**.`,
-      `It has the best combination of scale, addressability, Health Points economics, and evidence quality: 3,847 members, 650 HP/member, $58K budget, $4.2M expected book value, and 4.2x ROI.`,
+      `The strongest campaign play is **${leadCampaignName}**.`,
+      `It has the best combination of scale, addressability, Health Points economics, and evidence quality: ${leadCohort} members, ${leadHP} HP/member, ${leadBudget} budget, ${leadBookValue} expected book value, and ${leadROI} ROI.`,
       `The top existing campaign in the broader platform snapshot is still **${topCampaign}**, but this cockpit is now prioritising wearable-led campaign plays.`,
     ].join(' ');
   }
@@ -199,6 +283,16 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
   const verifications = context.verifications ?? {};
   const treasury = context.treasury ?? {};
   const compliance = context.compliance ?? {};
+  const engine = context.engine ?? {};
+
+  // Build signal library section from engine data
+  const signalLines = (engine.signals ?? []).map((s) =>
+    `  - ${s.displayName} (${s.signalId}): ${s.evidenceTier} tier, trust ceiling ${s.trustCeiling}, attribution ${(s.attributionConfidence * 100).toFixed(0)}%, dose-effect ${s.doseEffectP50 !== null ? (s.doseEffectP50 * 100).toFixed(1) + '%' : 'N/A'}. ${s.claimsPathway}`
+  );
+
+  const bridgeLines = (engine.claimsBridge ?? []).map((b) =>
+    `  - ${b.key}: $${b.annualDeltaUsd}/member/yr delta, ${(b.prevalence * 100).toFixed(0)}% prevalence, ${(b.attribution * 100).toFixed(0)}% attribution`
+  );
 
   return [
     'You are the AI Actuary inside the HealthID B2B platform.',
@@ -208,7 +302,18 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
     `Partner: ${partner.name ?? 'Unknown partner'} · ${partner.industry ?? 'unknown industry'} · ${partner.tier ?? 'unknown tier'}`,
     partner.portfolioBrief ? `Portfolio brief: ${partner.portfolioBrief}` : null,
     '',
-    'Use the platform snapshot below as your source of truth. Never fabricate numbers or claim access to data that is not in the snapshot.',
+    '── ENGINE ASSUMPTION SET ──',
+    engine.assumptionSetVersion ? `Version: ${engine.assumptionSetVersion} (${engine.assumptionSetLabel ?? 'unnamed'})` : null,
+    engine.economics ? `Economics: ${engine.economics.valuationHorizonYears}yr horizon, ${(engine.economics.discountRatePct * 100).toFixed(0)}% discount, ${engine.economics.persistedSavingsYears}yr persisted savings, ${(engine.economics.rewardCostRatio * 100).toFixed(0)}% reward cost ratio, ${(engine.economics.lapseReduction * 100).toFixed(1)}% lapse reduction, $${engine.economics.ltvPerMember} LTV/member.` : null,
+    '',
+    signalLines.length > 0 ? '── SIGNAL LIBRARY (engine-registered) ──' : null,
+    ...signalLines,
+    '',
+    bridgeLines.length > 0 ? '── CLAIMS BRIDGE PARAMETERS ──' : null,
+    ...bridgeLines,
+    '',
+    '── PLATFORM SNAPSHOT ──',
+    'Use this data as your source of truth. Never fabricate numbers or claim access to data that is not here.',
     '',
     `Campaigns: ${numberValue(campaigns.total)} total, ${numberValue(campaigns.active)} active, ${numberValue(campaigns.completed)} completed, ${numberValue(campaigns.draft)} draft, ${numberValue(campaigns.paused)} paused. Budget ${formatUsd(campaigns.totalBudget)} allocated, ${formatUsd(campaigns.totalSpent)} spent.${campaigns.topCampaign ? ` Top campaign: ${campaigns.topCampaign}.` : ''}`,
     `Member Pool: ${numberValue(identities.total).toLocaleString('en-US')} identities. Average health score ${numberValue(identities.avgHealthScore)}/100. Top sources: ${(identities.topSources ?? []).join(', ') || 'none recorded'}. Tiers: ${Object.entries(identities.byTier ?? {}).map(([tier, count]) => `${tier}: ${count}`).join(', ') || 'none recorded'}.`,
@@ -217,13 +322,15 @@ function buildSystemPrompt(context: DataContextLike = {}): string {
     `Compliance: ${numberValue(compliance.totalRecords)} records, ${numberValue(compliance.verifiedReceipts)} verified receipts, ${numberValue(compliance.piiAccessEvents)} raw data access events, ${numberValue(compliance.recentFailures)} recent proof failures. Events: ${Object.entries(compliance.byEventType ?? {}).map(([type, count]) => `${type}: ${count}`).join(', ') || 'none recorded'}.`,
     '',
     'Behavior rules:',
-    '- Be concise and commercial.',
-    '- Ground every answer in the provided data context.',
+    '- Be concise and commercial. Sound like a senior consulting actuary, not a chatbot.',
+    '- Ground every answer in the engine assumptions and platform data above.',
+    '- When discussing campaign economics, reference the specific claims bridge parameters (annual delta, prevalence, attribution factor).',
     '- Emphasize that partners receive verification receipts and proofs, not raw member health data.',
-    '- Frame wearable-led campaigns around modifiable risk, Health Points pricing, expected behavior change, and book value impact.',
-    '- Prioritize VO2 Max, HRV, sleep regularity, and resting heart rate when asked about campaign opportunities.',
-    '- When the user asks for advice, give a direct recommendation and why it matters.',
+    '- Frame campaigns around modifiable risk, Health Points pricing, expected behavior change, and book value impact.',
+    '- Distinguish Proven signals (confident recommendations) from Emerging signals (pilot-only, smaller cohorts).',
+    '- When the user asks for advice, give a direct recommendation, the engine parameters behind it, and why it matters.',
     '- If information is missing, say what is missing instead of guessing.',
+    '- Never invent citation DOIs or study results not present in the signal library.',
   ].filter(Boolean).join('\n');
 }
 

@@ -1,7 +1,23 @@
+import type { HealthMetric, CampaignType, CampaignUseCase } from '@/types';
+import { calculateActuarialROI } from '@/utils/actuarial';
+import { getSignal } from '@shared/signals';
+import { ENGINE_CLAIMS_BRIDGE, ENGINE_ECONOMICS, ENGINE_ASSUMPTION_SET_META, signalToClaimsBridgeKey } from '@shared/engineConstants';
+
 export type ActuaryConfidence = 'high' | 'medium' | 'emerging';
+
+export interface ActuaryInsightOutputs {
+  claimsReductionPct: number;
+  projectedSavingsUsd: number;
+  budgetRoiMultiple: number;
+  suggestedHpYield: number;
+  morbidityShiftBps: number;
+  paybackMonths: number;
+}
 
 export interface ActuaryInsight {
   id: string;
+  /** Engine signal ID from the shared signal registry */
+  signalId: string;
   signal: string;
   campaignName: string;
   title: string;
@@ -17,26 +33,97 @@ export interface ActuaryInsight {
   generatedAt: string;
   cohortSize: number;
   cohortFilter: string;
+  /** Metric + type used to compute outputs from the actuarial calculator */
+  metric: HealthMetric;
+  campaignType: CampaignType;
+  useCase: CampaignUseCase;
   sourceBreakdown: Array<{ source: string; pct: number }>;
-  outputs: {
-    claimsReductionPct: number;
-    projectedSavingsUsd: number;
-    budgetRoiMultiple: number;
-    suggestedHpYield: number;
-    morbidityShiftBps: number;
-    paybackMonths: number;
-  };
+  /** Computed from the actuarial calculator at module init — single source of truth */
+  outputs: ActuaryInsightOutputs;
   evidence: {
     literature: Array<{ title: string; journal: string; year: number; doi: string; effectSize: string }>;
     portfolioContext: string;
     counterfactualUsd: number;
     confidenceBreakdown: { credibility: number; causal: number; evidence: number; conservative: number };
   };
+  /** Engine claims bridge parameters for this signal (from shared engine constants) */
+  engineBridge: {
+    annualClaimsDeltaUSD: number;
+    annualClaimsDeltaCI: [number, number];
+    applicablePrevalence: number;
+    attributionFactor: number;
+    evidenceHorizonYears: number;
+    source: string;
+  };
+  /** Signal definition from the shared registry */
+  engineSignal: {
+    evidenceTier: string;
+    trustCeiling: string;
+    attributionConfidence: number;
+    claimsPathway: string;
+    doseResponse: { effectP50: number; effectCI: [number, number] } | null;
+  };
+}
+
+/** Assumption set metadata surfaced in the cockpit */
+export const engineAssumptionSetMeta = ENGINE_ASSUMPTION_SET_META;
+
+/** Derive engine bridge and signal data for an insight */
+function deriveEngineData(signalId: string) {
+  const signal = getSignal(signalId);
+  const bridgeKey = signalToClaimsBridgeKey(signalId);
+  const bridge = ENGINE_CLAIMS_BRIDGE[bridgeKey];
+  return {
+    engineBridge: {
+      annualClaimsDeltaUSD: bridge.annualClaimsDeltaUSD,
+      annualClaimsDeltaCI: bridge.annualClaimsDeltaCI,
+      applicablePrevalence: bridge.applicablePrevalence,
+      attributionFactor: bridge.attributionFactor,
+      evidenceHorizonYears: bridge.evidenceHorizonYears,
+      source: bridge.source,
+    },
+    engineSignal: {
+      evidenceTier: signal.evidenceTier,
+      trustCeiling: signal.trustCeiling,
+      attributionConfidence: signal.attributionConfidence,
+      claimsPathway: signal.claimsPathway,
+      doseResponse: signal.doseResponse,
+    },
+  };
+}
+
+/** Compute insight outputs from the actuarial calculator (single source of truth).
+ *  Uses applyAdjustments: false because baselines are already evidence-aligned
+ *  from ENGINE_CLAIMS_BASELINE — no need for the legacy conservatism haircut. */
+function computeOutputs(
+  metric: HealthMetric,
+  type: CampaignType,
+  useCase: CampaignUseCase,
+  cohortSize: number,
+  budget: number,
+): ActuaryInsightOutputs {
+  const result = calculateActuarialROI({
+    metric,
+    type,
+    useCase,
+    maxParticipants: cohortSize,
+    budgetCeiling: budget,
+    applyAdjustments: false,
+  });
+  return {
+    claimsReductionPct: Number((result.claimsReductionRate * 100).toFixed(1)),
+    projectedSavingsUsd: Math.round(result.totalProjectedSavings),
+    budgetRoiMultiple: Number(result.budgetROI.toFixed(1)),
+    suggestedHpYield: result.suggestedHP,
+    morbidityShiftBps: -Math.abs(result.morbidityShiftBps),
+    paybackMonths: result.paybackMonths,
+  };
 }
 
 export const actuaryInsights: ActuaryInsight[] = [
   {
     id: 'ins_vo2_activation',
+    signalId: 'vo2max',
     signal: 'VO2 Max',
     campaignName: 'Cardio Fitness Activation',
     title: 'Move low-cardio-fitness members toward a healthier risk trajectory',
@@ -52,20 +139,16 @@ export const actuaryInsights: ActuaryInsight[] = [
     generatedAt: '2026-05-12T09:14:00+08:00',
     cohortSize: 3847,
     cohortFilter: 'vo2_max_percentile <= 35 AND activity_consistency >= moderate AND age_band BETWEEN 30-55',
+    metric: 'vo2_max',
+    campaignType: 'stream',
+    useCase: 'claims_reduction',
     sourceBreakdown: [
       { source: 'Apple Health', pct: 42 },
       { source: 'Garmin', pct: 28 },
       { source: 'Lab partners', pct: 19 },
       { source: 'Other', pct: 11 },
     ],
-    outputs: {
-      claimsReductionPct: 3.3,
-      projectedSavingsUsd: 4200000,
-      budgetRoiMultiple: 4.2,
-      suggestedHpYield: 650,
-      morbidityShiftBps: -140,
-      paybackMonths: 8,
-    },
+    outputs: computeOutputs('vo2_max', 'stream', 'claims_reduction', 3847, 58000),
     evidence: {
       literature: [
         {
@@ -87,9 +170,11 @@ export const actuaryInsights: ActuaryInsight[] = [
       counterfactualUsd: 3100000,
       confidenceBreakdown: { credibility: 92, causal: 78, evidence: 88, conservative: 84 },
     },
+    ...deriveEngineData('vo2max'),
   },
   {
     id: 'ins_hrv_recovery',
+    signalId: 'hrv',
     signal: 'HRV',
     campaignName: 'HRV Recovery',
     title: 'Intervene before recovery drift becomes claims risk',
@@ -105,20 +190,16 @@ export const actuaryInsights: ActuaryInsight[] = [
     generatedAt: '2026-05-12T08:51:00+08:00',
     cohortSize: 1204,
     cohortFilter: 'hrv_trend = declining AND recovery_score_delta_45d <= -12 AND activity_status = active',
+    metric: 'hrv',
+    campaignType: 'stream',
+    useCase: 'claims_reduction',
     sourceBreakdown: [
       { source: 'WHOOP', pct: 34 },
       { source: 'Oura', pct: 30 },
       { source: 'Apple Health', pct: 25 },
       { source: 'Other', pct: 11 },
     ],
-    outputs: {
-      claimsReductionPct: 7.6,
-      projectedSavingsUsd: 1800000,
-      budgetRoiMultiple: 3.4,
-      suggestedHpYield: 520,
-      morbidityShiftBps: -18,
-      paybackMonths: 12,
-    },
+    outputs: computeOutputs('hrv', 'stream', 'claims_reduction', 1204, 36000),
     evidence: {
       literature: [
         {
@@ -133,9 +214,11 @@ export const actuaryInsights: ActuaryInsight[] = [
       counterfactualUsd: 940000,
       confidenceBreakdown: { credibility: 76, causal: 62, evidence: 71, conservative: 80 },
     },
+    ...deriveEngineData('hrv'),
   },
   {
     id: 'ins_sleep_regularly',
+    signalId: 'sleep_regularity',
     signal: 'Sleep',
     campaignName: 'Sleep Regularity',
     title: 'Stabilise sleep debt in members drifting toward higher risk',
@@ -151,20 +234,16 @@ export const actuaryInsights: ActuaryInsight[] = [
     generatedAt: '2026-05-12T08:30:00+08:00',
     cohortSize: 2186,
     cohortFilter: 'sleep_debt_45d >= 12h OR sleep_timing_variance >= 90m',
+    metric: 'sleep_hours',
+    campaignType: 'stream',
+    useCase: 'claims_reduction',
     sourceBreakdown: [
       { source: 'Apple Health', pct: 39 },
       { source: 'Oura', pct: 27 },
       { source: 'WHOOP', pct: 21 },
       { source: 'Other', pct: 13 },
     ],
-    outputs: {
-      claimsReductionPct: 2.8,
-      projectedSavingsUsd: 1250000,
-      budgetRoiMultiple: 3.1,
-      suggestedHpYield: 480,
-      morbidityShiftBps: -72,
-      paybackMonths: 11,
-    },
+    outputs: computeOutputs('sleep_hours', 'stream', 'claims_reduction', 2186, 42000),
     evidence: {
       literature: [
         {
@@ -179,9 +258,11 @@ export const actuaryInsights: ActuaryInsight[] = [
       counterfactualUsd: 760000,
       confidenceBreakdown: { credibility: 78, causal: 64, evidence: 74, conservative: 81 },
     },
+    ...deriveEngineData('sleep_regularity'),
   },
   {
     id: 'ins_resting_hr_improvement',
+    signalId: 'resting_hr',
     signal: 'Resting HR',
     campaignName: 'Resting Heart Rate Improvement',
     title: 'Reduce elevated resting heart rate with a targeted activity campaign',
@@ -197,20 +278,16 @@ export const actuaryInsights: ActuaryInsight[] = [
     generatedAt: '2026-05-12T08:17:00+08:00',
     cohortSize: 946,
     cohortFilter: 'resting_hr_percentile >= 70 AND resting_hr_trend_60d = worsening AND device_coverage >= 70',
+    metric: 'heart_rate_resting',
+    campaignType: 'stream',
+    useCase: 'claims_reduction',
     sourceBreakdown: [
       { source: 'Apple Health', pct: 44 },
       { source: 'Garmin', pct: 24 },
       { source: 'Fitbit', pct: 20 },
       { source: 'Other', pct: 12 },
     ],
-    outputs: {
-      claimsReductionPct: 2.1,
-      projectedSavingsUsd: 840000,
-      budgetRoiMultiple: 2.7,
-      suggestedHpYield: 600,
-      morbidityShiftBps: -54,
-      paybackMonths: 14,
-    },
+    outputs: computeOutputs('heart_rate_resting', 'stream', 'claims_reduction', 946, 31000),
     evidence: {
       literature: [
         {
@@ -225,5 +302,6 @@ export const actuaryInsights: ActuaryInsight[] = [
       counterfactualUsd: 390000,
       confidenceBreakdown: { credibility: 67, causal: 56, evidence: 62, conservative: 77 },
     },
+    ...deriveEngineData('resting_hr'),
   },
 ];

@@ -64,6 +64,65 @@ export interface DataContext {
     recentFailures: number;
     verifiedReceipts?: number;
   };
+  /** Computed actuarial metrics for insights — derived from the engine, not hardcoded. */
+  actuarial?: {
+    leadInsight: {
+      campaignName: string;
+      cohortSize: number;
+      bookValueUsd: number;
+      roiMultiple: number;
+      claimsReductionPct: number;
+      paybackMonths: number;
+      budgetUsd: number;
+      hpPerMember: number;
+    };
+    secondInsight?: {
+      campaignName: string;
+      bookValueUsd: number;
+      roiMultiple: number;
+      paybackMonths: number;
+    };
+    sleepInsight?: {
+      campaignName: string;
+      bookValueUsd: number;
+      roiMultiple: number;
+      paybackMonths: number;
+    };
+    rhrInsight?: {
+      campaignName: string;
+      bookValueUsd: number;
+      roiMultiple: number;
+      paybackMonths: number;
+    };
+  };
+  /** Engine-derived signal library and economic assumptions (for grounded AI generation) */
+  engine?: {
+    assumptionSetVersion: string;
+    assumptionSetLabel: string;
+    signals: Array<{
+      signalId: string;
+      displayName: string;
+      evidenceTier: string;
+      trustCeiling: string;
+      attributionConfidence: number;
+      claimsPathway: string;
+      doseEffectP50: number | null;
+    }>;
+    claimsBridge: Array<{
+      key: string;
+      annualDeltaUsd: number;
+      prevalence: number;
+      attribution: number;
+    }>;
+    economics: {
+      valuationHorizonYears: number;
+      discountRatePct: number;
+      persistedSavingsYears: number;
+      rewardCostRatio: number;
+      lapseReduction: number;
+      ltvPerMember: number;
+    };
+  };
 }
 
 // ── Provider Interface ──────────────────────────────────────────────

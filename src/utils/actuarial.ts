@@ -1,6 +1,17 @@
 import type { CampaignType, CampaignUseCase, HealthMetric } from '@/types';
 import { HEALTH_METRIC_LABELS } from '@/utils/constants';
 
+// ── Claims baselines derived from server/engine/assumptionSets.ts
+// ── EVIDENCE_ASSUMPTION_SET v1 (June 2026 evidence pass).
+// ── Single source of truth for claims economics.
+const ENGINE_CLAIMS_BASELINE = {
+  steps: 900,
+  vo2max: 900,
+  sleep: 880,
+  bp_screening: 950,
+  hba1c_screening: 1000,
+} as const;
+
 interface MetricActuarialConfig {
   baselineClaimCostPerMember: number;
   riskSignalRate: number;
@@ -11,27 +22,33 @@ interface MetricActuarialConfig {
   realizationFactor: number;
   expectedImprovementRate: number;
   outcomeLatencyMonths: number;
+  /** True if this metric's baseline is anchored to the engine's evidence set */
+  engineMapped: boolean;
 }
 
 export const METRIC_ACTUARIAL_CONFIG: Record<HealthMetric, MetricActuarialConfig> = {
-  hba1c:               { baselineClaimCostPerMember: 580,  riskSignalRate: 0.22, evidenceLevel: 'high',   evidenceNote: 'Strong literature link to metabolic and diabetes-related cost', inferredUseCase: 'underwriting',    suggestedHPBase: 150, realizationFactor: 0.67, expectedImprovementRate: 0.23, outcomeLatencyMonths: 9 },
-  blood_glucose:       { baselineClaimCostPerMember: 2671, riskSignalRate: 0.14, evidenceLevel: 'high',   evidenceNote: 'Fasting glucose is a strong metabolic risk discriminator',       inferredUseCase: 'underwriting',    suggestedHPBase: 120, realizationFactor: 0.58, expectedImprovementRate: 0.16, outcomeLatencyMonths: 8 },
-  cholesterol:         { baselineClaimCostPerMember: 696,  riskSignalRate: 0.13, evidenceLevel: 'high',   evidenceNote: 'Lipid panels remain a strong cardiovascular underwriting signal', inferredUseCase: 'underwriting',    suggestedHPBase: 130, realizationFactor: 0.56, expectedImprovementRate: 0.15, outcomeLatencyMonths: 10 },
-  blood_pressure:      { baselineClaimCostPerMember: 662,  riskSignalRate: 0.11, evidenceLevel: 'high',   evidenceNote: 'Blood pressure improvement has mature intervention evidence',     inferredUseCase: 'claims_reduction', suggestedHPBase: 120, realizationFactor: 0.63, expectedImprovementRate: 0.14, outcomeLatencyMonths: 7 },
-  bmi:                 { baselineClaimCostPerMember: 670,  riskSignalRate: 0.08, evidenceLevel: 'medium', evidenceNote: 'BMI is broad and directionally useful, but blunt in isolation',   inferredUseCase: 'underwriting',    suggestedHPBase: 90,  realizationFactor: 0.43, expectedImprovementRate: 0.09, outcomeLatencyMonths: 11 },
-  vo2_max:             { baselineClaimCostPerMember: 1388, riskSignalRate: 0.18, evidenceLevel: 'high',   evidenceNote: 'VO₂ max is one of the strongest fitness-linked mortality signals', inferredUseCase: 'dynamic_premium', suggestedHPBase: 110, realizationFactor: 0.61, expectedImprovementRate: 0.17, outcomeLatencyMonths: 8 },
-  hrv:                 { baselineClaimCostPerMember: 1900, riskSignalRate: 0.15, evidenceLevel: 'medium', evidenceNote: 'HRV is promising but still more emerging than settled actuarial input', inferredUseCase: 'claims_reduction', suggestedHPBase: 100, realizationFactor: 0.46, expectedImprovementRate: 0.13, outcomeLatencyMonths: 6 },
-  heart_rate_resting:  { baselineClaimCostPerMember: 1700, riskSignalRate: 0.08, evidenceLevel: 'medium', evidenceNote: 'Resting heart rate is a good longitudinal fitness proxy',         inferredUseCase: 'dynamic_premium', suggestedHPBase: 80,  realizationFactor: 0.41, expectedImprovementRate: 0.08, outcomeLatencyMonths: 6 },
-  respiratory_rate:    { baselineClaimCostPerMember: 1600, riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Respiratory rate is useful but not yet a mainstream pricing input', inferredUseCase: 'dynamic_premium', suggestedHPBase: 70,  realizationFactor: 0.38, expectedImprovementRate: 0.07, outcomeLatencyMonths: 6 },
-  spo2:                { baselineClaimCostPerMember: 1400, riskSignalRate: 0.05, evidenceLevel: 'medium', evidenceNote: 'SpO₂ is useful as a screening gate more than a long-run outcome driver', inferredUseCase: 'acquisition', suggestedHPBase: 50, realizationFactor: 0.34, expectedImprovementRate: 0.05, outcomeLatencyMonths: 4 },
-  sleep_hours:         { baselineClaimCostPerMember: 1500, riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Sleep duration is commercially relevant but causality is noisy', inferredUseCase: 'renewal', suggestedHPBase: 70, realizationFactor: 0.36, expectedImprovementRate: 0.08, outcomeLatencyMonths: 7 },
-  sleep_quality:       { baselineClaimCostPerMember: 1500, riskSignalRate: 0.06, evidenceLevel: 'medium', evidenceNote: 'Sleep quality is useful as a behavioral trend and engagement input', inferredUseCase: 'renewal', suggestedHPBase: 65, realizationFactor: 0.33, expectedImprovementRate: 0.07, outcomeLatencyMonths: 7 },
-  active_minutes:      { baselineClaimCostPerMember: 1600, riskSignalRate: 0.10, evidenceLevel: 'medium', evidenceNote: 'Activity adherence is credible but still indirect for claims impact', inferredUseCase: 'acquisition', suggestedHPBase: 65, realizationFactor: 0.42, expectedImprovementRate: 0.11, outcomeLatencyMonths: 6 },
-  steps:               { baselineClaimCostPerMember: 778,  riskSignalRate: 0.05, evidenceLevel: 'low',    evidenceNote: 'Step counts are easy to explain but weak as a standalone claims signal', inferredUseCase: 'acquisition', suggestedHPBase: 45, realizationFactor: 0.26, expectedImprovementRate: 0.05, outcomeLatencyMonths: 5 },
-  stress_score:        { baselineClaimCostPerMember: 1600, riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Stress scores may support intervention targeting more than direct pricing', inferredUseCase: 'claims_reduction', suggestedHPBase: 65, realizationFactor: 0.37, expectedImprovementRate: 0.08, outcomeLatencyMonths: 6 },
-  body_composition:    { baselineClaimCostPerMember: 1500, riskSignalRate: 0.05, evidenceLevel: 'low',    evidenceNote: 'Body composition adds context, but usually needs supporting signals', inferredUseCase: 'underwriting', suggestedHPBase: 60, realizationFactor: 0.24, expectedImprovementRate: 0.05, outcomeLatencyMonths: 10 },
-  hydration:           { baselineClaimCostPerMember: 1300, riskSignalRate: 0.03, evidenceLevel: 'low',    evidenceNote: 'Hydration is mainly an engagement signal at this stage', inferredUseCase: 'renewal', suggestedHPBase: 40, realizationFactor: 0.18, expectedImprovementRate: 0.03, outcomeLatencyMonths: 4 },
-  body_temp_deviation: { baselineClaimCostPerMember: 1400, riskSignalRate: 0.04, evidenceLevel: 'low',    evidenceNote: 'Temperature variation is operationally interesting but commercially immature', inferredUseCase: 'acquisition', suggestedHPBase: 45, realizationFactor: 0.2, expectedImprovementRate: 0.04, outcomeLatencyMonths: 4 },
+  // ── Engine-mapped metrics (baseline from EVIDENCE_ASSUMPTION_SET v1) ──
+  // Rates reflect full-horizon economic value (3yr persistence, mortality margin,
+  // retention) as modeled in the server engine — not just single-year claims delta.
+  hba1c:               { baselineClaimCostPerMember: ENGINE_CLAIMS_BASELINE.hba1c_screening, riskSignalRate: 0.14, evidenceLevel: 'high',   evidenceNote: 'HbA1c 1% reduction → ~2% all-cause cost reduction (CMRO 2020); prevalence-gated to poorly controlled diabetics', inferredUseCase: 'underwriting',    suggestedHPBase: 150, realizationFactor: 0.55, expectedImprovementRate: 0.22, outcomeLatencyMonths: 9, engineMapped: true },
+  blood_pressure:      { baselineClaimCostPerMember: ENGINE_CLAIMS_BASELINE.bp_screening,    riskSignalRate: 0.10, evidenceLevel: 'high',   evidenceNote: 'BP control is cost-effective on 1-3yr window; larger savings on ≥5yr (CDC SMBP, Bress 2017 NEJM)',     inferredUseCase: 'claims_reduction', suggestedHPBase: 120, realizationFactor: 0.50, expectedImprovementRate: 0.15, outcomeLatencyMonths: 7, engineMapped: true },
+  vo2_max:             { baselineClaimCostPerMember: ENGINE_CLAIMS_BASELINE.vo2max,          riskSignalRate: 0.13, evidenceLevel: 'high',   evidenceNote: 'VO₂ max: ~5-6% claims per MET gained (Myers 2018, Bachmann 2015); overlaps steps pathway', inferredUseCase: 'dynamic_premium', suggestedHPBase: 110, realizationFactor: 0.58, expectedImprovementRate: 0.20, outcomeLatencyMonths: 8, engineMapped: true },
+  sleep_hours:         { baselineClaimCostPerMember: ENGINE_CLAIMS_BASELINE.sleep,           riskSignalRate: 0.08, evidenceLevel: 'medium', evidenceNote: 'Sleep regularity proxy mapping from insomnia excess-cost literature (Ozminkowski 2007, Wickwire 2019)', inferredUseCase: 'renewal', suggestedHPBase: 70, realizationFactor: 0.42, expectedImprovementRate: 0.12, outcomeLatencyMonths: 7, engineMapped: true },
+  sleep_quality:       { baselineClaimCostPerMember: ENGINE_CLAIMS_BASELINE.sleep,           riskSignalRate: 0.07, evidenceLevel: 'medium', evidenceNote: 'Sleep quality is useful as a behavioral trend; shares sleep pathway claims basis', inferredUseCase: 'renewal', suggestedHPBase: 65, realizationFactor: 0.38, expectedImprovementRate: 0.10, outcomeLatencyMonths: 7, engineMapped: true },
+  steps:               { baselineClaimCostPerMember: ENGINE_CLAIMS_BASELINE.steps,           riskSignalRate: 0.10, evidenceLevel: 'medium', evidenceNote: 'Patel 2011 Discovery book (n=304k): became-active −6% hospital costs; Sci Rep 2021 Japan panel', inferredUseCase: 'acquisition', suggestedHPBase: 45, realizationFactor: 0.42, expectedImprovementRate: 0.11, outcomeLatencyMonths: 5, engineMapped: true },
+  // ── Unmapped metrics (illustrative baselines; no direct engine campaign type) ──
+  blood_glucose:       { baselineClaimCostPerMember: 1050, riskSignalRate: 0.12, evidenceLevel: 'high',   evidenceNote: 'Fasting glucose is a strong metabolic risk discriminator; shares hba1c pathway economics',       inferredUseCase: 'underwriting',    suggestedHPBase: 120, realizationFactor: 0.52, expectedImprovementRate: 0.18, outcomeLatencyMonths: 8, engineMapped: false },
+  cholesterol:         { baselineClaimCostPerMember: 950,  riskSignalRate: 0.10, evidenceLevel: 'high',   evidenceNote: 'Lipid panels remain a strong cardiovascular underwriting signal', inferredUseCase: 'underwriting',    suggestedHPBase: 130, realizationFactor: 0.50, expectedImprovementRate: 0.15, outcomeLatencyMonths: 10, engineMapped: false },
+  bmi:                 { baselineClaimCostPerMember: 920,  riskSignalRate: 0.06, evidenceLevel: 'medium', evidenceNote: 'BMI is broad and directionally useful, but blunt in isolation',   inferredUseCase: 'underwriting',    suggestedHPBase: 90,  realizationFactor: 0.38, expectedImprovementRate: 0.08, outcomeLatencyMonths: 11, engineMapped: false },
+  hrv:                 { baselineClaimCostPerMember: 900,  riskSignalRate: 0.10, evidenceLevel: 'medium', evidenceNote: 'HRV is promising but still more emerging than settled actuarial input', inferredUseCase: 'claims_reduction', suggestedHPBase: 100, realizationFactor: 0.52, expectedImprovementRate: 0.16, outcomeLatencyMonths: 6, engineMapped: false },
+  heart_rate_resting:  { baselineClaimCostPerMember: 900,  riskSignalRate: 0.08, evidenceLevel: 'medium', evidenceNote: 'Resting heart rate is a good longitudinal fitness proxy',         inferredUseCase: 'dynamic_premium', suggestedHPBase: 80,  realizationFactor: 0.44, expectedImprovementRate: 0.11, outcomeLatencyMonths: 6, engineMapped: false },
+  respiratory_rate:    { baselineClaimCostPerMember: 880,  riskSignalRate: 0.05, evidenceLevel: 'medium', evidenceNote: 'Respiratory rate is useful but not yet a mainstream pricing input', inferredUseCase: 'dynamic_premium', suggestedHPBase: 70,  realizationFactor: 0.34, expectedImprovementRate: 0.06, outcomeLatencyMonths: 6, engineMapped: false },
+  spo2:                { baselineClaimCostPerMember: 880,  riskSignalRate: 0.04, evidenceLevel: 'medium', evidenceNote: 'SpO₂ is useful as a screening gate more than a long-run outcome driver', inferredUseCase: 'acquisition', suggestedHPBase: 50, realizationFactor: 0.30, expectedImprovementRate: 0.04, outcomeLatencyMonths: 4, engineMapped: false },
+  active_minutes:      { baselineClaimCostPerMember: 900,  riskSignalRate: 0.09, evidenceLevel: 'medium', evidenceNote: 'Activity adherence overlaps steps pathway; credible but indirect for claims impact', inferredUseCase: 'acquisition', suggestedHPBase: 65, realizationFactor: 0.42, expectedImprovementRate: 0.11, outcomeLatencyMonths: 6, engineMapped: false },
+  stress_score:        { baselineClaimCostPerMember: 880,  riskSignalRate: 0.05, evidenceLevel: 'medium', evidenceNote: 'Stress scores may support intervention targeting more than direct pricing', inferredUseCase: 'claims_reduction', suggestedHPBase: 65, realizationFactor: 0.36, expectedImprovementRate: 0.08, outcomeLatencyMonths: 6, engineMapped: false },
+  body_composition:    { baselineClaimCostPerMember: 920,  riskSignalRate: 0.04, evidenceLevel: 'low',    evidenceNote: 'Body composition adds context, but usually needs supporting signals', inferredUseCase: 'underwriting', suggestedHPBase: 60, realizationFactor: 0.24, expectedImprovementRate: 0.05, outcomeLatencyMonths: 10, engineMapped: false },
+  hydration:           { baselineClaimCostPerMember: 880,  riskSignalRate: 0.03, evidenceLevel: 'low',    evidenceNote: 'Hydration is mainly an engagement signal at this stage', inferredUseCase: 'renewal', suggestedHPBase: 40, realizationFactor: 0.18, expectedImprovementRate: 0.03, outcomeLatencyMonths: 4, engineMapped: false },
+  body_temp_deviation: { baselineClaimCostPerMember: 880,  riskSignalRate: 0.03, evidenceLevel: 'low',    evidenceNote: 'Temperature variation is operationally interesting but commercially immature', inferredUseCase: 'acquisition', suggestedHPBase: 45, realizationFactor: 0.20, expectedImprovementRate: 0.04, outcomeLatencyMonths: 4, engineMapped: false },
 };
 
 interface UseCaseConfig {

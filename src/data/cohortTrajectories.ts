@@ -5,6 +5,7 @@
 
 import { seededRandom, normalDistribution } from './seed';
 import { campaigns } from './campaigns';
+import { IDENTITY_COUNT } from './simulation';
 
 const TRAJECTORY_SEED = 77701;
 const WEEKS = 12;
@@ -54,6 +55,19 @@ interface CohortConfig {
   leadSignal: string;
 }
 
+// ── Cohort allocation fractions of total population (IDENTITY_COUNT) ──
+// Sum to ~0.86 — remaining 14% are not assigned to a specific treatment cohort.
+const COHORT_ALLOCATION: Record<string, number> = {
+  'Pre-Diabetic Watchlist': 0.093,
+  'Cardiac Risk Pool': 0.128,
+  'Chronic Care Management': 0.103,
+  'Senior Wellness': 0.137,
+  'Mental Health Monitoring': 0.095,
+  'Maternity Track': 0.086,
+  'Low-Risk Millennial': 0.120,
+  'Active Lifestyle': 0.094,
+};
+
 const COHORT_CFG: Record<string, CohortConfig> = {
   'Pre-Diabetic Watchlist': {
     baseHealth: 56.8,
@@ -61,7 +75,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: 0.3,
     status: 'verified',
     holdoutPct: 15,
-    treatmentN: 3340,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Pre-Diabetic Watchlist']),
     leadSignal: 'Blood Glucose',
   },
   'Cardiac Risk Pool': {
@@ -70,7 +84,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: -0.5,
     status: 'verified',
     holdoutPct: 15,
-    treatmentN: 4610,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Cardiac Risk Pool']),
     leadSignal: 'VO2 Max',
   },
   'Chronic Care Management': {
@@ -79,7 +93,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: 0.1,
     status: 'projected',
     holdoutPct: 12,
-    treatmentN: 3720,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Chronic Care Management']),
     leadSignal: 'Blood Pressure',
   },
   'Senior Wellness': {
@@ -88,7 +102,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: -0.3,
     status: 'projected',
     holdoutPct: 12,
-    treatmentN: 4940,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Senior Wellness']),
     leadSignal: 'Resting HR',
   },
   'Mental Health Monitoring': {
@@ -97,7 +111,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: 0.0,
     status: 'projected',
     holdoutPct: 10,
-    treatmentN: 3410,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Mental Health Monitoring']),
     leadSignal: 'HRV / Stress',
   },
   'Maternity Track': {
@@ -106,7 +120,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: 0.4,
     status: 'projected',
     holdoutPct: 10,
-    treatmentN: 3090,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Maternity Track']),
     leadSignal: 'Sleep Quality',
   },
   'Low-Risk Millennial': {
@@ -115,7 +129,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: 0.2,
     status: 'projected',
     holdoutPct: 10,
-    treatmentN: 4320,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Low-Risk Millennial']),
     leadSignal: 'Active Minutes',
   },
   'Active Lifestyle': {
@@ -124,7 +138,7 @@ const COHORT_CFG: Record<string, CohortConfig> = {
     holdoutDrift: 0.1,
     status: 'projected',
     holdoutPct: 10,
-    treatmentN: 3400,
+    treatmentN: Math.round(IDENTITY_COUNT * COHORT_ALLOCATION['Active Lifestyle']),
     leadSignal: 'VO2 Max',
   },
 };

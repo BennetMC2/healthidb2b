@@ -23,7 +23,7 @@ import {
   weightedIndex,
 } from './seed';
 
-const IDENTITY_COUNT = 36000;
+export const IDENTITY_COUNT = 36000;
 const BASE_SEED = 20260425;
 const REFRESH_BUCKET_HOURS = 6;
 
@@ -624,6 +624,42 @@ function buildSimulation() {
     campaignTimeSeries.push(...simulation.snapshots);
   });
 
+  // ── Build longitudinal trends per member ──
+  const trendRng = seededRandom(BASE_SEED + seedOffset + 9999);
+  const TREND_WEEKS = 12;
+
+  function buildHealthTrend(member: MemberState): number[] {
+    const trend: number[] = [];
+    const baseScore = member.healthScore;
+    // Simulate a gentle drift over 12 weeks (older → newer)
+    const drift = normalDistribution(trendRng, 0, 0.4); // weekly drift direction
+    for (let w = 0; w < TREND_WEEKS; w++) {
+      const weekNoise = normalDistribution(trendRng, 0, 1.5);
+      const weekScore = clamp(Math.round(baseScore - (TREND_WEEKS - 1 - w) * drift + weekNoise), 24, 96);
+      trend.push(weekScore);
+    }
+    return trend;
+  }
+
+  function buildMetricTrends(member: MemberState): Partial<Record<import('@/types').HealthMetric, number[]>> | undefined {
+    // Only build metric trends for members with ≥2 sources (enough signal density)
+    if (member.connectedSources.length < 2) return undefined;
+    const trends: Partial<Record<import('@/types').HealthMetric, number[]>> = {};
+    const keyMetrics: import('@/types').HealthMetric[] = ['vo2_max', 'heart_rate_resting', 'sleep_hours', 'hrv', 'steps', 'blood_pressure'];
+    for (const metric of keyMetrics) {
+      const currentValue = member.metricValues[metric];
+      if (currentValue === undefined) continue;
+      const metricTrend: number[] = [];
+      const metricDrift = normalDistribution(trendRng, 0, 0.3);
+      for (let w = 0; w < TREND_WEEKS; w++) {
+        const noise = normalDistribution(trendRng, 0, currentValue * 0.02);
+        metricTrend.push(Number((currentValue - (TREND_WEEKS - 1 - w) * metricDrift + noise).toFixed(1)));
+      }
+      trends[metric] = metricTrend;
+    }
+    return Object.keys(trends).length > 0 ? trends : undefined;
+  }
+
   const identities: HealthIdentity[] = members
     .map((member) => ({
       id: member.id,
@@ -638,6 +674,9 @@ function buildSimulation() {
       lastVerified: member.lastVerified,
       enrolledCampaigns: member.enrolledCampaigns,
       createdAt: member.createdAt,
+      metricValues: member.metricValues,
+      healthTrend: buildHealthTrend(member),
+      metricTrends: buildMetricTrends(member),
     }))
     .sort((a, b) => {
       if (b.verificationCount !== a.verificationCount) return b.verificationCount - a.verificationCount;

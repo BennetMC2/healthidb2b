@@ -1,10 +1,22 @@
-import { X, Activity, Shield, Database, Users, Calendar, Gauge } from 'lucide-react';
+import { X, Activity, Shield, Database, Users, Calendar, Gauge, HeartPulse } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ReputationBadge } from '@/components/ui/Badge';
 import LiveProofButton from '@/components/proof/LiveProofButton';
+import Sparkline from '@/components/ui/Sparkline';
 import { formatNumber, formatRelativeTime } from '@/utils/format';
-import { DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, getConfidenceLabel, CONFIDENCE_LABELS, CONFIDENCE_COLORS } from '@/utils/constants';
-import type { HealthIdentity } from '@/types';
+import { DATA_SOURCE_LABELS, REPUTATION_TIER_LABELS, HEALTH_METRIC_LABELS, getConfidenceLabel, CONFIDENCE_LABELS, CONFIDENCE_COLORS } from '@/utils/constants';
+import type { HealthIdentity, HealthMetric } from '@/types';
+
+const KEY_METRICS: { key: HealthMetric; unit: string }[] = [
+  { key: 'vo2_max', unit: 'mL/kg/min' },
+  { key: 'heart_rate_resting', unit: 'bpm' },
+  { key: 'sleep_hours', unit: 'hrs' },
+  { key: 'hrv', unit: 'ms' },
+  { key: 'steps', unit: 'steps/day' },
+  { key: 'blood_pressure', unit: 'mmHg' },
+  { key: 'blood_glucose', unit: 'mg/dL' },
+  { key: 'hba1c', unit: '%' },
+];
 
 interface IdentityDetailDrawerProps {
   identity: HealthIdentity | null;
@@ -74,6 +86,52 @@ export default function IdentityDetailDrawer({ identity, onClose }: IdentityDeta
                   <div className="text-2xs text-tertiary mt-0.5">{REPUTATION_TIER_LABELS[identity.reputationTier]}</div>
                 </div>
               </div>
+
+              {/* Health Trend Sparkline */}
+              {identity.healthTrend && identity.healthTrend.length > 1 && (
+                <div className="card-elevated">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-2xs text-tertiary">12-Week Health Trend</span>
+                    <span className="text-2xs font-mono text-secondary">
+                      {identity.healthTrend[0]} → {identity.healthTrend[identity.healthTrend.length - 1]}
+                    </span>
+                  </div>
+                  <Sparkline
+                    data={identity.healthTrend}
+                    width={320}
+                    height={32}
+                    color={identity.healthScore >= 60 ? 'var(--a-accent)' : 'var(--a-warning)'}
+                  />
+                  <div className="flex justify-between mt-0.5">
+                    <span className="text-2xs text-tertiary">12w ago</span>
+                    <span className="text-2xs text-tertiary">Now</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Key Biometrics */}
+              {Object.keys(identity.metricValues).length > 0 && (
+                <div className="card-elevated">
+                  <div className="flex items-center gap-1 mb-2">
+                    <HeartPulse size={11} className="text-accent" />
+                    <span className="text-2xs text-tertiary">Biometric Snapshot</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                    {KEY_METRICS.filter(({ key }) => identity.metricValues[key] !== undefined).map(({ key, unit }) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <span className="text-2xs text-tertiary truncate">{HEALTH_METRIC_LABELS[key]}</span>
+                        <div className="flex items-center gap-1.5">
+                          {identity.metricTrends?.[key] && (
+                            <Sparkline data={identity.metricTrends[key]!} width={36} height={14} />
+                          )}
+                          <span className="text-xs font-mono text-secondary">{identity.metricValues[key]}</span>
+                          <span className="text-2xs text-tertiary">{unit}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Confidence Score */}
               <div className="card-elevated">

@@ -13,7 +13,8 @@ import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrencyCompact } from '@/utils/format';
 import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
 import { deleteConsumerCampaign } from '@/lib/consumerCampaigns';
-import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
+import { calculateActuarialROI } from '@/utils/actuarial';
+import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus, HealthMetric, CampaignUseCase } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
 
@@ -34,11 +35,36 @@ const familyFilters: Array<{ id: CampaignFamily; label: string }> = [
   { id: 'engagement', label: 'Engagement' },
 ];
 
+/** Compute signal-campaign display metrics from the actuarial calculator.
+ *  Baselines are already evidence-aligned — no additional conservatism haircut. */
+function computeSignalMetrics(
+  metric: HealthMetric,
+  type: CampaignType,
+  useCase: CampaignUseCase,
+  cohortSize: number,
+  budget: number,
+): { metrics: Array<{ label: string; value: string }>; bookValue: number } {
+  const r = calculateActuarialROI({ metric, type, useCase, maxParticipants: cohortSize, budgetCeiling: budget, applyAdjustments: false });
+  return {
+    metrics: [
+      { label: 'Book value', value: formatCurrencyCompact(r.totalProjectedSavings) },
+      { label: 'ROI', value: `${r.budgetROI.toFixed(1)}x` },
+      { label: 'Payback', value: `${r.paybackMonths} mo` },
+    ],
+    bookValue: r.totalProjectedSavings,
+  };
+}
+
+const vo2Metrics = computeSignalMetrics('vo2_max', 'stream', 'claims_reduction', 3847, 58000);
+const hrvMetrics = computeSignalMetrics('hrv', 'stream', 'claims_reduction', 1204, 36000);
+const sleepMetrics = computeSignalMetrics('sleep_hours', 'stream', 'claims_reduction', 2186, 42000);
+const rhrMetrics = computeSignalMetrics('heart_rate_resting', 'stream', 'claims_reduction', 946, 31000);
+
 const signalBookValues: Record<string, number> = {
-  'Cardio Fitness Activation': 4_200_000,
-  'HRV Recovery': 1_800_000,
-  'Sleep Regularity': 1_250_000,
-  'Resting Heart Rate Improvement': 840_000,
+  'Cardio Fitness Activation': vo2Metrics.bookValue,
+  'HRV Recovery': hrvMetrics.bookValue,
+  'Sleep Regularity': sleepMetrics.bookValue,
+  'Resting Heart Rate Improvement': rhrMetrics.bookValue,
 };
 
 const campaignTemplates: StudioCampaignTemplate[] = [
@@ -51,11 +77,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     audience: '3,847 addressable existing members',
     action: '650 HP/member for 8 weeks of verified Zone 2 consistency.',
     source: 'AI recommended',
-    metrics: [
-      { label: 'Book value', value: '$4.2M' },
-      { label: 'ROI', value: '4.2x' },
-      { label: 'Payback', value: '8 mo' },
-    ],
+    metrics: vo2Metrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
     icon: 'activity',
@@ -78,11 +100,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     audience: '1,204 members with HRV drift',
     action: '520 HP/member for 21 verified recovery days.',
     source: 'AI recommended',
-    metrics: [
-      { label: 'Book value', value: '$1.8M' },
-      { label: 'ROI', value: '3.4x' },
-      { label: 'Payback', value: '12 mo' },
-    ],
+    metrics: hrvMetrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
     icon: 'heart',
@@ -105,11 +123,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     audience: '2,186 members with sleep debt',
     action: '480 HP/member for 30 verified regular sleep nights.',
     source: 'AI recommended',
-    metrics: [
-      { label: 'Book value', value: '$1.25M' },
-      { label: 'ROI', value: '3.1x' },
-      { label: 'Payback', value: '11 mo' },
-    ],
+    metrics: sleepMetrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
     icon: 'moon',
@@ -132,11 +146,7 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     audience: '946 members with elevated resting HR',
     action: '600 HP/member for 12 active weeks and a 3 bpm improvement.',
     source: 'AI recommended',
-    metrics: [
-      { label: 'Book value', value: '$840K' },
-      { label: 'ROI', value: '2.7x' },
-      { label: 'Payback', value: '14 mo' },
-    ],
+    metrics: rhrMetrics.metrics,
     type: 'stream',
     useCase: 'claims_reduction',
     icon: 'heart',

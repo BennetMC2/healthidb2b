@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X } from 'lucide-react';
-import { actuaryInsights, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
+import { actuaryInsights, engineAssumptionSetMeta, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
+import { ENGINE_ECONOMICS } from '@shared/engineConstants';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
@@ -220,16 +221,58 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
           </section>
 
           <section className="rounded-lg border border-border bg-base/60 p-4">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Methodology</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">Engine assumptions</h3>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="badge bg-accent-muted border-accent/20 text-accent">
+                {engineAssumptionSetMeta.version}
+              </span>
+              <span className="text-2xs text-tertiary">{engineAssumptionSetMeta.label}</span>
+            </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {[
-                'Actuarial credibility: cohort volume x source quality',
-                'Causal adjustment: behaviour-change response discount',
-                'Evidence grading: peer-reviewed support only',
-                'Conservative anchoring: bottom-quartile response case',
-              ].map((item) => (
-                <div key={item} className="rounded border border-border bg-surface px-3 py-2 text-xs text-secondary">{item}</div>
-              ))}
+              <div className="rounded border border-border bg-surface px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Claims bridge delta</div>
+                <div className="mt-1 font-mono text-xs text-primary">
+                  ${insight.engineBridge.annualClaimsDeltaUSD}/member/yr
+                  <span className="text-tertiary"> (CI ${insight.engineBridge.annualClaimsDeltaCI[0]}–${insight.engineBridge.annualClaimsDeltaCI[1]})</span>
+                </div>
+              </div>
+              <div className="rounded border border-border bg-surface px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Attribution factor</div>
+                <div className="mt-1 font-mono text-xs text-primary">
+                  {(insight.engineBridge.attributionFactor * 100).toFixed(0)}%
+                  <span className="text-tertiary"> causal haircut</span>
+                </div>
+              </div>
+              <div className="rounded border border-border bg-surface px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Applicable prevalence</div>
+                <div className="mt-1 font-mono text-xs text-primary">
+                  {(insight.engineBridge.applicablePrevalence * 100).toFixed(0)}%
+                  <span className="text-tertiary"> of cohort</span>
+                </div>
+              </div>
+              <div className="rounded border border-border bg-surface px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Valuation horizon</div>
+                <div className="mt-1 font-mono text-xs text-primary">
+                  {ENGINE_ECONOMICS.valuationHorizonYears}yr
+                  <span className="text-tertiary"> @ {(ENGINE_ECONOMICS.discountRatePct * 100).toFixed(0)}% discount</span>
+                </div>
+              </div>
+              <div className="rounded border border-border bg-surface px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Evidence tier</div>
+                <div className="mt-1 font-mono text-xs text-primary">{insight.engineSignal.evidenceTier}</div>
+              </div>
+              <div className="rounded border border-border bg-surface px-3 py-2">
+                <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Trust ceiling</div>
+                <div className="mt-1 font-mono text-xs text-primary">{insight.engineSignal.trustCeiling}</div>
+              </div>
+            </div>
+            <div className="mt-3 rounded border border-border bg-surface px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Claims pathway</div>
+              <div className="mt-1 text-xs text-secondary">{insight.engineSignal.claimsPathway}</div>
+            </div>
+            <div className="mt-2 rounded border border-border bg-surface px-3 py-2">
+              <div className="font-mono text-[10px] uppercase tracking-[0.1em] text-tertiary">Bridge source</div>
+              <div className="mt-1 text-2xs leading-relaxed text-tertiary">{insight.engineBridge.source}</div>
             </div>
           </section>
         </div>
@@ -361,7 +404,7 @@ export default function Actuary() {
           <div>
             <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-accent">
               <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-              Live · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}
+              Live · Engine {engineAssumptionSetMeta.version} · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}
             </div>
             <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · AI Actuary</h1>
             <p className="mt-2 text-sm text-secondary">
