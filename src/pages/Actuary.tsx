@@ -515,7 +515,10 @@ export default function Actuary() {
             <div>
               <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Wearable signal campaigns</h2>
               <p className="mt-1 text-xs text-tertiary">
-                {actuaryInsights.length} priced campaign plays ranked by addressable behaviour change and expected book impact.
+                {actuaryInsights.length} model-ranked campaigns by addressable behaviour change and expected book impact.
+              </p>
+              <p className="mt-0.5 font-mono text-[0.6rem] text-tertiary/70">
+                Planning estimates, not actuarial certification or proven claims reduction.
               </p>
             </div>
           </div>

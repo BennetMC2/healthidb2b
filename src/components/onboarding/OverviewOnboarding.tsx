@@ -16,7 +16,7 @@ const steps: OnboardingStep[] = [
   {
     icon: Vault,
     title: 'The Yield Engine',
-    description: 'Partner budgets earn T-Bill yield while awaiting distribution. Wholesale buying power amplifies every dollar.',
+    description: 'Partner budgets earn yield while awaiting distribution. Wholesale buying power amplifies every dollar.',
   },
   {
     icon: Plug,
