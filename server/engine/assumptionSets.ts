@@ -518,8 +518,11 @@ export function activeAssumptionSet() {
   return EVIDENCE_ASSUMPTION_SET;
 }
 
-export function assumptionSetRegister(campaign: CampaignType, market: Market): AssumptionItem[] {
-  const set = activeAssumptionSet();
+export function assumptionSetRegister(
+  campaign: CampaignType,
+  market: Market,
+  set: VersionedAssumptionSet = activeAssumptionSet(),
+): AssumptionItem[] {
   const key = signalToClaimsBridgeKey(campaign);
   return [
     {

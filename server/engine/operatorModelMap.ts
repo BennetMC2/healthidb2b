@@ -1,10 +1,10 @@
-import { activeAssumptionSet } from "./assumptionSets";
 import { activeModelModuleSummary } from "./moduleRegistry";
+import { currentSet } from "./modelContext";
 
 export const OPERATOR_MODEL_MAP_VERSION = "0.1.0";
 
 export function buildOperatorModelMap() {
-  const assumptions = activeAssumptionSet();
+  const assumptions = currentSet();
   const moduleSummary = activeModelModuleSummary();
   return {
     version: OPERATOR_MODEL_MAP_VERSION,
