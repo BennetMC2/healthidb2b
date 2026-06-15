@@ -38,7 +38,6 @@ export default function ModelStudio() {
 
   useEffect(() => {
     reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelId]);
 
   const rows = useMemo(
