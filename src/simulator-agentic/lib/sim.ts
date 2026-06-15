@@ -16,6 +16,7 @@ import type {
   GrowthBehavior,
   GrowthResult,
 } from "@shared/schema";
+import { useModelStore } from "@/stores/useModelStore";
 
 // API base: works locally and after deploy (port 5000 proxy).
 const PORT_TOKEN = "__PORT_5000__";
@@ -100,7 +101,9 @@ export function streamSimulation(
     .join("");
   const segmentSetQs = segmentSetVersionId ? `&segmentSetVersionId=${encodeURIComponent(segmentSetVersionId)}` : "";
   const lifeAssumptionQs = lifeAssumptionVersionId ? `&lifeAssumptionVersionId=${encodeURIComponent(lifeAssumptionVersionId)}` : "";
-  const url = `${API_BASE}/api/simulate?goal=${encodeURIComponent(goal)}&sample=${sampleSize}${incentiveQs}${strategyQs}${assumptionQs}${segmentSetQs}${lifeAssumptionQs}`;
+  // The active Model drives every engine number; send it on every request.
+  const modelQs = `&modelId=${encodeURIComponent(useModelStore.getState().currentModelId)}`;
+  const url = `${API_BASE}/api/simulate?goal=${encodeURIComponent(goal)}&sample=${sampleSize}${incentiveQs}${strategyQs}${assumptionQs}${segmentSetQs}${lifeAssumptionQs}${modelQs}`;
   const es = new EventSource(url);
   es.onmessage = (msg) => {
     try {
@@ -163,7 +166,7 @@ export function streamGrowthSimulation(
   onEvent: (e: StreamEvent) => void
 ): () => void {
   const rewardQs = typeof rewardPmpm === "number" && Number.isFinite(rewardPmpm) ? `&rewardPmpm=${encodeURIComponent(rewardPmpm)}` : "";
-  const url = `${API_BASE}/api/growth?goal=${encodeURIComponent(goal)}&sample=${sampleSize}${rewardQs}`;
+  const url = `${API_BASE}/api/growth?goal=${encodeURIComponent(goal)}&sample=${sampleSize}${rewardQs}&modelId=${encodeURIComponent(useModelStore.getState().currentModelId)}`;
   const es = new EventSource(url);
   es.onmessage = (msg) => {
     try {
