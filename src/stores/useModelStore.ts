@@ -66,6 +66,10 @@ interface ModelStore {
   currentModelId: string;
   // The active model's campaign economics — every actuarial number reads this.
   economics: EconomicsConfig;
+  // Realization scalar vs. the floor (Model 1 == 1). Used to scale seeded/static
+  // display numbers (e.g. the AI Actuary cards' Monte-Carlo book value) so they
+  // also move with the selected model.
+  modelScalar: number;
   // Buyer/demo context gates internal_only models out of the switcher.
   buyerContext: boolean;
   setCurrentModel: (id: string) => void;
@@ -76,15 +80,15 @@ interface ModelStore {
 
 // Resolve a model's economics: baked fallback immediately (so the static demo
 // re-prices on switch), then overridden by the engine when reachable.
-function fallbackEconomics(id: string): EconomicsConfig {
-  const m: ModelEconomics = MODEL_ECONOMICS_FALLBACK[id] ?? MODEL_ECONOMICS_FALLBACK[DEFAULT_MODEL_ID];
-  return deriveEconomics(m);
+function fallbackModel(id: string): ModelEconomics {
+  return MODEL_ECONOMICS_FALLBACK[id] ?? MODEL_ECONOMICS_FALLBACK[DEFAULT_MODEL_ID];
 }
 
 export const useModelStore = create<ModelStore>((set, get) => ({
   models: FALLBACK_MODELS,
   currentModelId: DEFAULT_MODEL_ID,
   economics: FLOOR_ECONOMICS,
+  modelScalar: 1,
   buyerContext: true,
   currentModel: () => {
     const { models, currentModelId } = get();
@@ -98,7 +102,8 @@ export const useModelStore = create<ModelStore>((set, get) => ({
     if (!target) return;
     if (buyerContext && !isBuyerSelectable(target)) return;
     // Re-price immediately from the baked fallback, then refine from the engine.
-    set({ currentModelId: id, economics: fallbackEconomics(id) });
+    const fm = fallbackModel(id);
+    set({ currentModelId: id, economics: deriveEconomics(fm), modelScalar: fm.modelScalar });
     get().hydrateEconomics(id);
   },
   hydrate: async () => {
@@ -121,7 +126,7 @@ export const useModelStore = create<ModelStore>((set, get) => ({
       const model = (await res.json()) as ModelEconomics;
       if (model && typeof model.modelScalar === 'number') {
         // Only apply if still the active model (avoid races on rapid switches).
-        if (get().currentModelId === id) set({ economics: deriveEconomics(model) });
+        if (get().currentModelId === id) set({ economics: deriveEconomics(model), modelScalar: model.modelScalar });
       }
     } catch {
       // Offline — keep the fallback economics already applied.

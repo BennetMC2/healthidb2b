@@ -9,6 +9,7 @@ import { SEEDED_RESULTS } from '@shared/seeded-results';
 import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
+import { useModelStore } from '@/stores/useModelStore';
 import { formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
 import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
 import { getPartnerPortfolio } from '@/data/partnerPortfolios';
@@ -326,11 +327,17 @@ function formatSimulatedAgo(ts: number): string {
 
 function OpportunityCard({ insight, onEvidence, seededResult }: { insight: ActuaryInsight; onEvidence: (insight: ActuaryInsight) => void; seededResult?: SeededRunResult }) {
   const navigate = useNavigate();
+  // The seeded Monte-Carlo numbers are a Model-1 (floor) run; scale them by the
+  // active model's realization scalar so they also move when the model switches.
+  const modelScalar = useModelStore((s) => s.modelScalar);
 
   // Use real simulation numbers when available, fall back to engine estimates
-  const bookValue = seededResult ? seededResult.finance.claimsSavingsP50 : insight.outputs.projectedSavingsUsd;
-  const roi = seededResult ? seededResult.finance.roiP50 : insight.outputs.budgetRoiMultiple;
-  const payback = seededResult?.paybackMonths ?? insight.outputs.paybackMonths;
+  const bookValue = seededResult ? Math.round(seededResult.finance.claimsSavingsP50 * modelScalar) : insight.outputs.projectedSavingsUsd;
+  const roi = seededResult ? Number((seededResult.finance.roiP50 * modelScalar).toFixed(1)) : insight.outputs.budgetRoiMultiple;
+  // Higher realised savings → faster payback (scales inversely), floored at 1mo.
+  const payback = seededResult?.paybackMonths != null
+    ? Math.max(1, Math.round(seededResult.paybackMonths / modelScalar))
+    : insight.outputs.paybackMonths;
   const isSimulated = !!seededResult;
 
   return (

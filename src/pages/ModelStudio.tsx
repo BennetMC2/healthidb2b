@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Layers, ShieldCheck, AlertTriangle, GitBranch, History, Check, X } from 'lucide-react';
+import { Layers, ShieldCheck, AlertTriangle, GitBranch, History, Check, X, BookOpen, ChevronDown } from 'lucide-react';
 import { useModelStore } from '@/stores/useModelStore';
 import { ModelBadge } from '@/components/layout/ModelSwitcher';
 import { PROVENANCE_FLAG } from '@shared/models';
@@ -87,6 +87,8 @@ export default function ModelStudio() {
           }}
         />
       </div>
+
+      <HowToGuide currentName={current.name} />
 
       {loading && <div className="py-12 text-center text-sm text-tertiary">Loading model…</div>}
 
@@ -238,6 +240,80 @@ function Panel({ title, icon, children }: { title: string; icon: React.ReactNode
         {title}
       </div>
       <div>{children}</div>
+    </div>
+  );
+}
+
+// Collapsible plain-English explainer of how models work and what to do here.
+function HowToGuide({ currentName }: { currentName: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-4 rounded border border-border bg-surface">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 px-4 py-2.5 text-left"
+      >
+        <BookOpen size={14} className="text-accent" />
+        <span className="text-xs font-semibold text-secondary">How this works — models, assumptions & editing</span>
+        <ChevronDown size={14} className={`ml-auto text-tertiary transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border px-4 py-4 text-xs leading-relaxed text-tertiary">
+          <section>
+            <h4 className="mb-1 font-semibold text-secondary">What a “model” is</h4>
+            <p>
+              A <strong>model</strong> is a complete, named set of actuarial assumptions — claims baselines,
+              dose-response, attribution, mortality, discounting, reward economics — that the whole app prices
+              against. Switch the model in the header and every number (AI Actuary plays, campaign ROI, Treasury)
+              recomputes against it. You’re currently viewing <strong>{currentName}</strong>.
+            </p>
+          </section>
+          <section>
+            <h4 className="mb-1 font-semibold text-secondary">The three models</h4>
+            <ul className="space-y-1">
+              <li>
+                <span className="text-accent">● Evidence Floor</span> — the conservative base case. Every value is
+                anchored to published literature and regulator statistics. It’s <em>signed</em> (governed), so it
+                can’t be edited in place — it’s the floor every number should clear.
+              </li>
+              <li>
+                <span className="text-amber-500">● Forward / Upside</span> — a <strong>fork of the floor</strong>:
+                identical except for a handful of explicitly labelled, rationalised levers (e.g. higher claims
+                attribution, longer persistence). Because it’s a draft, you can edit it. See exactly what differs
+                in the <strong>“Diff vs. floor”</strong> panel.
+              </li>
+              <li>
+                <span className="text-fuchsia-500">● AI Sandbox</span> — internal-only, exploratory. Watermarked and
+                never selectable in a buyer-facing session.
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h4 className="mb-1 font-semibold text-secondary">Confidence flags</h4>
+            <p>Each assumption row carries a provenance flag showing where its value came from:</p>
+            <ul className="mt-1 space-y-0.5">
+              <li>🟢 <strong>Literature</strong> — backed by a published source.</li>
+              <li>🟡 <strong>Proxy</strong> — mapped from an analogous source.</li>
+              <li>🟠 <strong>Asserted</strong> — an expert assumption with no external source (a review target).</li>
+              <li>🔵 <strong>AI-projected</strong> — proposed by an AI pass.</li>
+            </ul>
+            <p className="mt-1">
+              The <strong>review checklist</strong> on the right collects the 🟠 unsourced items so an actuary can
+              walk and clear them one by one.
+            </p>
+          </section>
+          <section>
+            <h4 className="mb-1 font-semibold text-secondary">Editing &amp; the live loop</h4>
+            <p>
+              On an unsigned model (e.g. Forward), each editable row has an <strong>Edit</strong> button. Change the
+              value, give a <strong>required rationale</strong>, and apply — the model re-prices on the next run and
+              the change is recorded in the <strong>change log</strong>. Signed models reject edits to protect the
+              floor; fork or unlock first. When an actuary is happy, <strong>Sign off</strong> turns a draft into a
+              governed, dated floor.
+            </p>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
