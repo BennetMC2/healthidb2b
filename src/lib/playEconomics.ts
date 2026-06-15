@@ -45,7 +45,9 @@ export function playEconomicsFromSnapshot(seeded: SeededRunResult, modelScalar: 
   // so (roiP*+1) is the gross/cost multiple at the floor; scaling gross by the
   // scalar scales that multiple).
   return {
-    bookValue: Math.round(f.claimsSavingsP50 * modelScalar),
+    // "Book-value opportunity" = total value created (claims + retention + …),
+    // so it reads as the gross opportunity above the net-of-cost figure.
+    bookValue: grossValue,
     grossValue,
     totalCost,
     netValue,

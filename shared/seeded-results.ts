@@ -1,14 +1,16 @@
 import type { SeededRunResult } from "./campaigns";
 
 /**
- * Pre-computed simulation results for the demo.
+ * Pre-computed simulation results for the demo — the single source of truth the
+ * AI Actuary cards, Campaigns gallery and Simulator all read.
  *
- * Illustrative target economics for the four headline plays. Each is internally
- * consistent (roiP50 = netValueP50 / totalCostP50; valueCreatedP50 =
- * netValueP50 + totalCostP50) and represents a verified, multi-year-persistence
- * programme priced below its expected book-value gain. Behaviour rates are kept
- * from the original agent runs; the financial layer is set to the
- * optimistic-but-defensible case the Forward model prices toward.
+ * These are REAL deterministic engine runs: each play's plan + behaviour was fed
+ * through the actuarial Monte Carlo (claims bridge → life value → 6,000-iteration
+ * MC) at a fixed $2 PMPM reward under the Evidence-Floor model (seed 4242). The
+ * Forward model scales these via the model realization scalar. Numbers are
+ * therefore honest engine output, not hand-set — they're uneven by design (VO₂
+ * clears strongly; HRV/Sleep are modest), which is what a trustworthy engine
+ * does. Re-generate by running the engine at the same reward/seed.
  */
 export const SEEDED_RESULTS: SeededRunResult[] = [
   {
@@ -23,17 +25,17 @@ export const SEEDED_RESULTS: SeededRunResult[] = [
       behaviorChangeCI: [0.187, 0.365],
     },
     finance: {
-      claimsSavingsP50: 13000,
-      roiP50: 1.7,
-      roiP5: 0.9,
-      roiP95: 2.7,
-      netValueP50: 10297,
-      valueCreatedP50: 16354,
-      totalCostP50: 6057,
-      downsideProbability: 0.06,
-      rewardToSustainP50: 2988,
+      claimsSavingsP50: 10050,
+      roiP50: 1.704,
+      roiP5: 0.561,
+      roiP95: 3.041,
+      netValueP50: 13284,
+      valueCreatedP50: 21079,
+      totalCostP50: 7795,
+      downsideProbability: 0.002,
+      rewardToSustainP50: 1992,
     },
-    paybackMonths: 5,
+    paybackMonths: 4,
   },
   {
     campaignId: "ins_hrv_recovery",
@@ -47,17 +49,17 @@ export const SEEDED_RESULTS: SeededRunResult[] = [
       behaviorChangeCI: [0.242, 0.427],
     },
     finance: {
-      claimsSavingsP50: 16000,
-      roiP50: 1.2,
-      roiP5: 0.5,
-      roiP95: 2.2,
-      netValueP50: 11630,
-      valueCreatedP50: 21322,
-      totalCostP50: 9692,
-      downsideProbability: 0.12,
-      rewardToSustainP50: 3723,
+      claimsSavingsP50: 1545,
+      roiP50: -0.007,
+      roiP5: -0.185,
+      roiP95: 0.204,
+      netValueP50: -108,
+      valueCreatedP50: 15830,
+      totalCostP50: 15938,
+      downsideProbability: 0.56,
+      rewardToSustainP50: 4462,
     },
-    paybackMonths: 7,
+    paybackMonths: null,
   },
   {
     campaignId: "ins_sleep_regularity",
@@ -71,17 +73,17 @@ export const SEEDED_RESULTS: SeededRunResult[] = [
       behaviorChangeCI: [0.205, 0.391],
     },
     finance: {
-      claimsSavingsP50: 9500,
-      roiP50: 1.4,
-      roiP5: 0.7,
-      roiP95: 2.4,
-      netValueP50: 7084,
-      valueCreatedP50: 12144,
-      totalCostP50: 5060,
-      downsideProbability: 0.09,
-      rewardToSustainP50: 2640,
+      claimsSavingsP50: 1826,
+      roiP50: 0.059,
+      roiP5: -0.206,
+      roiP95: 0.393,
+      netValueP50: 926,
+      valueCreatedP50: 16556,
+      totalCostP50: 15629,
+      downsideProbability: 0.418,
+      rewardToSustainP50: 4090,
     },
-    paybackMonths: 6,
+    paybackMonths: 11,
   },
   {
     campaignId: "ins_resting_hr_improvement",
@@ -95,16 +97,16 @@ export const SEEDED_RESULTS: SeededRunResult[] = [
       behaviorChangeCI: [0.187, 0.364],
     },
     finance: {
-      claimsSavingsP50: 2900,
-      roiP50: 1.0,
-      roiP5: 0.4,
-      roiP95: 1.9,
-      netValueP50: 1826,
-      valueCreatedP50: 3652,
-      totalCostP50: 1826,
-      downsideProbability: 0.15,
-      rewardToSustainP50: 633,
+      claimsSavingsP50: 1164,
+      roiP50: 0.608,
+      roiP5: 0.039,
+      roiP95: 1.332,
+      netValueP50: 1852,
+      valueCreatedP50: 4897,
+      totalCostP50: 3045,
+      downsideProbability: 0.035,
+      rewardToSustainP50: 790,
     },
-    paybackMonths: 8,
+    paybackMonths: 7,
   },
 ];
