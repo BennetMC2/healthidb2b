@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Activity, BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X, Zap } from 'lucide-react';
-import { actuaryInsights, engineAssumptionSetMeta, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
+import { buildActuaryInsights, engineAssumptionSetMeta, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
+import { useEconomics } from '@/lib/economics';
 import { ENGINE_ECONOMICS } from '@shared/engineConstants';
 import type { SeededRunResult } from '@shared/campaigns';
 import { SEEDED_RESULTS } from '@shared/seeded-results';
@@ -445,6 +446,9 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
 export default function Actuary() {
   const location = useLocation();
   const currentPartner = usePartnerStore((s) => s.currentPartner);
+  const eco = useEconomics();
+  // Re-priced when the active Model changes (brief §3).
+  const actuaryInsights = useMemo(() => buildActuaryInsights(eco), [eco]);
   const { messages, isStreaming, sendMessage } = useCopilotStore();
   const [query, setQuery] = useState('');
   const copilotInputRef = useRef<HTMLTextAreaElement>(null);

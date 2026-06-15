@@ -20,7 +20,7 @@ import {
   REPUTATION_TIER_ORDER,
   USE_CASE_LABELS,
 } from '@/utils/constants';
-import { suggestUseCase } from '@/utils/actuarial';
+import { suggestUseCase, useEconomics } from '@/lib/economics';
 import { ChallengeDisplay } from '@/components/ui/Badge';
 import { useToastStore } from '@/stores/useToastStore';
 import { useCampaignStore } from '@/stores/useCampaignStore';
@@ -55,6 +55,7 @@ const steps = [
 export default function CampaignCreate() {
   const navigate = useNavigate();
   const location = useLocation();
+  const eco = useEconomics();
   const addToast = useToastStore((s) => s.addToast);
   const addCampaign = useCampaignStore((s) => s.addCampaign);
   const updateB2CSync = useCampaignStore((s) => s.updateB2CSync);
@@ -450,7 +451,7 @@ export default function CampaignCreate() {
                     setForm((f) => ({
                       ...f,
                       metric: newMetric,
-                      useCase: f.useCase || (newMetric ? suggestUseCase(newMetric) : ''),
+                      useCase: f.useCase || (newMetric ? suggestUseCase(eco, newMetric) : ''),
                     }));
                   }}
                   className="input-field w-full"

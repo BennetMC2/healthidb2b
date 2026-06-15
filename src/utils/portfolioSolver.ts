@@ -5,13 +5,14 @@
 // Runs in <50ms so objective-weight dragging is instant.
 // Uses the same actuarial parameters as the server engine.
 
-import {
-  METRIC_ACTUARIAL_CONFIG,
-  USE_CASE_CONFIG,
-  calculateActuarialROI,
-} from './actuarial';
+import { calculateActuarialROI } from '@/lib/economics';
+import { useModelStore } from '@/stores/useModelStore';
 import { HEALTH_METRIC_LABELS } from './constants';
 import { actuaryInsights } from '@/data/actuaryInsights';
+
+// The active Model's economics (reactive on each solve — switching the Model and
+// re-solving re-prices the allocation, brief §3).
+const activeEco = () => useModelStore.getState().economics;
 import type { HealthMetric, CampaignUseCase } from '@/types';
 import type {
   ObjectiveWeights,
@@ -95,7 +96,7 @@ function generateCandidateConfigs(): CandidateConfig[] {
   for (const insight of actuaryInsights) {
     const metric = insightMetricMap[insight.signal];
     if (!metric) continue;
-    const config = METRIC_ACTUARIAL_CONFIG[metric];
+    const config = activeEco().metricConfig[metric];
 
     candidates.push({
       id: `line_${insight.id}`,
@@ -189,11 +190,12 @@ function computeLineValue(
   weights: ObjectiveWeights,
   allLines: CandidateConfig[],
 ): Omit<AllocationLine, 'budgetAllocated' | 'status' | 'pinnedRewardHp' | 'enables' | 'enabledBy' | 'attentionConstrained'> {
-  const metricConfig = METRIC_ACTUARIAL_CONFIG[config.signal];
-  const useCaseConfig = USE_CASE_CONFIG[config.useCase];
+  const eco = activeEco();
+  const metricConfig = eco.metricConfig[config.signal];
+  const useCaseConfig = eco.useCaseConfig[config.useCase];
 
-  // Get base ROI from existing actuarial calculator
-  const roi = calculateActuarialROI({
+  // Get base ROI from the engine-backed economics (one source of truth)
+  const roi = calculateActuarialROI(eco, {
     metric: config.signal,
     type: 'stream',
     useCase: config.useCase,

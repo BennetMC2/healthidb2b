@@ -9,6 +9,7 @@ import CampaignMemberDetail from '@/pages/CampaignMemberDetail';
 import CampaignCreate from '@/pages/CampaignCreate';
 import Treasury from '@/pages/Treasury';
 import Compliance from '@/pages/Compliance';
+import ModelStudio from '@/pages/ModelStudio';
 import Settings from '@/pages/Settings';
 import DemoWalkthrough from '@/components/walkthrough/DemoWalkthrough';
 import ToastContainer from '@/components/ui/Toast';
@@ -129,6 +130,7 @@ export default function App() {
             <Route path="/app/campaigns/:id" element={<CampaignDetail />} />
             <Route path="/app/campaigns/:id/members/:memberId" element={<CampaignMemberDetail />} />
             <Route path="/app/treasury" element={<Treasury />} />
+            <Route path="/app/models" element={<ModelStudio />} />
             <Route path="/app/compliance" element={<Compliance />} />
             <Route path="/app/settings" element={<Settings />} />
             <Route path="/app/privacy" element={<Privacy />} />

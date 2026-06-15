@@ -7,7 +7,7 @@ import type {
   RewardOption,
   VerificationGrade,
 } from "@shared/schema";
-import { activeAssumptionSet } from "./assumptionSets";
+import { currentSet, liveProxy } from "./modelContext";
 
 export const COHORT_REWARD_ALLOCATOR_MODULE = {
   moduleName: "default-cohort-reward-allocator",
@@ -16,9 +16,17 @@ export const COHORT_REWARD_ALLOCATOR_MODULE = {
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
-const verificationScore: Record<VerificationGrade, number> = activeAssumptionSet().rewardAllocation.verificationScore;
+// Live per-Model reward allocation assumptions (see modelContext).
+const verificationScore: Record<VerificationGrade, number> = liveProxy(
+  () => currentSet().rewardAllocation.verificationScore,
+);
 
-export const DEFAULT_REWARD_CATALOGUE: RewardOption[] = activeAssumptionSet().rewardAllocation.rewardCatalogue;
+// DEFAULT_REWARD_CATALOGUE is used as a call-time default param, so a getter
+// that reflects the active Model is correct. Kept as a Proxy array so existing
+// `rewardOptions = DEFAULT_REWARD_CATALOGUE` and index/length access still work.
+export const DEFAULT_REWARD_CATALOGUE: RewardOption[] = liveProxy(
+  () => currentSet().rewardAllocation.rewardCatalogue as unknown as Record<string, unknown>,
+) as unknown as RewardOption[];
 
 export function buildDefaultLifeCohorts(plan: ResolvedPlan, behavior: BehaviorRates): PopulationSegmentForAllocation[] {
   const n = plan.bookSize;

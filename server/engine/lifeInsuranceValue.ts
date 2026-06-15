@@ -5,7 +5,7 @@ import type {
   VerificationGrade,
   WearableSignalTier,
 } from "@shared/schema";
-import { activeAssumptionSet } from "./assumptionSets";
+import { LIFE_ASSUMPTIONS } from "./assumptions";
 
 export const LIFE_INSURANCE_VALUE_MODULE = {
   moduleName: "default-life-insurance-value",
@@ -21,7 +21,6 @@ const verificationMultiplier: Record<VerificationGrade, number> = {
 };
 
 const evidenceRank = ["E", "D", "C", "B", "A"] as const;
-const LIFE_ASSUMPTIONS = activeAssumptionSet().lifeInsurance;
 
 export function buildDefaultSignalTiers(
   plan: ResolvedPlan,

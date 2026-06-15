@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Skull, ArrowRight } from 'lucide-react';
-import { calculateActuarialROI } from '@/utils/actuarial';
+import { calculateActuarialROI, useEconomics } from '@/lib/economics';
 import { formatCurrency, formatNumber } from '@/utils/format';
 import { useCampaignStore } from '@/stores/useCampaignStore';
 import type { Campaign } from '@/types';
@@ -13,6 +13,7 @@ interface KillCampaignModalProps {
 
 export default function KillCampaignModal({ campaign, onConfirm, onCancel }: KillCampaignModalProps) {
   const allCampaigns = useCampaignStore((s) => s.campaigns);
+  const eco = useEconomics();
 
   const remainingBudget = Math.max(campaign.rewards.budgetCeiling - campaign.rewards.budgetSpent, 0);
 
@@ -21,7 +22,7 @@ export default function KillCampaignModal({ campaign, onConfirm, onCancel }: Kil
     const activeCampaigns = allCampaigns
       .filter((c) => c.id !== campaign.id && c.status === 'active')
       .map((c) => {
-        const roi = calculateActuarialROI({
+        const roi = calculateActuarialROI(eco, {
           metric: c.challenge.metric,
           type: c.type,
           useCase: c.useCase,
@@ -48,7 +49,7 @@ export default function KillCampaignModal({ campaign, onConfirm, onCancel }: Kil
         roi: c.roi,
       };
     });
-  }, [allCampaigns, campaign, remainingBudget]);
+  }, [allCampaigns, campaign, remainingBudget, eco]);
 
   return (
     <div className="fixed inset-0 z-[9900] flex items-center justify-center" onClick={onCancel}>

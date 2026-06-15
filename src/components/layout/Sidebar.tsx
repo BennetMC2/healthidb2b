@@ -7,6 +7,7 @@ import {
   Target,
   ShieldCheck,
   Settings,
+  Layers,
   ChevronLeft,
   ChevronRight,
   Lock,
@@ -50,6 +51,7 @@ const navItems = [
   { path: '/app/simulator', label: 'Simulator', icon: Activity, tourId: 'simulator-nav' },
   { path: '/app/campaigns', label: 'Campaign Studio', icon: Target, tourId: 'campaigns-nav' },
   { path: '/app/cohorts', label: 'Cohorts', icon: Globe, tourId: 'explorer-nav' },
+  { path: '/app/models', label: 'Model Studio', icon: Layers, tourId: 'models-nav' },
   { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
   { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
 ];

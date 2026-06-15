@@ -5,6 +5,7 @@ import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useThemeStore } from '@/stores/useThemeStore';
 import CommandPalette from '@/components/ui/CommandPalette';
 import NotificationDropdown from '@/components/layout/NotificationDropdown';
+import ModelSwitcher, { ModelBadge } from '@/components/layout/ModelSwitcher';
 
 interface HeaderProps {
   onTourStart?: () => void;
@@ -70,6 +71,8 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           <span className="text-2xs text-secondary font-medium">
             {currentPartner.label}
           </span>
+          {/* Persistent active-model badge — present on every screen (brief §3). */}
+          <ModelBadge className="ml-2 hidden md:inline-flex" />
         </div>
 
         {/* Center - Search */}
@@ -124,6 +127,9 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           <span className="hidden h-[30px] items-center rounded border border-accent/20 bg-accent/10 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-accent lg:flex">
             Demo partner
           </span>
+
+          {/* Global model switcher — switching re-renders every number app-wide. */}
+          <ModelSwitcher />
 
           {/* Dark mode toggle */}
           <button

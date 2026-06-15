@@ -13,7 +13,7 @@ import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrencyCompact } from '@/utils/format';
 import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
 import { deleteConsumerCampaign } from '@/lib/consumerCampaigns';
-import { calculateActuarialROI } from '@/utils/actuarial';
+import { calculateActuarialROI, useEconomics, type EconomicsConfig } from '@/lib/economics';
 import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus, HealthMetric, CampaignUseCase } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
@@ -38,13 +38,14 @@ const familyFilters: Array<{ id: CampaignFamily; label: string }> = [
 /** Compute signal-campaign display metrics from the actuarial calculator.
  *  Baselines are already evidence-aligned — no additional conservatism haircut. */
 function computeSignalMetrics(
+  eco: EconomicsConfig,
   metric: HealthMetric,
   type: CampaignType,
   useCase: CampaignUseCase,
   cohortSize: number,
   budget: number,
 ): { metrics: Array<{ label: string; value: string }>; bookValue: number } {
-  const r = calculateActuarialROI({ metric, type, useCase, maxParticipants: cohortSize, budgetCeiling: budget, applyAdjustments: false });
+  const r = calculateActuarialROI(eco, { metric, type, useCase, maxParticipants: cohortSize, budgetCeiling: budget, applyAdjustments: false });
   return {
     metrics: [
       { label: 'Est. book value', value: formatCurrencyCompact(r.totalProjectedSavings) },
@@ -55,10 +56,16 @@ function computeSignalMetrics(
   };
 }
 
-const vo2Metrics = computeSignalMetrics('vo2_max', 'stream', 'claims_reduction', 3847, 58000);
-const hrvMetrics = computeSignalMetrics('hrv', 'stream', 'claims_reduction', 1204, 36000);
-const sleepMetrics = computeSignalMetrics('sleep_hours', 'stream', 'claims_reduction', 2186, 42000);
-const rhrMetrics = computeSignalMetrics('heart_rate_resting', 'stream', 'claims_reduction', 946, 31000);
+// Build the signal-campaign catalog for the active Model. Re-priced whenever the
+// selected Model changes (the templates' book value / ROI / payback move).
+function buildSignalCatalog(eco: EconomicsConfig): {
+  campaignTemplates: StudioCampaignTemplate[];
+  signalBookValues: Record<string, number>;
+} {
+const vo2Metrics = computeSignalMetrics(eco, 'vo2_max', 'stream', 'claims_reduction', 3847, 58000);
+const hrvMetrics = computeSignalMetrics(eco, 'hrv', 'stream', 'claims_reduction', 1204, 36000);
+const sleepMetrics = computeSignalMetrics(eco, 'sleep_hours', 'stream', 'claims_reduction', 2186, 42000);
+const rhrMetrics = computeSignalMetrics(eco, 'heart_rate_resting', 'stream', 'claims_reduction', 946, 31000);
 
 const signalBookValues: Record<string, number> = {
   'Cardio Fitness Activation': vo2Metrics.bookValue,
@@ -271,6 +278,8 @@ const campaignTemplates: StudioCampaignTemplate[] = [
     suggestedPoints: 180,
   },
 ];
+  return { campaignTemplates, signalBookValues };
+}
 
 function TemplateIcon({ icon }: { icon: string }) {
   const className = 'text-accent';
@@ -312,6 +321,8 @@ function portfolioFamilyLabel(campaign: Campaign) {
 
 export default function Campaigns() {
   const navigate = useNavigate();
+  const eco = useEconomics();
+  const { campaignTemplates, signalBookValues } = useMemo(() => buildSignalCatalog(eco), [eco]);
   const loading = useSimulatedLoading(300);
   const allCampaigns = useCampaignStore((s) => s.campaigns);
   const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);

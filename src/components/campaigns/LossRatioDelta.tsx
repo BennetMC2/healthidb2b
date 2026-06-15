@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingDown } from 'lucide-react';
-import { calculateLossRatioDelta } from '@/utils/actuarial';
+import { calculateLossRatioDelta, useEconomics } from '@/lib/economics';
 import { formatCurrency } from '@/utils/format';
 import type { Campaign } from '@/types';
 
@@ -10,11 +10,12 @@ interface LossRatioDeltaProps {
 }
 
 export default function LossRatioDelta({ campaign }: LossRatioDeltaProps) {
+  const eco = useEconomics();
   const result = useMemo(() => {
     const startDate = new Date(campaign.startDate);
     const campaignAgeMonths = Math.max(1, Math.round((Date.now() - startDate.getTime()) / (30 * 86400000)));
 
-    return calculateLossRatioDelta({
+    return calculateLossRatioDelta(eco, {
       metric: campaign.challenge.metric,
       useCase: campaign.useCase,
       type: campaign.type,
@@ -24,7 +25,7 @@ export default function LossRatioDelta({ campaign }: LossRatioDeltaProps) {
       budgetCeiling: campaign.rewards.budgetCeiling,
       campaignAgeMonths,
     });
-  }, [campaign]);
+  }, [campaign, eco]);
 
   const chartData = result.complianceLiftTimeSeries.map((d) => ({
     month: `M${d.month}`,

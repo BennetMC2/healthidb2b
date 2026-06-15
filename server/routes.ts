@@ -17,6 +17,8 @@ import { estimateLifeInsuranceValue } from "./engine/lifeInsuranceValue";
 import { compareLifeBacktest } from "./engine/lifeBacktest";
 import { explainRewardStrategy } from "./engine/rewardStrategyExplainer";
 import { buildOperatorModelMap } from "./engine/operatorModelMap";
+import { enterModel, currentSet } from "./engine/modelContext";
+import { listModelSummaries, getModel, applyModelOverride, getChangeLog, signModel } from "./engine/models";
 import { getSignal, allSignals, FUSIONS, EMERGING_HAIRCUT, TRUST_VALUE_MODIFIER } from "./engine/registry";
 import { answerCopilotQuestion } from "./engine/copilot";
 import type {
@@ -264,7 +266,102 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     })
   );
   app.get("/api/health", (_req, res) => res.json({ ok: true }));
-  app.get("/api/operator/model-map", (_req, res) => res.json(buildOperatorModelMap()));
+  app.get("/api/operator/model-map", (req, res) => {
+    enterModel(String(req.query.modelId || ""));
+    res.json(buildOperatorModelMap());
+  });
+
+  // Per-model campaign economics — the source of truth the demo screens read
+  // (replaces the former client-side actuarial.ts). Derived deterministically
+  // from the resolved Model's assumption set; instant + cacheable.
+  app.get("/api/economics", (req, res) => {
+    enterModel(String(req.query.modelId || ""), { allowInternal: true });
+    const set = currentSet();
+    const FLOOR_ATTRIBUTION = 0.3; // Model 1 steps claims-attribution factor
+    const stepsAttribution = set.economic.claimsBridge.steps.attributionFactor;
+    res.json({
+      modelScalar: stepsAttribution / FLOOR_ATTRIBUTION,
+      claimsBaseline: {
+        steps: set.economic.claimsBaseline.steps,
+        vo2max: set.economic.claimsBaseline.vo2max,
+        sleep: set.economic.claimsBaseline.sleep,
+        bp_screening: set.economic.claimsBaseline.bp_screening,
+        hba1c_screening: set.economic.claimsBaseline.hba1c_screening,
+      },
+    });
+  });
+
+  // Model registry — the switcher and Studio read this (brief §1, §3).
+  app.get("/api/models", (req, res) => {
+    const buyerContext = String(req.query.context || "buyer") !== "internal";
+    res.json({ models: listModelSummaries({ buyerContext }), defaultModelId: "model-1-evidence-floor" });
+  });
+
+  // A Model's assumptions + governance metadata + forward-fork diff (Studio).
+  app.get("/api/models/:id", (req, res) => {
+    const model = getModel(String(req.params.id));
+    if (!model) return res.status(404).json({ error: "unknown model" });
+    enterModel(model.meta.id, { allowInternal: true });
+    res.json({
+      meta: model.meta,
+      adjustments: model.adjustments,
+      assumptions: assumptionRegister("steps", "HK"),
+      changeLog: getChangeLog(model.meta.id),
+    });
+  });
+
+  // Studio edit: apply an assumption override with a required rationale. Logged
+  // to the change log + audit trail; picked up by the next simulation.
+  app.patch("/api/models/:id/assumptions", async (req, res) => {
+    const ctx = requestContext(req);
+    const { path, label, toValue, rationale } = req.body ?? {};
+    if (typeof path !== "string" || (typeof toValue !== "number" && typeof toValue !== "string")) {
+      return res.status(400).json({ error: "path and toValue required" });
+    }
+    const result = applyModelOverride({
+      modelId: String(req.params.id),
+      path,
+      label: String(label ?? path),
+      toValue,
+      rationale: String(rationale ?? ""),
+      actor: ctx.actor,
+      at: new Date().toISOString(),
+    });
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    await storage.saveAuditEvent({
+      id: randomUUID(),
+      organizationId: ctx.organizationId,
+      actor: ctx.actor,
+      role: ctx.role,
+      action: "model.assumption.edit",
+      entityType: "model",
+      entityId: String(req.params.id),
+      summary: `${result.entry.label}: ${result.entry.fromValue} → ${result.entry.toValue}`,
+      metadata: JSON.stringify({ rationale: result.entry.rationale, path }),
+      createdAt: Date.now(),
+    }).catch(() => {});
+    res.json({ ok: true, entry: result.entry });
+  });
+
+  // Sign-off: name + date a draft model as a governed signed floor.
+  app.post("/api/models/:id/signoff", async (req, res) => {
+    const ctx = requestContext(req);
+    const result = signModel(String(req.params.id), ctx.actor, new Date().toISOString());
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    await storage.saveAuditEvent({
+      id: randomUUID(),
+      organizationId: ctx.organizationId,
+      actor: ctx.actor,
+      role: ctx.role,
+      action: "model.signoff",
+      entityType: "model",
+      entityId: String(req.params.id),
+      summary: `Model signed off by ${ctx.actor}`,
+      metadata: "{}",
+      createdAt: Date.now(),
+    }).catch(() => {});
+    res.json({ ok: true });
+  });
 
   // Results co-pilot: grounded Q&A over a completed run. The client sends the
   // run's canonical numbers as context; the model explains them, never invents.
@@ -547,6 +644,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // Main agentic simulation stream (SSE)
   app.get("/api/simulate", async (req: Request, res: Response) => {
     const ctx = requestContext(req);
+    // Activate the selected Model for this request — every downstream engine
+    // read (claims bridge, life value, reward allocation) resolves against it.
+    enterModel(String(req.query.modelId || ""));
     const goal = String(req.query.goal || "").trim();
     const requestedSample = parseInt(String(req.query.sample || "12"), 10) || 12;
     const sampleSize = Math.max(12, Math.min(MAX_AGENT_SAMPLE, requestedSample));
@@ -948,6 +1048,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // with a quarterly cash P&L. Never models carrier switching.
   app.get("/api/growth", async (req: Request, res: Response) => {
     const ctx = requestContext(req);
+    enterModel(String(req.query.modelId || ""));
     const goal = String(req.query.goal || "").trim();
     const requestedSample = parseInt(String(req.query.sample || "60"), 10) || 60;
     const sampleSize = Math.max(12, Math.min(MAX_AGENT_SAMPLE, requestedSample));
