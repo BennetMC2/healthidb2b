@@ -2,6 +2,8 @@ import { useReducer, useCallback, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import type { StreamEvent, IncentiveDesign, LifeAssumptionOverrides, ResolvedPlan, RewardRoiPoint, RewardStrategyConfig } from "@shared/schema";
 import { streamSimulation, initialSimState, type SimState } from "@sim/lib/sim";
+import { playEconomicsById, type PlayEconomics } from "@/lib/playEconomics";
+import { useModelStore } from "@/stores/useModelStore";
 import CommandBar from "@sim/components/CommandBar";
 import AgentConsole from "@sim/components/AgentConsole";
 import PopulationGrid from "@sim/components/PopulationGrid";
@@ -99,7 +101,14 @@ export default function SimulatorPage() {
   const [activeTab, setActiveTab] = useState<SimTab>("command");
 
   // Prefill insight from Actuary page navigation
-  const prefillInsight = (location.state as { prefillInsight?: { campaignName: string; signal: string; cohortSize: number; outputs: { projectedSavingsUsd: number; budgetRoiMultiple: number; paybackMonths: number }; healthPointsPricing: { suggestedHpPerMember: number; maxBudgetUsd: number } } } | null)?.prefillInsight ?? null;
+  const prefillInsight = (location.state as { prefillInsight?: { id: string; campaignName: string; signal: string; cohortSize: number; outputs: { projectedSavingsUsd: number; budgetRoiMultiple: number; paybackMonths: number }; healthPointsPricing: { suggestedHpPerMember: number; maxBudgetUsd: number } } } | null)?.prefillInsight ?? null;
+  // Canonical economics for the launched play (if it has a seeded snapshot),
+  // re-priced by the active model — used to pin the Decision readout.
+  const modelScalar = useModelStore((s) => s.modelScalar);
+  const pinnedEcon = useMemo(
+    () => (prefillInsight?.id ? playEconomicsById(prefillInsight.id, modelScalar) ?? null : null),
+    [prefillInsight?.id, modelScalar]
+  );
   const [selectedReward, setSelectedReward] = useState<number | null>(4);
   const stopRef = useRef<(() => void) | null>(null);
   const verifyStopRef = useRef<(() => void) | null>(null);
@@ -293,6 +302,7 @@ export default function SimulatorPage() {
                   selectedReward={selectedReward}
                   onRewardChange={setSelectedReward}
                   verifyReward={verifyReward}
+                  pinnedEcon={pinnedEcon}
                 />
               )}
             </div>
@@ -374,6 +384,7 @@ function SimulationResults({
   selectedReward,
   onRewardChange,
   verifyReward,
+  pinnedEcon,
 }: {
   state: SimState;
   hero: SimState["behavior"];
@@ -384,11 +395,29 @@ function SimulationResults({
     onDone: (r: VerifyResult | null) => void,
     onProgress?: (completed: number, total: number) => void
   ) => () => void;
+  pinnedEcon: PlayEconomics | null;
 }) {
-  const display = useMemo(
-    () => (state.finance ? buildDisplayResult(state.finance, state.plan, selectedReward) : null),
-    [state.finance, state.plan, selectedReward]
-  );
+  const display = useMemo(() => {
+    const base = state.finance ? buildDisplayResult(state.finance, state.plan, selectedReward) : null;
+    // For a demo play launched from a card, pin the Decision readout to the
+    // canonical per-play economics so the simulator's headline numbers exactly
+    // match the AI Actuary + Campaigns cards. Drill-down distributions stay live.
+    if (!base || !pinnedEcon) return base;
+    const cost = pinnedEcon.totalCost;
+    return {
+      ...base,
+      economicsConfigured: true,
+      behaviorFrac: pinnedEcon.behaviorChangeRate,
+      membersImproved: Math.round(pinnedEcon.bookSize * pinnedEcon.behaviorChangeRate),
+      grossUsd: pinnedEcon.grossValue,
+      claimsUsd: pinnedEcon.bookValue,
+      totalCostUsd: cost,
+      netUsd: pinnedEcon.netValue,
+      netBandUsd: [Math.round((pinnedEcon.roiLow - 1) * cost), Math.round((pinnedEcon.roiHigh - 1) * cost)] as [number, number],
+      roi: pinnedEcon.roiRatio,
+      roiBand: [pinnedEcon.roiLow - 1, pinnedEcon.roiHigh - 1] as [number, number],
+    };
+  }, [state.finance, state.plan, selectedReward, pinnedEcon]);
   if (!state.finance || !display) return null;
   return (
     <>

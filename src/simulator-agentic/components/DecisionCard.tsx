@@ -1,6 +1,6 @@
 import type { NarrativeReport, ResolvedPlan } from "@shared/schema";
 import type { DisplayResult } from "@sim/lib/displayResult";
-import { fmtPct, fmtRoi, fmtUsd, fmtPmpm, fmtPerYear, fmtHp } from "@sim/lib/format";
+import { fmtPct, fmtRoiMultiple, fmtUsd, fmtPmpm, fmtPerYear, fmtHp } from "@sim/lib/format";
 import {
   Activity,
   AlertTriangle,
@@ -118,7 +118,7 @@ export default function DecisionCard({
       <span className={display.netUsd >= 0 ? "text-[hsl(150_60%_58%)]" : "text-[hsl(0_75%_64%)]"}>
         {fmtUsd(display.netUsd)} net value
       </span>{" "}
-      ({fmtRoi(display.roi)} ROI) over {horizon} months.
+      ({fmtRoiMultiple(display.roi)} ROI) over {horizon} months.
     </>
   ) : (
     <>
@@ -190,8 +190,8 @@ export default function DecisionCard({
         {econ && (
           <HeadlineMetric
             label="ROI (net / cost)"
-            value={fmtRoi(display.roi)}
-            band={display.roiBand ? `${fmtRoi(display.roiBand[0])} – ${fmtRoi(display.roiBand[1])}` : null}
+            value={fmtRoiMultiple(display.roi)}
+            band={display.roiBand ? `${fmtRoiMultiple(display.roiBand[0])} – ${fmtRoiMultiple(display.roiBand[1])}` : null}
             sub={display.downsideFrac != null ? `${fmtPct(display.downsideFrac)} chance of negative net` : undefined}
             accent={(display.roi ?? 0) >= 0 ? "hsl(150 60% 58%)" : "hsl(0 75% 64%)"}
             testId="metric-roi"

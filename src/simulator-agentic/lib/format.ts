@@ -37,6 +37,12 @@ export function fmtRoi(ratio: number | null | undefined, digits = 0): string {
   return v > 0 ? `+${pct}%` : `${pct}%`;
 }
 
+// ROI as a multiple (e.g. 0.8 ratio → "1.8x"), matching the AI Actuary and
+// Campaigns cards so the same play reads identically across surfaces.
+export function fmtRoiMultiple(ratio: number | null | undefined): string {
+  return `${(safeNumber(ratio) + 1).toFixed(1)}x`;
+}
+
 // --- rewards (canonical unit: USD PMPM) ---
 export function fmtPmpm(usdPerMonth: number | null | undefined): string {
   return `$${safeNumber(usdPerMonth).toFixed(2)} PMPM`;

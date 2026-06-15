@@ -11,34 +11,54 @@ import type { SeededRunResult } from '@shared/campaigns';
 // ===========================================================================
 
 export interface PlayEconomics {
-  bookValue: number; // "Est. book-value opportunity" — claims savings × scalar
-  roi: number; // displayed ROI multiple (net return × scalar, + 1)
+  bookValue: number; // claims savings × scalar ("Est. book-value opportunity")
+  grossValue: number; // total value created × scalar
+  totalCost: number; // reward + admin + platform (NOT scaled — cost is fixed)
+  netValue: number; // grossValue − totalCost (coherent with the above)
+  roiRatio: number; // net / cost (0.8 = +80%)
+  roi: number; // displayed ROI multiple = roiRatio + 1 (e.g. 3.7×)
   roiLow: number; // ROI band low (multiple)
   roiHigh: number; // ROI band high (multiple)
   payback: number | null; // months
-  netValue: number; // net value (unscaled snapshot figure)
   enrollmentRate: number;
   persistenceRate: number;
   behaviorChangeRate: number;
   downsideProbability: number;
+  bookSize: number;
   simulatedAt: number;
 }
 
 // The single formula. Anything showing a demo play's headline numbers must go
 // through this so the surfaces cannot drift apart.
+//
+// The model scalar scales VALUE (gross / claims), leaving cost fixed, so net
+// value and ROI follow coherently — i.e. gross/cost/net/ROI all agree, which is
+// what lets the AI Actuary cards, Campaigns gallery and the Simulator's Decision
+// readout show one identical, internally-consistent set of numbers per play.
 export function playEconomicsFromSnapshot(seeded: SeededRunResult, modelScalar: number): PlayEconomics {
   const f = seeded.finance;
+  const grossValue = Math.round(f.valueCreatedP50 * modelScalar);
+  const totalCost = f.totalCostP50;
+  const netValue = grossValue - totalCost;
+  const roiRatio = totalCost > 0 ? netValue / totalCost : 0;
+  // Band: scale each gross-value percentile the same way (roiP* are net ratios,
+  // so (roiP*+1) is the gross/cost multiple at the floor; scaling gross by the
+  // scalar scales that multiple).
   return {
     bookValue: Math.round(f.claimsSavingsP50 * modelScalar),
-    roi: Number((f.roiP50 * modelScalar + 1).toFixed(1)),
-    roiLow: Number((f.roiP5 * modelScalar + 1).toFixed(1)),
-    roiHigh: Number((f.roiP95 * modelScalar + 1).toFixed(1)),
+    grossValue,
+    totalCost,
+    netValue,
+    roiRatio,
+    roi: Number((roiRatio + 1).toFixed(1)),
+    roiLow: Number(((f.roiP5 + 1) * modelScalar).toFixed(1)),
+    roiHigh: Number(((f.roiP95 + 1) * modelScalar).toFixed(1)),
     payback: seeded.paybackMonths != null ? Math.max(1, Math.round(seeded.paybackMonths / modelScalar)) : null,
-    netValue: f.netValueP50,
     enrollmentRate: seeded.behavior.enrollmentRate,
     persistenceRate: seeded.behavior.persistenceRate,
     behaviorChangeRate: seeded.behavior.behaviorChangeRate,
     downsideProbability: f.downsideProbability,
+    bookSize: seeded.plan.bookSize,
     simulatedAt: seeded.simulatedAt,
   };
 }
