@@ -18,7 +18,7 @@ import { compareLifeBacktest } from "./engine/lifeBacktest";
 import { explainRewardStrategy } from "./engine/rewardStrategyExplainer";
 import { buildOperatorModelMap } from "./engine/operatorModelMap";
 import { enterModel } from "./engine/modelContext";
-import { listModelSummaries, getModel } from "./engine/models";
+import { listModelSummaries, getModel, applyModelOverride, getChangeLog, signModel } from "./engine/models";
 import { getSignal, allSignals, FUSIONS, EMERGING_HAIRCUT, TRUST_VALUE_MODIFIER } from "./engine/registry";
 import { answerCopilotQuestion } from "./engine/copilot";
 import type {
@@ -286,7 +286,61 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       meta: model.meta,
       adjustments: model.adjustments,
       assumptions: assumptionRegister("steps", "HK"),
+      changeLog: getChangeLog(model.meta.id),
     });
+  });
+
+  // Studio edit: apply an assumption override with a required rationale. Logged
+  // to the change log + audit trail; picked up by the next simulation.
+  app.patch("/api/models/:id/assumptions", async (req, res) => {
+    const ctx = requestContext(req);
+    const { path, label, toValue, rationale } = req.body ?? {};
+    if (typeof path !== "string" || (typeof toValue !== "number" && typeof toValue !== "string")) {
+      return res.status(400).json({ error: "path and toValue required" });
+    }
+    const result = applyModelOverride({
+      modelId: String(req.params.id),
+      path,
+      label: String(label ?? path),
+      toValue,
+      rationale: String(rationale ?? ""),
+      actor: ctx.actor,
+      at: new Date().toISOString(),
+    });
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    await storage.saveAuditEvent({
+      id: randomUUID(),
+      organizationId: ctx.organizationId,
+      actor: ctx.actor,
+      role: ctx.role,
+      action: "model.assumption.edit",
+      entityType: "model",
+      entityId: String(req.params.id),
+      summary: `${result.entry.label}: ${result.entry.fromValue} → ${result.entry.toValue}`,
+      metadata: JSON.stringify({ rationale: result.entry.rationale, path }),
+      createdAt: Date.now(),
+    }).catch(() => {});
+    res.json({ ok: true, entry: result.entry });
+  });
+
+  // Sign-off: name + date a draft model as a governed signed floor.
+  app.post("/api/models/:id/signoff", async (req, res) => {
+    const ctx = requestContext(req);
+    const result = signModel(String(req.params.id), ctx.actor, new Date().toISOString());
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    await storage.saveAuditEvent({
+      id: randomUUID(),
+      organizationId: ctx.organizationId,
+      actor: ctx.actor,
+      role: ctx.role,
+      action: "model.signoff",
+      entityType: "model",
+      entityId: String(req.params.id),
+      summary: `Model signed off by ${ctx.actor}`,
+      metadata: "{}",
+      createdAt: Date.now(),
+    }).catch(() => {});
+    res.json({ ok: true });
   });
 
   // Results co-pilot: grounded Q&A over a completed run. The client sends the

@@ -11,6 +11,7 @@
 
 import type {
   ModelAdjustment,
+  ModelChangeLogEntry,
   ModelMeta,
   ModelSummary,
 } from "@shared/models";
@@ -213,11 +214,81 @@ export function resolveActiveModel(modelId?: string, opts?: { allowInternal?: bo
     // buyer-facing session (brief §3). Fall back to the floor.
     return MODEL_1;
   }
-  return found;
+  return resolveWithOverrides(found)!;
 }
 
 export function getModel(modelId: string): Model | undefined {
-  return MODELS_BY_ID.get(modelId);
+  return resolveWithOverrides(MODELS_BY_ID.get(modelId));
+}
+
+// --- Studio edits: in-memory override store + change log (brief §2, §5) -------
+// Edits made in the Model Studio are applied as per-path overrides on top of a
+// Model's base set, logged with rationale + actor. This is the edit → re-run →
+// live-update loop: the next /api/simulate against this model picks them up.
+// (In-memory for the demo; the change log is the governance record.)
+
+const overrides = new Map<string, Map<string, number | string>>();
+const changeLog: ModelChangeLogEntry[] = [];
+let changeSeq = 0;
+
+function resolveWithOverrides(model: Model | undefined): Model | undefined {
+  if (!model) return undefined;
+  const ov = overrides.get(model.meta.id);
+  if (!ov || ov.size === 0) return model;
+  const set = deepClone(model.set);
+  for (const [path, value] of ov) setPath(set, path, value);
+  return { ...model, set };
+}
+
+export function applyModelOverride(input: {
+  modelId: string;
+  path: string;
+  label: string;
+  toValue: number | string;
+  rationale: string;
+  actor: string;
+  at: string;
+}): { ok: true; entry: ModelChangeLogEntry } | { ok: false; error: string } {
+  const base = MODELS_BY_ID.get(input.modelId);
+  if (!base) return { ok: false, error: "unknown model" };
+  if (base.meta.governanceStatus === "signed") {
+    // Provenance integrity: a signed floor can't be silently edited (brief §5).
+    return { ok: false, error: "model is signed; fork or unlock before editing" };
+  }
+  if (!input.rationale?.trim()) {
+    return { ok: false, error: "rationale required for every edit" };
+  }
+  const fromValue = (getPath(resolveWithOverrides(base)!.set, input.path) ?? "") as number | string;
+  let ov = overrides.get(input.modelId);
+  if (!ov) overrides.set(input.modelId, (ov = new Map()));
+  ov.set(input.path, input.toValue);
+  const entry: ModelChangeLogEntry = {
+    id: `chg-${++changeSeq}`,
+    modelId: input.modelId,
+    path: input.path,
+    label: input.label,
+    fromValue,
+    toValue: input.toValue,
+    rationale: input.rationale.trim(),
+    actor: input.actor,
+    at: input.at,
+  };
+  changeLog.push(entry);
+  return { ok: true, entry };
+}
+
+export function getChangeLog(modelId?: string): ModelChangeLogEntry[] {
+  return modelId ? changeLog.filter((e) => e.modelId === modelId) : changeLog;
+}
+
+// Sign-off: name + date a draft model → governed signed floor (brief §5).
+export function signModel(modelId: string, signedBy: string, at: string): { ok: boolean; error?: string } {
+  const model = MODELS_BY_ID.get(modelId);
+  if (!model) return { ok: false, error: "unknown model" };
+  model.meta.governanceStatus = "signed";
+  model.meta.signedBy = signedBy;
+  model.meta.signedAt = at;
+  return { ok: true };
 }
 
 // Metadata-only list for the /api/models endpoint and the switcher.
