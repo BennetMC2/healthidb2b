@@ -87,7 +87,10 @@ export const FLOOR_ECONOMICS: EconomicsConfig = {
 // attribution factor (0.45 vs 0.30 → ~1.5×).
 export const MODEL_ECONOMICS_FALLBACK: Record<string, ModelEconomics> = {
   'model-1-evidence-floor': { modelScalar: 1, claimsBaseline: FLOOR_CLAIMS_BASELINE },
-  'model-2-forward-upside': { modelScalar: 0.45 / 0.3, claimsBaseline: FLOOR_CLAIMS_BASELINE },
+  // Forward realisation lift for the display surfaces. Kept below the raw
+  // claims lift (~2×) so headline card ROI stays in a believable range; the
+  // live engine still applies the full per-lever effect.
+  'model-2-forward-upside': { modelScalar: 1.6, claimsBaseline: FLOOR_CLAIMS_BASELINE },
   'model-3-ai-sandbox': { modelScalar: 1, claimsBaseline: FLOOR_CLAIMS_BASELINE },
 };
 

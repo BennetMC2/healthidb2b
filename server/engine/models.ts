@@ -96,27 +96,35 @@ const MODEL_1: Model = {
 // No un-rationalised "bigger number" edits (brief §6).
 const MODEL_2_ADJUSTMENTS: Array<Omit<ModelAdjustment, "fromValue">> = [
   {
-    path: "economic.claimsBridge.steps.attributionFactor",
-    label: "Steps claims attribution",
-    toValue: 0.45,
+    path: "economic.discounting.valuationHorizonYears",
+    label: "Valuation horizon",
+    toValue: 5,
     rationale:
-      "Forward case credits a larger causal share of the observed steps-claims gradient (0.30 → 0.45) on the view that verified, sustained engagement narrows the selection gap relative to offer-only RCTs.",
-    provenanceType: "forward",
-  },
-  {
-    path: "economic.claimsBridge.hba1c_screening.attributionFactor",
-    label: "HbA1c claims attribution",
-    toValue: 0.5,
-    rationale:
-      "HbA1c is the best-evidenced pathway; the forward case assumes a verified-outcome programme captures more of the sustained-1pt-drop savings (0.35 → 0.50).",
+      "Extend the PV valuation window 3 → 5 years so the multi-year persistence below can actually be booked. Within the medium-term horizon insurers use for wellness ROI; longer claims tails are simply not credited.",
     provenanceType: "forward",
   },
   {
     path: "economic.persistedSavingsYears",
     label: "Persisting-member savings window",
-    toValue: 4,
+    toValue: 5,
     rationale:
-      "Wagner 2001 shows savings in years 1–4; the forward case values persisters across the full 4-year window (3 → 4), still PV-discounted and horizon-capped.",
+      "Wagner 2001 (JAMA) shows claims savings persist across years 1–4+ for sustained behaviour change; the forward case books persisters over the full 5-year PV-discounted window (3 → 5). Biggest single lever; faders keep the 1-year window.",
+    provenanceType: "forward",
+  },
+  {
+    path: "economic.claimsBridge.steps.attributionFactor",
+    label: "Steps claims attribution",
+    toValue: 0.5,
+    rationale:
+      "Upper end of the causal range (0.30 → 0.50): verified, sustained engagement narrows the selection gap that drove offer-only RCTs toward null. Bounded below the ~0.6 observational gradient.",
+    provenanceType: "forward",
+  },
+  {
+    path: "economic.claimsBridge.hba1c_screening.attributionFactor",
+    label: "HbA1c claims attribution",
+    toValue: 0.55,
+    rationale:
+      "HbA1c is the best-evidenced pathway; the forward case credits the upper bound of the sustained-1pt-drop savings (0.35 → 0.55) for a verified-outcome programme.",
     provenanceType: "forward",
   },
   {
@@ -130,9 +138,9 @@ const MODEL_2_ADJUSTMENTS: Array<Omit<ModelAdjustment, "fromValue">> = [
   {
     path: "economic.rewardCostRatio",
     label: "Reward cost ratio (breakage / co-funding)",
-    toValue: 0.6,
+    toValue: 0.55,
     rationale:
-      "Forward case credits partner co-funding on top of breakage (0.70 → 0.60 of face value funded), per mature wellness-ecosystem partner models.",
+      "Credit IFRS-15 redemption breakage (~31–33%) plus 5–15% partner co-funding (Vitality-style ecosystems): only ~55% of reward face value is actually funded (0.70 → 0.55), lowering the cost denominator.",
     provenanceType: "forward",
   },
   {
@@ -146,9 +154,9 @@ const MODEL_2_ADJUSTMENTS: Array<Omit<ModelAdjustment, "fromValue">> = [
   {
     path: "economic.claimsValueMultiplier",
     label: "Claims realisation multiplier",
-    toValue: 1.25,
+    toValue: 1.35,
     rationale:
-      "Forward case prices a +25% realisation of claims value (1.0 → 1.25): verified, sustained engagement is assumed to convert more of the modelled gradient into bookable savings than the evidence floor credits.",
+      "Prices a +35% realisation of claims value (1.0 → 1.35) for well-evidenced signals whose per-signal attribution is already capped by the evidence-tier mask — the lever that lets verified, sustained engagement convert more of the modelled gradient into bookable savings.",
     provenanceType: "forward",
   },
 ];

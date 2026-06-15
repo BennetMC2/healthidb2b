@@ -277,10 +277,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/economics", (req, res) => {
     enterModel(String(req.query.modelId || ""), { allowInternal: true });
     const set = currentSet();
-    const FLOOR_ATTRIBUTION = 0.3; // Model 1 steps claims-attribution factor
-    const stepsAttribution = set.economic.claimsBridge.steps.attributionFactor;
+    // Representative realisation lift vs. the floor for the demo screens: the
+    // claims-value multiplier × the persistence-window ratio (the two levers
+    // that actually move bookable claims). Clamped so cards stay believable.
+    const FLOOR_PERSISTED = 3;
+    const rawScalar =
+      (set.economic.claimsValueMultiplier ?? 1) *
+      (set.economic.persistedSavingsYears / FLOOR_PERSISTED);
+    // Dampen toward 1 so headline display ROI stays believable (live engine
+    // still applies the full per-lever effect).
+    const scalar = 1 + (rawScalar - 1) * 0.55;
     res.json({
-      modelScalar: stepsAttribution / FLOOR_ATTRIBUTION,
+      modelScalar: Math.min(2.0, Math.max(1, scalar)),
       claimsBaseline: {
         steps: set.economic.claimsBaseline.steps,
         vo2max: set.economic.claimsBaseline.vo2max,

@@ -84,11 +84,16 @@ function fallbackModel(id: string): ModelEconomics {
   return MODEL_ECONOMICS_FALLBACK[id] ?? MODEL_ECONOMICS_FALLBACK[DEFAULT_MODEL_ID];
 }
 
+// The demo leads with the Forward / Upside model so the headline view shows the
+// optimistic-but-defensible case. The Evidence Floor stays one click away.
+const INITIAL_MODEL_ID = 'model-2-forward-upside';
+const INITIAL_MODEL = MODEL_ECONOMICS_FALLBACK[INITIAL_MODEL_ID];
+
 export const useModelStore = create<ModelStore>((set, get) => ({
   models: FALLBACK_MODELS,
-  currentModelId: DEFAULT_MODEL_ID,
-  economics: FLOOR_ECONOMICS,
-  modelScalar: 1,
+  currentModelId: INITIAL_MODEL_ID,
+  economics: deriveEconomics(INITIAL_MODEL),
+  modelScalar: INITIAL_MODEL.modelScalar,
   buyerContext: true,
   currentModel: () => {
     const { models, currentModelId } = get();
