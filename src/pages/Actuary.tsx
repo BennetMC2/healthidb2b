@@ -10,6 +10,7 @@ import CopilotMessage from '@/components/copilot/CopilotMessage';
 import { useCopilotStore } from '@/stores/useCopilotStore';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { useModelStore } from '@/stores/useModelStore';
+import { playEconomicsFromSnapshot } from '@/lib/playEconomics';
 import { formatCurrencyCompact, formatNumber, formatPercent } from '@/utils/format';
 import { liabilityAvoidedFromReceipts } from '@/utils/businessMetrics';
 import { getPartnerPortfolio } from '@/data/partnerPortfolios';
@@ -331,13 +332,12 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
   // active model's realization scalar so they also move when the model switches.
   const modelScalar = useModelStore((s) => s.modelScalar);
 
-  // Use real simulation numbers when available, fall back to engine estimates
-  const bookValue = seededResult ? Math.round(seededResult.finance.claimsSavingsP50 * modelScalar) : insight.outputs.projectedSavingsUsd;
-  const roi = seededResult ? Number((seededResult.finance.roiP50 * modelScalar).toFixed(1)) : insight.outputs.budgetRoiMultiple;
-  // Higher realised savings → faster payback (scales inversely), floored at 1mo.
-  const payback = seededResult?.paybackMonths != null
-    ? Math.max(1, Math.round(seededResult.paybackMonths / modelScalar))
-    : insight.outputs.paybackMonths;
+  // Canonical per-play economics (single source of truth shared with Campaigns
+  // and the Simulator). Falls back to engine estimates for plays with no snapshot.
+  const econ = seededResult ? playEconomicsFromSnapshot(seededResult, modelScalar) : null;
+  const bookValue = econ ? econ.bookValue : insight.outputs.projectedSavingsUsd;
+  const roi = econ ? econ.roi : insight.outputs.budgetRoiMultiple; // already a displayed multiple
+  const payback = econ ? econ.payback : insight.outputs.paybackMonths;
   const isSimulated = !!seededResult;
 
   return (
@@ -402,16 +402,16 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
         <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
         <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
         <OutputTile label="Est. book-value opportunity" value={formatCurrencyCompact(bookValue)} />
-        <OutputTile label="Modelled ROI" value={isSimulated ? `${(roi + 1).toFixed(1)}x` : `${roi.toFixed(1)}x`} />
-        <OutputTile label="Payback" value={`${payback} mo`} />
+        <OutputTile label="Modelled ROI" value={`${roi.toFixed(1)}x`} />
+        <OutputTile label="Payback" value={payback != null ? `${payback} mo` : '—'} />
       </div>
 
-      {isSimulated && (
+      {econ && (
         <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-          <OutputTile label="Net value" value={formatCurrencyCompact(seededResult.finance.netValueP50)} />
-          <OutputTile label="ROI band" value={`${(seededResult.finance.roiP5 + 1).toFixed(1)}x – ${(seededResult.finance.roiP95 + 1).toFixed(1)}x`} />
-          <OutputTile label="Enrollment" value={`${(seededResult.behavior.enrollmentRate * 100).toFixed(0)}%`} />
-          <OutputTile label="Persistence" value={`${(seededResult.behavior.persistenceRate * 100).toFixed(0)}%`} />
+          <OutputTile label="Net value" value={formatCurrencyCompact(econ.netValue)} />
+          <OutputTile label="ROI band" value={`${econ.roiLow.toFixed(1)}x – ${econ.roiHigh.toFixed(1)}x`} />
+          <OutputTile label="Enrollment" value={`${(econ.enrollmentRate * 100).toFixed(0)}%`} />
+          <OutputTile label="Persistence" value={`${(econ.persistenceRate * 100).toFixed(0)}%`} />
         </div>
       )}
 

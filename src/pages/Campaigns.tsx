@@ -13,8 +13,9 @@ import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrencyCompact } from '@/utils/format';
 import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
 import { deleteConsumerCampaign } from '@/lib/consumerCampaigns';
-import { calculateActuarialROI, useEconomics, type EconomicsConfig } from '@/lib/economics';
-import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus, HealthMetric, CampaignUseCase } from '@/types';
+import { playEconomicsById } from '@/lib/playEconomics';
+import { useModelStore } from '@/stores/useModelStore';
+import type { Campaign, CampaignTemplate, CampaignType, CampaignStatus } from '@/types';
 
 type CampaignFamily = 'signal' | 'acquisition' | 'retention' | 'engagement';
 
@@ -35,37 +36,35 @@ const familyFilters: Array<{ id: CampaignFamily; label: string }> = [
   { id: 'engagement', label: 'Engagement' },
 ];
 
-/** Compute signal-campaign display metrics from the actuarial calculator.
- *  Baselines are already evidence-aligned — no additional conservatism haircut. */
+/** Display metrics for a signal play, read from the canonical per-play
+ *  economics (the same source the AI Actuary cards and Simulator use), so the
+ *  same play shows identical book value / ROI / payback everywhere. */
 function computeSignalMetrics(
-  eco: EconomicsConfig,
-  metric: HealthMetric,
-  type: CampaignType,
-  useCase: CampaignUseCase,
-  cohortSize: number,
-  budget: number,
+  campaignId: string,
+  modelScalar: number,
 ): { metrics: Array<{ label: string; value: string }>; bookValue: number } {
-  const r = calculateActuarialROI(eco, { metric, type, useCase, maxParticipants: cohortSize, budgetCeiling: budget, applyAdjustments: false });
+  const econ = playEconomicsById(campaignId, modelScalar);
+  if (!econ) return { metrics: [], bookValue: 0 };
   return {
     metrics: [
-      { label: 'Est. book value', value: formatCurrencyCompact(r.totalProjectedSavings) },
-      { label: 'Modelled ROI', value: `${r.budgetROI.toFixed(1)}x` },
-      { label: 'Payback', value: `${r.paybackMonths} mo` },
+      { label: 'Est. book value', value: formatCurrencyCompact(econ.bookValue) },
+      { label: 'Modelled ROI', value: `${econ.roi.toFixed(1)}x` },
+      { label: 'Payback', value: econ.payback != null ? `${econ.payback} mo` : '—' },
     ],
-    bookValue: r.totalProjectedSavings,
+    bookValue: econ.bookValue,
   };
 }
 
 // Build the signal-campaign catalog for the active Model. Re-priced whenever the
 // selected Model changes (the templates' book value / ROI / payback move).
-function buildSignalCatalog(eco: EconomicsConfig): {
+function buildSignalCatalog(modelScalar: number): {
   campaignTemplates: StudioCampaignTemplate[];
   signalBookValues: Record<string, number>;
 } {
-const vo2Metrics = computeSignalMetrics(eco, 'vo2_max', 'stream', 'claims_reduction', 3847, 58000);
-const hrvMetrics = computeSignalMetrics(eco, 'hrv', 'stream', 'claims_reduction', 1204, 36000);
-const sleepMetrics = computeSignalMetrics(eco, 'sleep_hours', 'stream', 'claims_reduction', 2186, 42000);
-const rhrMetrics = computeSignalMetrics(eco, 'heart_rate_resting', 'stream', 'claims_reduction', 946, 31000);
+const vo2Metrics = computeSignalMetrics('ins_vo2_activation', modelScalar);
+const hrvMetrics = computeSignalMetrics('ins_hrv_recovery', modelScalar);
+const sleepMetrics = computeSignalMetrics('ins_sleep_regularity', modelScalar);
+const rhrMetrics = computeSignalMetrics('ins_resting_hr_improvement', modelScalar);
 
 const signalBookValues: Record<string, number> = {
   'Cardio Fitness Activation': vo2Metrics.bookValue,
@@ -321,8 +320,8 @@ function portfolioFamilyLabel(campaign: Campaign) {
 
 export default function Campaigns() {
   const navigate = useNavigate();
-  const eco = useEconomics();
-  const { campaignTemplates, signalBookValues } = useMemo(() => buildSignalCatalog(eco), [eco]);
+  const modelScalar = useModelStore((s) => s.modelScalar);
+  const { campaignTemplates, signalBookValues } = useMemo(() => buildSignalCatalog(modelScalar), [modelScalar]);
   const loading = useSimulatedLoading(300);
   const allCampaigns = useCampaignStore((s) => s.campaigns);
   const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
