@@ -18,6 +18,9 @@ interface ActuarialROICalculatorProps {
   // When set (creating a recommended play), the headline economics are pinned to
   // the canonical per-play simulation so this panel matches the AI Actuary card.
   pinnedEcon?: PlayEconomics | null;
+  // The campaign's configured per-member reward (HP). Shown in place of the old
+  // per-receipt "suggested HP" when pinned, so it matches the card's HP price.
+  pinnedRewardHp?: number;
 }
 
 const EVIDENCE_COLORS: Record<string, { dot: string; value: string }> = {
@@ -80,6 +83,7 @@ export default function ActuarialROICalculator({
   showVNB = false,
   variant = 'compact',
   pinnedEcon = null,
+  pinnedRewardHp,
 }: ActuarialROICalculatorProps) {
   const isHero = variant === 'hero';
   const copy = getProjectionCopy(useCase);
@@ -130,10 +134,12 @@ export default function ActuarialROICalculator({
       tone: !ready ? 'text-tertiary' : (pinned ? pinned.roi : roi.budgetROI) >= 2 ? 'text-accent' : (pinned ? pinned.roi : roi.budgetROI) < 1 ? 'text-warning' : 'text-primary',
     },
     {
-      label: 'Suggested HP Yield',
-      value: roi.isReady ? `${roi.suggestedHP} HP` : '—',
-      detail: roi.isReady ? 'Per verified receipt' : 'No model yet',
-      tone: roi.isReady ? 'text-primary' : 'text-tertiary',
+      label: pinned ? 'Reward / member' : 'Suggested HP Yield',
+      value: pinned
+        ? (pinnedRewardHp ? `${pinnedRewardHp} HP` : '—')
+        : roi.isReady ? `${roi.suggestedHP} HP` : '—',
+      detail: pinned ? 'Per member · full action' : roi.isReady ? 'Per verified receipt' : 'No model yet',
+      tone: ready ? 'text-primary' : 'text-tertiary',
     },
     {
       label: copy.shiftLabel,

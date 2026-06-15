@@ -375,6 +375,7 @@ export default function CampaignCreate() {
         maxParticipants={Number(form.maxParticipants) || 0}
         budgetCeiling={Number(form.budgetCeiling) || 0}
         pinnedEcon={pinnedPlayEcon}
+        pinnedRewardHp={Number(form.pointsPerVerification) || 0}
         onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
         variant="hero"
       />
