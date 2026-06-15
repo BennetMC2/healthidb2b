@@ -143,6 +143,14 @@ const MODEL_2_ADJUSTMENTS: Array<Omit<ModelAdjustment, "fromValue">> = [
       "Upper end of the AIA FY2024 VONB-margin LTV range (1,400 → 1,800) for a verified, higher-persistency book.",
     provenanceType: "forward",
   },
+  {
+    path: "economic.claimsValueMultiplier",
+    label: "Claims realisation multiplier",
+    toValue: 1.25,
+    rationale:
+      "Forward case prices a +25% realisation of claims value (1.0 → 1.25): verified, sustained engagement is assumed to convert more of the modelled gradient into bookable savings than the evidence floor credits.",
+    provenanceType: "forward",
+  },
 ];
 
 const MODEL_2_BUILD = applyAdjustments(

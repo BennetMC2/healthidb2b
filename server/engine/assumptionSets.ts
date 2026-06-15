@@ -90,6 +90,11 @@ export interface EconomicAssumptions {
   platformCostPmpm: number;
   lapseReduction: number;
   ltvPerMember: number;
+  // Model-level multiplier on realised claims value. 1.0 = evidence floor; a
+  // forward/upside model lifts this to price a more optimistic realisation that
+  // the per-signal attribution mask (claimsBridge) would otherwise cap. Applied
+  // after attribution so it moves the headline claims/ROI per model.
+  claimsValueMultiplier: number;
 }
 
 export interface VersionedAssumptionSet {
@@ -210,6 +215,7 @@ export const DEFAULT_ASSUMPTION_SET: VersionedAssumptionSet = {
     platformCostPmpm: 0,
     lapseReduction: 0.02,
     ltvPerMember: 2600,
+    claimsValueMultiplier: 1,
   },
   marketWearablePrior: {
     HK: 0.21,
@@ -468,6 +474,7 @@ export const EVIDENCE_ASSUMPTION_SET: VersionedAssumptionSet = {
     lapseReduction: 0.01,
     // LTV: AIA FY2024 VONB margin 54.5% × realistic protection ANP → ~US$900–1,800.
     ltvPerMember: 1400,
+    claimsValueMultiplier: 1,
   },
   // Rakuten Insight / Statista 2022: HK ~42% smartwatch (~64% any wearable);
   // SG ~27% smartwatch (~45–69% any wearable). v0 understated HK.

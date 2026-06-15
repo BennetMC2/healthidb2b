@@ -124,10 +124,14 @@ export function evaluateClaimsBridge(
   const tiers = targeted ? allTiers.filter((t) => t.tier !== "low") : allTiers;
   const totalWeight = tiers.reduce((s, t) => s + t.weight, 0) || 1;
   const applicableTreated = Math.max(0, effectiveTreated) * applicablePrevalence;
+  // Model-level realisation multiplier (1.0 on the evidence floor). Applied
+  // after attribution so a forward/upside model lifts the headline claims value
+  // even where per-signal attribution is already capped by the mask above.
+  const claimsValueMultiplier = ECONOMIC_ASSUMPTIONS.claimsValueMultiplier ?? 1;
   const tierBreakdown = tiers.map((tier) => {
     const weight = tier.weight / totalWeight;
     const annualDelta = Math.max(0, delta * tier.deltaMultiplier);
-    const savings = applicableTreated * weight * annualDelta * attributionFactor * doseAchievement * pvFactor * valueGate;
+    const savings = applicableTreated * weight * annualDelta * attributionFactor * doseAchievement * pvFactor * valueGate * claimsValueMultiplier;
     return {
       tier: tier.label,
       weight,
