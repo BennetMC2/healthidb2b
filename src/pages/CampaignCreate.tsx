@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -21,6 +21,18 @@ import {
   USE_CASE_LABELS,
 } from '@/utils/constants';
 import { suggestUseCase, useEconomics } from '@/lib/economics';
+import { playEconomicsById } from '@/lib/playEconomics';
+import { useModelStore } from '@/stores/useModelStore';
+
+// Map a verification signal → its canonical demo play, so creating a recommended
+// play prices off the same simulation the AI Actuary card shows.
+const METRIC_TO_PLAY: Partial<Record<HealthMetric, string>> = {
+  vo2_max: 'ins_vo2_activation',
+  hrv: 'ins_hrv_recovery',
+  sleep_hours: 'ins_sleep_regularity',
+  sleep_quality: 'ins_sleep_regularity',
+  heart_rate_resting: 'ins_resting_hr_improvement',
+};
 import { ChallengeDisplay } from '@/components/ui/Badge';
 import { useToastStore } from '@/stores/useToastStore';
 import { useCampaignStore } from '@/stores/useCampaignStore';
@@ -90,6 +102,14 @@ export default function CampaignCreate() {
     budgetCeiling: '25000',
     maxParticipants: '1000',
   });
+
+  // Pin the economics panel to the canonical play simulation when the selected
+  // signal is one of the recommended plays, so it matches the AI Actuary card.
+  const modelScalar = useModelStore((s) => s.modelScalar);
+  const pinnedPlayEcon = useMemo(() => {
+    const playId = form.metric ? METRIC_TO_PLAY[form.metric] : undefined;
+    return playId ? playEconomicsById(playId, modelScalar) ?? null : null;
+  }, [form.metric, modelScalar]);
 
   useEffect(() => {
     const template = (location.state as { template?: CampaignTemplate })?.template;
@@ -354,6 +374,7 @@ export default function CampaignCreate() {
         useCase={form.useCase}
         maxParticipants={Number(form.maxParticipants) || 0}
         budgetCeiling={Number(form.budgetCeiling) || 0}
+        pinnedEcon={pinnedPlayEcon}
         onApplySuggestedHP={(hp) => setForm((f) => ({ ...f, pointsPerVerification: String(hp) }))}
         variant="hero"
       />

@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { TrendingUp, Info } from 'lucide-react';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format';
 import { calculateActuarialROI, useEconomics } from '@/lib/economics';
+import { useModelStore } from '@/stores/useModelStore';
+import type { PlayEconomics } from '@/lib/playEconomics';
 import type { CampaignType, CampaignUseCase, HealthMetric } from '@/types';
 
 interface ActuarialROICalculatorProps {
@@ -13,6 +15,9 @@ interface ActuarialROICalculatorProps {
   onApplySuggestedHP?: (hp: number) => void;
   showVNB?: boolean;
   variant?: 'compact' | 'hero';
+  // When set (creating a recommended play), the headline economics are pinned to
+  // the canonical per-play simulation so this panel matches the AI Actuary card.
+  pinnedEcon?: PlayEconomics | null;
 }
 
 const EVIDENCE_COLORS: Record<string, { dot: string; value: string }> = {
@@ -74,11 +79,15 @@ export default function ActuarialROICalculator({
   onApplySuggestedHP,
   showVNB = false,
   variant = 'compact',
+  pinnedEcon = null,
 }: ActuarialROICalculatorProps) {
-  const [mode, setMode] = useState<'gross' | 'adjusted'>('gross');
   const isHero = variant === 'hero';
   const copy = getProjectionCopy(useCase);
   const eco = useEconomics();
+  // Economics follow the GLOBAL model switch (Forward = upside, Floor =
+  // conservative) — there is no separate local toggle anymore.
+  const currentModel = useModelStore((s) => s.currentModel());
+  const isUpside = currentModel.confidencePosture !== 'floor';
 
   const roi = useMemo(
     () =>
@@ -88,30 +97,37 @@ export default function ActuarialROICalculator({
         useCase,
         maxParticipants,
         budgetCeiling,
-        applyAdjustments: mode === 'adjusted',
+        applyAdjustments: !isUpside,
       }),
-    [metric, type, useCase, maxParticipants, budgetCeiling, mode, eco],
+    [metric, type, useCase, maxParticipants, budgetCeiling, isUpside, eco],
   );
 
   const evidence = EVIDENCE_COLORS[roi.evidenceLevel] ?? EVIDENCE_COLORS.low;
+  // Pinned mode: headline tiles come from the canonical play simulation so this
+  // panel exactly matches the AI Actuary card. Pricing tiles (HP yield, morbidity
+  // shift) stay from the live projection.
+  const pinned = pinnedEcon;
+  const ready = pinned ? true : roi.isReady;
   const projectionTiles = [
     {
       label: copy.primaryRate,
-      value: roi.isReady ? `${(roi.claimsReductionRate * 100).toFixed(1)}%` : '—',
-      detail: roi.isReady ? `${roi.confidenceLabel}` : 'Select a signal',
-      tone: roi.isReady ? evidence.value : 'text-tertiary',
+      value: pinned ? `${(pinned.behaviorChangeRate * 100).toFixed(0)}%` : roi.isReady ? `${(roi.claimsReductionRate * 100).toFixed(1)}%` : '—',
+      detail: pinned ? 'behaviour change' : roi.isReady ? `${roi.confidenceLabel}` : 'Select a signal',
+      tone: ready ? evidence.value : 'text-tertiary',
     },
     {
       label: copy.valueLabel,
-      value: roi.isReady ? formatCurrencyCompact(roi.totalProjectedSavings) : '—',
-      detail: roi.isReady ? `${roi.scenarioHorizonMonths}-month horizon` : 'Awaiting cohort',
-      tone: roi.isReady && roi.totalProjectedSavings > 0 ? 'text-accent' : 'text-tertiary',
+      value: pinned ? formatCurrencyCompact(pinned.bookValue) : roi.isReady ? formatCurrencyCompact(roi.totalProjectedSavings) : '—',
+      detail: pinned ? 'from play simulation' : roi.isReady ? `${roi.scenarioHorizonMonths}-month horizon` : 'Awaiting cohort',
+      tone: ready ? 'text-accent' : 'text-tertiary',
     },
     {
       label: 'Budget ROI',
-      value: roi.isReady ? `${roi.budgetROI.toFixed(1)}×` : '—',
-      detail: roi.isReady ? `${formatCurrencyCompact(roi.scenarioRangeLow)}–${formatCurrencyCompact(roi.scenarioRangeHigh)} range` : 'Budget required',
-      tone: !roi.isReady ? 'text-tertiary' : roi.budgetROI >= 2 ? 'text-accent' : roi.budgetROI < 1 ? 'text-warning' : 'text-primary',
+      value: pinned ? `${pinned.roi.toFixed(1)}×` : roi.isReady ? `${roi.budgetROI.toFixed(1)}×` : '—',
+      detail: pinned
+        ? `${pinned.roiLow.toFixed(1)}×–${pinned.roiHigh.toFixed(1)}× band`
+        : roi.isReady ? `${formatCurrencyCompact(roi.scenarioRangeLow)}–${formatCurrencyCompact(roi.scenarioRangeHigh)} range` : 'Budget required',
+      tone: !ready ? 'text-tertiary' : (pinned ? pinned.roi : roi.budgetROI) >= 2 ? 'text-accent' : (pinned ? pinned.roi : roi.budgetROI) < 1 ? 'text-warning' : 'text-primary',
     },
     {
       label: 'Suggested HP Yield',
@@ -127,9 +143,11 @@ export default function ActuarialROICalculator({
     },
     {
       label: 'Payback Period',
-      value: roi.isReady && roi.paybackMonths > 0 ? (roi.paybackMonths >= 36 ? '36 mo+' : `${roi.paybackMonths} mo`) : '—',
-      detail: roi.isReady ? 'Net-positive estimate' : 'Needs budget',
-      tone: roi.isReady && roi.paybackMonths > 0 ? 'text-primary' : 'text-tertiary',
+      value: pinned
+        ? (pinned.payback != null ? `${pinned.payback} mo` : '—')
+        : roi.isReady && roi.paybackMonths > 0 ? (roi.paybackMonths >= 36 ? '36 mo+' : `${roi.paybackMonths} mo`) : '—',
+      detail: ready ? 'Net-positive estimate' : 'Needs budget',
+      tone: ready ? 'text-primary' : 'text-tertiary',
     },
   ];
 
@@ -153,36 +171,21 @@ export default function ActuarialROICalculator({
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-border bg-surface/80 p-1">
-          <button
-            onClick={() => setMode('gross')}
-            className={`rounded-lg px-3 py-1.5 text-2xs font-medium transition-colors ${
-              mode === 'gross' ? 'bg-accent/10 text-accent' : 'text-tertiary hover:text-secondary'
-            }`}
-          >
-            Upside
-          </button>
-          <button
-            onClick={() => setMode('adjusted')}
-            className={`rounded-lg px-3 py-1.5 text-2xs font-medium transition-colors ${
-              mode === 'adjusted' ? 'bg-accent/10 text-accent' : 'text-tertiary hover:text-secondary'
-            }`}
-          >
-            Conservative
-          </button>
+        {/* Model is driven by the global switch in the header — shown here, not toggled. */}
+        <div className="flex shrink-0 items-center gap-1.5 rounded-xl border border-border bg-surface/80 px-3 py-1.5 text-2xs font-medium text-secondary">
+          <span className={`h-1.5 w-1.5 rounded-full ${isUpside ? 'bg-warning' : 'bg-accent'}`} />
+          Model: {currentModel.name}
         </div>
       </div>
 
-      {roi.isReady && (
+      {ready && (
         <div
           className={`mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-2xs font-medium ${
-            mode === 'gross' ? 'bg-warning/10 text-warning' : 'bg-accent/10 text-accent'
+            isUpside ? 'bg-warning/10 text-warning' : 'bg-accent/10 text-accent'
           }`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${mode === 'gross' ? 'bg-warning' : 'bg-accent'}`} />
-          {mode === 'gross'
-            ? 'Modeled upside case'
-            : 'Conservative case'}
+          <span className={`h-1.5 w-1.5 rounded-full ${isUpside ? 'bg-warning' : 'bg-accent'}`} />
+          {pinned ? 'Priced from play simulation' : isUpside ? 'Modeled upside case' : 'Conservative case'}
         </div>
       )}
 
