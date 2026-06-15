@@ -30,7 +30,7 @@ import { usePartnerStore } from '@/stores/usePartnerStore';
 import { identities, computeTreasuryState, treasuryTransactions, treasurySnapshots } from '@/data';
 import { formatCurrency, formatCurrencyPrecise, formatNumber, formatTimestamp } from '@/utils/format';
 import { getMetricsGroupedByCategory } from '@/utils/constants';
-import { calculateMultiMetricROI } from '@/utils/actuarial';
+import { calculateMultiMetricROI, useEconomics } from '@/lib/economics';
 import type { TreasuryTransaction, TreasurySnapshot, TransactionType, HealthMetric, CampaignType, CampaignUseCase } from '@/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -151,11 +151,12 @@ export default function Treasury() {
   const BUDGET_CEILING = 25000;
 
   // ── Multi-metric ROI computation ──────────────────────────────────
+  const eco = useEconomics();
   const allMetrics = [actuarialMetric, ...additionalMetrics] as HealthMetric[];
   const multiRoi = useMemo(
-    () => calculateMultiMetricROI(allMetrics, actuarialUseCase, actuarialType, audienceSize, BUDGET_CEILING),
+    () => calculateMultiMetricROI(eco, allMetrics, actuarialUseCase, actuarialType, audienceSize, BUDGET_CEILING),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [actuarialMetric, actuarialUseCase, actuarialType, additionalMetrics, audienceSize],
+    [actuarialMetric, actuarialUseCase, actuarialType, additionalMetrics, audienceSize, eco],
   );
 
   // ── Portfolio book calculations ────────────────────────────────────

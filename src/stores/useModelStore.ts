@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import type { ModelSummary } from '@shared/models';
 import { isBuyerSelectable } from '@shared/models';
+import {
+  FLOOR_ECONOMICS,
+  MODEL_ECONOMICS_FALLBACK,
+  deriveEconomics,
+  type EconomicsConfig,
+  type ModelEconomics,
+} from '@/lib/economicsConfig';
 
 // Front-page model switcher state (Assumptions Studio brief §3). The active
 // Model drives every number in the app: its id is sent to the engine on each
@@ -57,16 +64,27 @@ const FALLBACK_MODELS: ModelSummary[] = [
 interface ModelStore {
   models: ModelSummary[];
   currentModelId: string;
+  // The active model's campaign economics — every actuarial number reads this.
+  economics: EconomicsConfig;
   // Buyer/demo context gates internal_only models out of the switcher.
   buyerContext: boolean;
   setCurrentModel: (id: string) => void;
   hydrate: () => Promise<void>;
+  hydrateEconomics: (id: string) => Promise<void>;
   currentModel: () => ModelSummary;
+}
+
+// Resolve a model's economics: baked fallback immediately (so the static demo
+// re-prices on switch), then overridden by the engine when reachable.
+function fallbackEconomics(id: string): EconomicsConfig {
+  const m: ModelEconomics = MODEL_ECONOMICS_FALLBACK[id] ?? MODEL_ECONOMICS_FALLBACK[DEFAULT_MODEL_ID];
+  return deriveEconomics(m);
 }
 
 export const useModelStore = create<ModelStore>((set, get) => ({
   models: FALLBACK_MODELS,
   currentModelId: DEFAULT_MODEL_ID,
+  economics: FLOOR_ECONOMICS,
   buyerContext: true,
   currentModel: () => {
     const { models, currentModelId } = get();
@@ -79,9 +97,12 @@ export const useModelStore = create<ModelStore>((set, get) => ({
     // active model in a buyer-facing session (brief §3).
     if (!target) return;
     if (buyerContext && !isBuyerSelectable(target)) return;
-    set({ currentModelId: id });
+    // Re-price immediately from the baked fallback, then refine from the engine.
+    set({ currentModelId: id, economics: fallbackEconomics(id) });
+    get().hydrateEconomics(id);
   },
   hydrate: async () => {
+    get().hydrateEconomics(get().currentModelId);
     try {
       const res = await fetch('/api/models');
       if (!res.ok) return;
@@ -91,6 +112,19 @@ export const useModelStore = create<ModelStore>((set, get) => ({
       }
     } catch {
       // Static demo / offline — keep the fallback list.
+    }
+  },
+  hydrateEconomics: async (id) => {
+    try {
+      const res = await fetch(`/api/economics?modelId=${encodeURIComponent(id)}`);
+      if (!res.ok) return;
+      const model = (await res.json()) as ModelEconomics;
+      if (model && typeof model.modelScalar === 'number') {
+        // Only apply if still the active model (avoid races on rapid switches).
+        if (get().currentModelId === id) set({ economics: deriveEconomics(model) });
+      }
+    } catch {
+      // Offline — keep the fallback economics already applied.
     }
   },
 }));

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { TrendingUp } from 'lucide-react';
-import { calculateActuarialROI } from '@/utils/actuarial';
+import { calculateActuarialROI, useEconomics } from '@/lib/economics';
 import { formatCurrency, formatNumber } from '@/utils/format';
 import type { Campaign } from '@/types';
 
@@ -15,9 +15,10 @@ export default function ScaleCampaignModal({ campaign, onConfirm, onCancel }: Sc
   const [scalePct, setScalePct] = useState(150);
 
   const newBudget = Math.round(currentBudget * scalePct / 100);
+  const eco = useEconomics();
 
   const projections = useMemo(() => {
-    const currentROI = calculateActuarialROI({
+    const currentROI = calculateActuarialROI(eco, {
       metric: campaign.challenge.metric,
       type: campaign.type,
       useCase: campaign.useCase,
@@ -33,7 +34,7 @@ export default function ScaleCampaignModal({ campaign, onConfirm, onCancel }: Sc
     const projectedEnrolled = Math.round(campaign.funnel.enrolled * effectiveScale);
     const projectedVerified = Math.round(campaign.funnel.verified * effectiveScale);
     const projectedRewarded = Math.round(campaign.funnel.rewarded * effectiveScale);
-    const projectedROI = calculateActuarialROI({
+    const projectedROI = calculateActuarialROI(eco, {
       metric: campaign.challenge.metric,
       type: campaign.type,
       useCase: campaign.useCase,
@@ -58,7 +59,7 @@ export default function ScaleCampaignModal({ campaign, onConfirm, onCancel }: Sc
         payback: projectedROI.paybackMonths,
       },
     };
-  }, [campaign, currentBudget, newBudget, scalePct]);
+  }, [campaign, currentBudget, newBudget, scalePct, eco]);
 
   return (
     <div className="fixed inset-0 z-[9900] flex items-center justify-center" onClick={onCancel}>

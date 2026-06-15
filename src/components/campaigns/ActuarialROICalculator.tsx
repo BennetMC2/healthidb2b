@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TrendingUp, Info } from 'lucide-react';
 import { formatCurrency, formatCurrencyCompact } from '@/utils/format';
-import { calculateActuarialROI } from '@/utils/actuarial';
+import { calculateActuarialROI, useEconomics } from '@/lib/economics';
 import type { CampaignType, CampaignUseCase, HealthMetric } from '@/types';
 
 interface ActuarialROICalculatorProps {
@@ -78,10 +78,11 @@ export default function ActuarialROICalculator({
   const [mode, setMode] = useState<'gross' | 'adjusted'>('gross');
   const isHero = variant === 'hero';
   const copy = getProjectionCopy(useCase);
+  const eco = useEconomics();
 
   const roi = useMemo(
     () =>
-      calculateActuarialROI({
+      calculateActuarialROI(eco, {
         metric,
         type,
         useCase,
@@ -89,7 +90,7 @@ export default function ActuarialROICalculator({
         budgetCeiling,
         applyAdjustments: mode === 'adjusted',
       }),
-    [metric, type, useCase, maxParticipants, budgetCeiling, mode],
+    [metric, type, useCase, maxParticipants, budgetCeiling, mode, eco],
   );
 
   const evidence = EVIDENCE_COLORS[roi.evidenceLevel] ?? EVIDENCE_COLORS.low;

@@ -17,7 +17,7 @@ import { estimateLifeInsuranceValue } from "./engine/lifeInsuranceValue";
 import { compareLifeBacktest } from "./engine/lifeBacktest";
 import { explainRewardStrategy } from "./engine/rewardStrategyExplainer";
 import { buildOperatorModelMap } from "./engine/operatorModelMap";
-import { enterModel } from "./engine/modelContext";
+import { enterModel, currentSet } from "./engine/modelContext";
 import { listModelSummaries, getModel, applyModelOverride, getChangeLog, signModel } from "./engine/models";
 import { getSignal, allSignals, FUSIONS, EMERGING_HAIRCUT, TRUST_VALUE_MODIFIER } from "./engine/registry";
 import { answerCopilotQuestion } from "./engine/copilot";
@@ -269,6 +269,26 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.get("/api/operator/model-map", (req, res) => {
     enterModel(String(req.query.modelId || ""));
     res.json(buildOperatorModelMap());
+  });
+
+  // Per-model campaign economics — the source of truth the demo screens read
+  // (replaces the former client-side actuarial.ts). Derived deterministically
+  // from the resolved Model's assumption set; instant + cacheable.
+  app.get("/api/economics", (req, res) => {
+    enterModel(String(req.query.modelId || ""), { allowInternal: true });
+    const set = currentSet();
+    const FLOOR_ATTRIBUTION = 0.3; // Model 1 steps claims-attribution factor
+    const stepsAttribution = set.economic.claimsBridge.steps.attributionFactor;
+    res.json({
+      modelScalar: stepsAttribution / FLOOR_ATTRIBUTION,
+      claimsBaseline: {
+        steps: set.economic.claimsBaseline.steps,
+        vo2max: set.economic.claimsBaseline.vo2max,
+        sleep: set.economic.claimsBaseline.sleep,
+        bp_screening: set.economic.claimsBaseline.bp_screening,
+        hba1c_screening: set.economic.claimsBaseline.hba1c_screening,
+      },
+    });
   });
 
   // Model registry — the switcher and Studio read this (brief §1, §3).

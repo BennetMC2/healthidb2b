@@ -1,5 +1,5 @@
 import type { HealthMetric, CampaignType, CampaignUseCase } from '@/types';
-import { calculateActuarialROI } from '@/utils/actuarial';
+import { calculateActuarialROI, FLOOR_ECONOMICS, type EconomicsConfig } from '@/lib/economics';
 import { getSignal } from '@shared/signals';
 import { ENGINE_CLAIMS_BRIDGE, ENGINE_ECONOMICS, ENGINE_ASSUMPTION_SET_META, signalToClaimsBridgeKey } from '@shared/engineConstants';
 
@@ -96,13 +96,14 @@ function deriveEngineData(signalId: string) {
  *  Uses applyAdjustments: false because baselines are already evidence-aligned
  *  from ENGINE_CLAIMS_BASELINE — no need for the legacy conservatism haircut. */
 function computeOutputs(
+  eco: EconomicsConfig,
   metric: HealthMetric,
   type: CampaignType,
   useCase: CampaignUseCase,
   cohortSize: number,
   budget: number,
 ): ActuaryInsightOutputs {
-  const result = calculateActuarialROI({
+  const result = calculateActuarialROI(eco, {
     metric,
     type,
     useCase,
@@ -120,7 +121,11 @@ function computeOutputs(
   };
 }
 
-export const actuaryInsights: ActuaryInsight[] = [
+// Build the insight set for a given Model's economics. Re-priced on model switch
+// via buildActuaryInsights(eco); the static `actuaryInsights` export below uses
+// the Model-1 floor so non-reactive consumers keep their current numbers.
+export function buildActuaryInsights(eco: EconomicsConfig): ActuaryInsight[] {
+  return [
   {
     id: 'ins_vo2_activation',
     signalId: 'vo2max',
@@ -148,7 +153,7 @@ export const actuaryInsights: ActuaryInsight[] = [
       { source: 'Lab partners', pct: 19 },
       { source: 'Other', pct: 11 },
     ],
-    outputs: computeOutputs('vo2_max', 'stream', 'claims_reduction', 3847, 58000),
+    outputs: computeOutputs(eco, 'vo2_max', 'stream', 'claims_reduction', 3847, 58000),
     evidence: {
       literature: [
         {
@@ -199,7 +204,7 @@ export const actuaryInsights: ActuaryInsight[] = [
       { source: 'Apple Health', pct: 25 },
       { source: 'Other', pct: 11 },
     ],
-    outputs: computeOutputs('hrv', 'stream', 'claims_reduction', 1204, 36000),
+    outputs: computeOutputs(eco, 'hrv', 'stream', 'claims_reduction', 1204, 36000),
     evidence: {
       literature: [
         {
@@ -243,7 +248,7 @@ export const actuaryInsights: ActuaryInsight[] = [
       { source: 'WHOOP', pct: 21 },
       { source: 'Other', pct: 13 },
     ],
-    outputs: computeOutputs('sleep_hours', 'stream', 'claims_reduction', 2186, 42000),
+    outputs: computeOutputs(eco, 'sleep_hours', 'stream', 'claims_reduction', 2186, 42000),
     evidence: {
       literature: [
         {
@@ -287,7 +292,7 @@ export const actuaryInsights: ActuaryInsight[] = [
       { source: 'Fitbit', pct: 20 },
       { source: 'Other', pct: 12 },
     ],
-    outputs: computeOutputs('heart_rate_resting', 'stream', 'claims_reduction', 946, 31000),
+    outputs: computeOutputs(eco, 'heart_rate_resting', 'stream', 'claims_reduction', 946, 31000),
     evidence: {
       literature: [
         {
@@ -304,4 +309,8 @@ export const actuaryInsights: ActuaryInsight[] = [
     },
     ...deriveEngineData('resting_hr'),
   },
-];
+  ];
+}
+
+/** Static Model-1 (Evidence Floor) insight set for non-reactive consumers. */
+export const actuaryInsights: ActuaryInsight[] = buildActuaryInsights(FLOOR_ECONOMICS);
