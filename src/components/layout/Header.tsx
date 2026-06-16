@@ -23,6 +23,8 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
     if (location.pathname.startsWith('/app/campaigns')) return 'Campaign Studio';
     if (location.pathname.startsWith('/app/cohorts')) return 'Cohorts';
     if (location.pathname.startsWith('/app/explorer')) return 'Cohorts';
+    if (location.pathname.startsWith('/app/treasury')) return 'Treasury';
+    if (location.pathname.startsWith('/app/models')) return 'Model Studio';
     if (location.pathname.startsWith('/app/compliance')) return 'Verification Trail';
     if (location.pathname.startsWith('/app/settings')) return 'Settings';
     return 'HealthID';

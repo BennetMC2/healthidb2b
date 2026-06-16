@@ -308,8 +308,6 @@ function EvidenceModal({ insight, onClose }: { insight: ActuaryInsight; onClose:
             <Activity size={13} />
             Simulate this
           </button>
-          <button className="btn-ghost text-xs opacity-50 cursor-not-allowed" disabled title="Coming soon">Save to watchlist</button>
-          <button className="btn-ghost text-xs opacity-50 cursor-not-allowed" disabled title="Coming soon">Export evidence pack</button>
         </div>
       </aside>
     </div>
@@ -441,9 +439,6 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
         <button onClick={() => onEvidence(insight)} className="btn-ghost text-xs">
           <ExternalLink size={13} />
           See evidence & methodology
-        </button>
-        <button className="btn-ghost text-xs opacity-50 cursor-not-allowed" disabled title="Coming soon">
-          Dismiss
         </button>
       </div>
     </article>

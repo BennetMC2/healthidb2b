@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Layers } from 'lucide-react';
 import { useModelStore } from '@/stores/useModelStore';
+import { useToastStore } from '@/stores/useToastStore';
 import { modelTrustTone } from '@shared/models';
 import type { ModelMeta } from '@shared/models';
 
@@ -49,6 +50,7 @@ export function ModelBadge({ className = '' }: { className?: string }) {
 export default function ModelSwitcher() {
   const { models, currentModelId, setCurrentModel, hydrate, buyerContext } = useModelStore();
   const current = useModelStore((s) => s.currentModel());
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
     hydrate();
@@ -58,7 +60,12 @@ export default function ModelSwitcher() {
     <div className="hidden items-center gap-1.5 sm:flex">
       <select
         value={currentModelId}
-        onChange={(e) => setCurrentModel(e.target.value)}
+        onChange={(e) => {
+          setCurrentModel(e.target.value);
+          // Make the re-price visible — the switch otherwise changes numbers silently.
+          const next = models.find((m) => m.id === e.target.value);
+          if (next) addToast({ message: `Re-priced against ${next.name}`, variant: 'default' });
+        }}
         className={`h-[30px] max-w-[200px] cursor-pointer rounded border bg-base px-2 text-xs focus:outline-none ${toneClasses(current)}`}
         title={current.summary}
       >
