@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Activity, BrainCircuit, ExternalLink, FlaskConical, Sparkles, Target, X, Zap } from 'lucide-react';
+import { Activity, BrainCircuit, ChevronDown, ChevronRight, ExternalLink, FlaskConical, Sparkles, Target, X, Zap } from 'lucide-react';
 import { buildActuaryInsights, engineAssumptionSetMeta, type ActuaryConfidence, type ActuaryInsight } from '@/data/actuaryInsights';
 import { useEconomics } from '@/lib/economics';
 import { ENGINE_ECONOMICS } from '@shared/engineConstants';
@@ -326,6 +326,7 @@ function formatSimulatedAgo(ts: number): string {
 
 function OpportunityCard({ insight, onEvidence, seededResult }: { insight: ActuaryInsight; onEvidence: (insight: ActuaryInsight) => void; seededResult?: SeededRunResult }) {
   const navigate = useNavigate();
+  const [showDetail, setShowDetail] = useState(false);
   // The seeded Monte-Carlo numbers are a Model-1 (floor) run; scale them by the
   // active model's realization scalar so they also move when the model switches.
   const modelScalar = useModelStore((s) => s.modelScalar);
@@ -360,12 +361,20 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
         </span>
       </div>
 
-      <h2 className="mt-3 text-[1.35rem] font-semibold text-primary">{insight.campaignName}</h2>
-      <p className="mt-1 text-sm font-medium leading-relaxed text-primary">{insight.title}</p>
-      <p className="mt-2 text-sm leading-relaxed text-secondary">{insight.subtitle}</p>
-      <p className="mt-3 text-sm leading-relaxed text-tertiary">{insight.body}</p>
+      {/* Body row: headline + description on the left, ONE hero metric (ROI) on the right. */}
+      <div className="mt-3 flex items-start justify-between gap-5">
+        <div className="min-w-0">
+          <h2 className="text-[1.35rem] font-semibold text-primary">{insight.campaignName}</h2>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-primary">{insight.title}</p>
+          <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-secondary">{insight.subtitle}</p>
+        </div>
+        <div className="shrink-0 border-l border-border pl-5 text-right">
+          <div className="font-mono text-[2.1rem] font-bold leading-none tracking-tight text-accent">{roi.toFixed(1)}×</div>
+          <div className="mt-1.5 text-2xs uppercase tracking-[0.1em] text-tertiary">Modelled ROI</div>
+        </div>
+      </div>
 
-      <div className="mt-5 rounded border border-border bg-base/60 p-3">
+      <div className="mt-4 rounded border border-border bg-base/60 p-3">
         <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-accent">Campaign action</div>
         <p className="mt-1 text-sm leading-relaxed text-secondary">{insight.behaviourToReward}</p>
       </div>
@@ -379,10 +388,8 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
             </span>
             <span className="text-2xs text-tertiary">
               {seededResult.behavior.behaviorChangeRate > 0
-                ? `${(seededResult.behavior.behaviorChangeRate * 100).toFixed(0)}% behavior change · ${(seededResult.finance.downsideProbability * 100).toFixed(0)}% downside risk`
+                ? `${(seededResult.behavior.behaviorChangeRate * 100).toFixed(0)}% behaviour change · ${(seededResult.finance.downsideProbability * 100).toFixed(0)}% downside`
                 : 'Agent-driven Monte Carlo'}
-              {' · '}
-              {formatSimulatedAgo(seededResult.simulatedAt)}
             </span>
           </>
         ) : (
@@ -391,53 +398,66 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
               <FlaskConical size={10} />
               Estimated
             </span>
-            <span className="text-2xs text-tertiary">Engine estimates — run simulation for modelled, agent-tested numbers</span>
+            <span className="text-2xs text-tertiary">Engine estimate — run simulation for agent-tested numbers</span>
           </>
         )}
       </div>
 
-      <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">
-        <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
-        <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
-        <OutputTile label="Est. book-value opportunity" value={formatCurrencyCompact(bookValue)} />
-        <OutputTile label="Modelled ROI" value={`${roi.toFixed(1)}x`} />
-        <OutputTile label="Payback" value={payback != null ? `${payback} mo` : '—'} />
-      </div>
+      {/* Progressive disclosure: the full pricing breakdown is tucked away, not a wall of stats. */}
+      <button
+        onClick={() => setShowDetail((v) => !v)}
+        aria-expanded={showDetail}
+        className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80"
+      >
+        {showDetail ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        {showDetail ? 'Hide pricing detail' : 'Show pricing detail'}
+      </button>
 
-      {econ && (
-        <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-          <OutputTile label="Net value" value={formatCurrencyCompact(econ.netValue)} />
-          <OutputTile label="ROI band" value={`${econ.roiLow.toFixed(1)}x – ${econ.roiHigh.toFixed(1)}x`} />
-          <OutputTile label="Enrollment" value={`${(econ.enrollmentRate * 100).toFixed(0)}%`} />
-          <OutputTile label="Persistence" value={`${(econ.persistenceRate * 100).toFixed(0)}%`} />
+      {showDetail && (
+        <div className="mt-3 border-t border-border/60 pt-3">
+          <p className="mb-3 text-sm leading-relaxed text-tertiary">{insight.body}</p>
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
+            <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
+            <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
+            <OutputTile label="Est. book-value opportunity" value={formatCurrencyCompact(bookValue)} />
+            <OutputTile label="Modelled ROI" value={`${roi.toFixed(1)}x`} />
+            <OutputTile label="Payback" value={payback != null ? `${payback} mo` : '—'} />
+          </div>
+          {econ && (
+            <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              <OutputTile label="Net value" value={formatCurrencyCompact(econ.netValue)} />
+              <OutputTile label="ROI band" value={`${econ.roiLow.toFixed(1)}x – ${econ.roiHigh.toFixed(1)}x`} />
+              <OutputTile label="Enrollment" value={`${(econ.enrollmentRate * 100).toFixed(0)}%`} />
+              <OutputTile label="Persistence" value={`${(econ.persistenceRate * 100).toFixed(0)}%`} />
+            </div>
+          )}
+          {!isSimulated && (
+            <div className="mt-2 grid gap-2 md:grid-cols-3">
+              <OutputTile label="Modelled claims impact" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
+              <OutputTile label="Potential morbidity movement" value={`${insight.outputs.morbidityShiftBps} bps`} />
+              <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
+            </div>
+          )}
         </div>
       )}
 
-      {!isSimulated && (
-        <div className="mt-3 grid gap-2 md:grid-cols-3">
-          <OutputTile label="Modelled claims impact" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
-          <OutputTile label="Potential morbidity movement" value={`${insight.outputs.morbidityShiftBps} bps`} />
-          <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
-        </div>
-      )}
-
-      <div className="mt-5 flex flex-wrap gap-2">
+      {/* One primary action; the rest stay quiet. */}
+      <div className="mt-5 flex flex-wrap items-center gap-2">
         <button
           onClick={() => navigate('/app/campaigns/new', { state: { template: templateForInsight(insight) } })}
           className="btn-primary text-xs"
         >
           <Target size={13} />
-          Create Campaign
+          Create campaign
         </button>
         <button
           onClick={() => navigate('/app/simulator', { state: { prefillGoal: simulatorGoalForInsight(insight), prefillInsight: insight } })}
-          className="btn-ghost text-xs border-accent/20 hover:border-accent/40"
+          className="btn-ghost text-xs"
         >
           <Activity size={13} />
           {isSimulated ? 'Re-simulate' : 'Simulate this'}
         </button>
-        <button onClick={() => onEvidence(insight)} className="btn-ghost text-xs">
-          <ExternalLink size={13} />
+        <button onClick={() => onEvidence(insight)} className="ml-auto text-xs text-tertiary hover:text-secondary">
           See evidence & methodology
         </button>
       </div>
