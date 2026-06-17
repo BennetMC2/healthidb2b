@@ -465,6 +465,16 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
   );
 }
 
+function KpiCard({ label, value, sub, accent }: { label: string; value: string; sub?: string; accent?: boolean }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <div className="font-mono text-[10.5px] uppercase tracking-[0.13em] text-tertiary">{label}</div>
+      <div className={`mt-2.5 text-[1.55rem] font-semibold leading-none tracking-tight ${accent ? 'text-accent' : 'text-primary'}`}>{value}</div>
+      {sub && <div className="mt-1.5 text-xs text-tertiary">{sub}</div>}
+    </div>
+  );
+}
+
 export default function Actuary() {
   const location = useLocation();
   const currentPartner = usePartnerStore((s) => s.currentPartner);
@@ -500,82 +510,56 @@ export default function Actuary() {
 
   return (
     <div className="space-y-4">
-      <section className="command-surface p-5" data-walkthrough="actuary-hero">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-accent">
-              <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-              Live · Engine {engineAssumptionSetMeta.version} · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}
-            </div>
-            <h1 className="mt-3 text-[2rem] font-semibold text-primary">{currentPartner.label} · AI Actuary</h1>
-            <p className="mt-2 text-sm text-secondary">
-              Campaign intelligence cockpit monitoring verified wearable signals across {formatNumber(partnerPortfolio.lives)} lives. Lead signal: {partnerPortfolio.leadSignal}.
-            </p>
-            <div className="mt-4 rounded-xl border border-accent/15 bg-accent/10 px-4 py-3">
-              <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Today's brief</div>
-              <p className="mt-1 max-w-4xl text-sm leading-relaxed text-primary">{partnerPortfolio.morningBrief}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <AILiveMark />
-            <button
-              onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="btn-primary text-xs"
-            >
-              <Sparkles size={14} />
-              Show campaign plays
-            </button>
-          </div>
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">
+        <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+        Live · Engine {engineAssumptionSetMeta.version} · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}
+      </div>
+
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="font-mono text-2xs uppercase tracking-[0.18em] text-tertiary/70">AI Actuary</div>
+          <h1 className="mt-1.5 text-[1.9rem] font-semibold leading-tight tracking-tight text-primary">
+            {actuaryInsights.length} plays worth your attention today
+          </h1>
+          <p className="mt-1.5 max-w-[640px] text-sm leading-relaxed text-secondary">
+            Ranked by modelled return across {formatNumber(partnerPortfolio.lives)} verified lives. Lead signal: {partnerPortfolio.leadSignal}. Open a play to see the full pricing breakdown.
+          </p>
         </div>
-        <div className="mt-5">
-          <PartnerPortfolioBand portfolio={partnerPortfolio} />
-        </div>
-        <p className="mt-3 font-mono text-[0.65rem] text-tertiary leading-relaxed">
-          Decision support only. Not actuarial certification. Human review required.
-        </p>
-      </section>
+        <button
+          onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+          className="btn-primary text-xs"
+        >
+          <Sparkles size={14} />
+          Show campaign plays
+        </button>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Lives monitored" value={formatNumber(partnerPortfolio.lives)} sub="verified wearables" />
+        <KpiCard label="Verified receipts" value={formatNumber(portfolio.verifiedOutcomes)} />
+        <KpiCard label="Liability opportunity" value={formatCurrencyCompact(portfolio.liabilityAvoided)} accent sub="modelled, across plays" />
+        <KpiCard label="Lead signal" value={partnerPortfolio.leadSignal} sub="tightened overnight" />
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
         <main className="space-y-4">
-          <div ref={playsRef} className="flex items-center justify-between scroll-mt-4" data-walkthrough="actuary-opportunities">
-            <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Wearable signal campaigns</h2>
-              <p className="mt-1 text-xs text-tertiary">
-                {actuaryInsights.length} model-ranked campaigns by addressable behaviour change and expected book impact.
-              </p>
-              <p className="mt-0.5 font-mono text-[0.6rem] text-tertiary/70">
-                Planning estimates, not actuarial certification or proven claims reduction.
-              </p>
-            </div>
+          <div ref={playsRef} className="flex items-baseline justify-between scroll-mt-4" data-walkthrough="actuary-opportunities">
+            <h2 className="text-base font-semibold text-primary">Signal plays</h2>
+            <span className="font-mono text-[10.5px] uppercase tracking-[0.13em] text-tertiary">Ranked by modelled ROI</span>
           </div>
           {actuaryInsights.map((insight) => (
             <OpportunityCard key={insight.id} insight={insight} onEvidence={setEvidenceInsight} seededResult={seededResults.find((r) => r.campaignId === insight.id)} />
           ))}
-
-          <section className="card" data-walkthrough="actuary-log">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">What the Actuary has been doing</h2>
-            <div className="mt-4 space-y-2">
-              {[
-                '09:14 · Priced VO2 Max activation cohort across 3,847 addressable members',
-                '09:02 · Re-scored HRV recovery drift and Health Points yield',
-                '08:51 · Rebuilt Sleep Regularity cohort from 45-day device history',
-                '08:30 · Flagged resting heart rate campaign with emerging confidence',
-                '08:00 · Daily wearable signal sweep complete',
-              ].map((line) => (
-                <div key={line} className="flex items-center gap-2 font-mono text-xs text-secondary">
-                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                  {line}
-                </div>
-              ))}
-            </div>
-          </section>
+          <p className="font-mono text-[0.6rem] text-tertiary/70">
+            Planning estimates, not actuarial certification or proven claims reduction. Human review required.
+          </p>
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
           <ProofReceiptAnimation compact />
           <section className="card" data-walkthrough="actuary-portfolio">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Portfolio health</h2>
-            <div className="mt-4 grid gap-2">
+            <h2 className="text-sm font-semibold text-primary">Portfolio health</h2>
+            <div className="mt-3 grid gap-2">
               <OutputTile label="Verified outcomes" value={formatNumber(portfolio.verifiedOutcomes)} />
               <OutputTile label="Modelled liability opportunity" value={formatCurrencyCompact(portfolio.liabilityAvoided)} />
               <OutputTile label="Avg trust" value={portfolio.avgTrust} />
@@ -583,14 +567,13 @@ export default function Actuary() {
           </section>
 
           <ResearchFeed portfolio={partnerPortfolio} />
-          <FDECard portfolio={partnerPortfolio} />
 
           <section className="card overflow-hidden p-0" data-walkthrough="actuary-ask">
             <div className="border-b border-border px-4 py-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <BrainCircuit size={16} className="text-accent" />
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-primary">Actuary Copilot</h2>
+                  <h2 className="text-sm font-semibold text-primary">Actuary Copilot</h2>
                 </div>
                 <div className="rounded-full border border-accent/20 bg-accent/10 px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-accent">
                   Live
