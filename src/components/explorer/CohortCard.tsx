@@ -38,6 +38,14 @@ export default function CohortCard({ cohort, onClick }: CohortCardProps) {
         <ArrowRight size={14} className="text-tertiary opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
       </div>
 
+      {/* Risk score bar — fill proportional to cohort risk, for at-a-glance comparison */}
+      <div className="mt-3 h-[5px] rounded-full bg-base overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-accent to-accent/40 transition-all duration-300"
+          style={{ width: `${Math.min(Math.max(cohort.riskScore, 0), 1) * 100}%` }}
+        />
+      </div>
+
       <div className="grid grid-cols-3 gap-2 mt-3">
         <div>
           <span className="text-2xs text-tertiary block">Members</span>

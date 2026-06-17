@@ -9,6 +9,7 @@ import { useCampaignStore } from '@/stores/useCampaignStore';
 import { useToastStore } from '@/stores/useToastStore';
 import { StatusBadge, TypeBadge, MetricBadge } from '@/components/ui/Badge';
 import SectionHeader from '@/components/ui/SectionHeader';
+import MetricCard from '@/components/ui/MetricCard';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { formatNumber, formatCurrencyCompact } from '@/utils/format';
 import { ProofReceiptAnimation } from '@/components/enterprise/EnterpriseWidgets';
@@ -321,7 +322,7 @@ function portfolioFamilyLabel(campaign: Campaign) {
 export default function Campaigns() {
   const navigate = useNavigate();
   const modelScalar = useModelStore((s) => s.modelScalar);
-  const { campaignTemplates, signalBookValues } = useMemo(() => buildSignalCatalog(modelScalar), [modelScalar]);
+  const { campaignTemplates } = useMemo(() => buildSignalCatalog(modelScalar), [modelScalar]);
   const loading = useSimulatedLoading(300);
   const allCampaigns = useCampaignStore((s) => s.campaigns);
   const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
@@ -330,6 +331,8 @@ export default function Campaigns() {
   const [typeFilter, setTypeFilter] = useState<'all' | CampaignType>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | CampaignStatus>('all');
   const [familyFilter, setFamilyFilter] = useState<CampaignFamily>('signal');
+  // Visible table filter pills: family ('all' = no family constraint) + status.
+  const [tableFamilyFilter, setTableFamilyFilter] = useState<'all' | CampaignFamily>('all');
   const [selectedTemplateId, setSelectedTemplateId] = useState(campaignTemplates[0]?.id ?? '');
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(null);
   const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
@@ -345,9 +348,10 @@ export default function Campaigns() {
     return campaigns.filter((c) => {
       if (typeFilter !== 'all' && c.type !== typeFilter) return false;
       if (statusFilter !== 'all' && c.status !== statusFilter) return false;
+      if (tableFamilyFilter !== 'all' && campaignFamily(c) !== tableFamilyFilter) return false;
       return true;
     });
-  }, [campaigns, typeFilter, statusFilter]);
+  }, [campaigns, typeFilter, statusFilter, tableFamilyFilter]);
 
   const visibleTemplates = useMemo(() => {
     return campaignTemplates.filter((template) => template.family === familyFilter);
@@ -365,28 +369,6 @@ export default function Campaigns() {
     totalVerified: campaigns.reduce((s, c) => s + c.funnel.verified, 0),
     acquisition: campaigns.filter((c) => c.useCase === 'acquisition').length,
   }), [campaigns]);
-
-  const familyStats = useMemo(() => {
-    return familyFilters.map((family) => {
-      const rows = campaigns.filter((campaign) => campaignFamily(campaign) === family.id);
-      let summary = `${formatNumber(rows.reduce((sum, campaign) => sum + campaign.funnel.eligible, 0))} reachable`;
-
-      if (family.id === 'signal') {
-        summary = `${formatCurrencyCompact(rows.reduce((sum, campaign) => sum + (signalBookValues[campaign.name] ?? 0), 0))} est. book value`;
-      }
-      if (family.id === 'acquisition') {
-        summary = `${formatNumber(rows.reduce((sum, campaign) => sum + campaign.funnel.eligible, 0))} anonymous pool`;
-      }
-      if (family.id === 'retention') {
-        summary = '$1.6M retained value';
-      }
-      if (family.id === 'engagement') {
-        summary = '+31% receipt growth';
-      }
-
-      return { ...family, count: rows.length, summary };
-    });
-  }, [campaigns]);
 
   const portfolioRows = useMemo(() => {
     return filtered.slice(0, 8);
@@ -439,97 +421,92 @@ export default function Campaigns() {
         />
       )}
 
-      <div className="card-elevated border-accent/15" data-walkthrough="campaigns-hero">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 text-2xs uppercase tracking-[0.22em] text-accent/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              Campaign Studio
-            </div>
-            <h1 className="mt-2 text-[1.75rem] font-semibold leading-tight text-primary xl:whitespace-nowrap">
-              Launch campaigns that acquire, retain, and improve members.
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-secondary">
-              Use Health Points to target anonymous open-pool members, retain existing policyholders, and move verified wearable signals in ways that improve book value.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2 text-2xs text-tertiary">
-              <span className="badge bg-accent/10 border-accent/20 text-accent">Health Points priced</span>
-              <span className="badge bg-accent/10 border-accent/20 text-accent">Anonymous until consent</span>
-              <span className="badge bg-accent/10 border-accent/20 text-accent">Wearable signal verified</span>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-2 xl:justify-end">
-            <button
-              onClick={() => navigate('/app/campaigns/new')}
-              className="btn-primary text-xs"
-            >
-              <Plus size={13} />
-              Create Campaign
-            </button>
-            <button
-              onClick={() => navigate('/app/cohorts')}
-              className="btn-ghost text-xs"
-            >
-              View Cohorts
-            </button>
-          </div>
+      {/* Page header — shared label + H2 + purpose + right-aligned actions pattern */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between" data-walkthrough="campaigns-hero">
+        <div className="min-w-0">
+          <div className="font-mono text-2xs uppercase tracking-[0.18em] text-accent/80">Campaign Studio</div>
+          <h2 className="mt-1 text-base font-semibold text-primary font-display">Campaign portfolio</h2>
+          <p className="mt-1 max-w-[640px] text-sm leading-relaxed text-tertiary">
+            Use Health Points to acquire anonymous open-pool members, retain policyholders, and move verified wearable signals that improve book value.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          <button
+            onClick={() => navigate('/app/cohorts')}
+            className="btn-ghost text-xs"
+          >
+            View cohorts
+          </button>
+          <button
+            onClick={() => navigate('/app/campaigns/new')}
+            className="btn-primary text-xs"
+          >
+            <Plus size={13} />
+            Create campaign
+          </button>
         </div>
       </div>
 
-      <section className="card" data-walkthrough="campaigns-portfolio">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <Target size={16} className="text-accent" />
-              Campaign portfolio
-            </div>
-            <p className="mt-1 text-xs text-tertiary">
-              {stats.total} campaigns · {stats.active} active · {formatCurrencyCompact(stats.totalBudget)} HP budget · {formatNumber(stats.totalEligible)} reachable members · {formatNumber(stats.totalVerified)} verified receipts
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as 'all' | CampaignType)}
-              className="h-[32px] px-2 bg-base border border-border rounded text-xs text-secondary min-w-[150px]"
-            >
-              <option value="all">All Campaign Types</option>
-              <option value="snapshot">Snapshot</option>
-              <option value="stream">Stream</option>
-            </select>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | CampaignStatus)}
-              className="h-[32px] px-2 bg-base border border-border rounded text-xs text-secondary min-w-[140px]"
-            >
-              <option value="all">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="completed">Completed</option>
-              <option value="paused">Paused</option>
-            </select>
-          </div>
-        </div>
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-walkthrough="campaigns-kpis">
+        <MetricCard
+          label="Active campaigns"
+          value={`${stats.active} / ${stats.total}`}
+          icon={<Activity size={14} />}
+        />
+        <MetricCard
+          label="Total budget"
+          value={formatCurrencyCompact(stats.totalBudget)}
+          subValue="HP budget"
+          icon={<Megaphone size={14} />}
+        />
+        <MetricCard
+          label="Reachable members"
+          value={formatNumber(stats.totalEligible)}
+          icon={<Users size={14} />}
+        />
+        <MetricCard
+          label="Verified receipts"
+          value={formatNumber(stats.totalVerified)}
+          icon={<Target size={14} />}
+        />
+      </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 2xl:grid-cols-4">
-          {familyStats.map((family) => {
-            const playLabel = family.count === 1 ? 'PLAY' : 'PLAYS';
+      <section className="card" data-walkthrough="campaigns-portfolio">
+        {/* Visible filter pills toolbar — family + status, replacing the old dropdowns */}
+        <div className="flex flex-wrap items-center gap-2">
+          {([{ id: 'all', label: 'All' }, ...familyFilters] as Array<{ id: 'all' | CampaignFamily; label: string }>).map((family) => {
+            const active = tableFamilyFilter === family.id;
             return (
               <button
                 key={family.id}
-                onClick={() => {
-                  setFamilyFilter(family.id);
-                  setSelectedTemplateId(campaignTemplates.find((template) => template.family === family.id)?.id ?? '');
-                }}
-                className={`rounded border px-3 py-3 text-left transition-colors ${
-                  familyFilter === family.id
-                    ? 'border-accent/30 bg-accent/10'
-                    : 'border-border bg-base/60 hover:border-accent/20'
+                onClick={() => setTableFamilyFilter(family.id)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  active
+                    ? 'border-accent/30 bg-accent/10 text-accent'
+                    : 'border-border bg-base/60 text-secondary hover:border-accent/20'
                 }`}
+                aria-pressed={active}
               >
-                <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">{family.count} {playLabel}</div>
-                <div className="mt-1 text-sm font-semibold text-primary">{family.label}</div>
-                <div className="mt-1 text-xs text-secondary">{family.summary}</div>
+                {family.label}
+              </button>
+            );
+          })}
+          <span className="ml-auto font-mono text-2xs uppercase tracking-[0.12em] text-tertiary">Status</span>
+          {([{ id: 'all', label: 'All' }, { id: 'active', label: 'Active' }, { id: 'completed', label: 'Completed' }] as Array<{ id: 'all' | CampaignStatus; label: string }>).map((s) => {
+            const active = statusFilter === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setStatusFilter(s.id)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  active
+                    ? 'border-accent/30 bg-accent/10 text-accent'
+                    : 'border-border bg-base/60 text-secondary hover:border-accent/20'
+                }`}
+                aria-pressed={active}
+              >
+                {s.label}
               </button>
             );
           })}
@@ -597,7 +574,7 @@ export default function Campaigns() {
                 icon={<Filter size={20} className="text-tertiary" />}
                 title="No campaigns match the current filters"
                 description="Adjust the programme type or status filter to broaden the results."
-                action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); } }}
+                action={{ label: 'Clear Filters', onClick: () => { setTypeFilter('all'); setStatusFilter('all'); setTableFamilyFilter('all'); } }}
               />
             )}
           </div>

@@ -6,6 +6,7 @@ import MetricCard from '@/components/ui/MetricCard';
 import DataTable from '@/components/ui/DataTable';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Badge from '@/components/ui/Badge';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 import Tabs from '@/components/ui/Tabs';
 import { usePartnerStore } from '@/stores/usePartnerStore';
 import { complianceRecords, dataProcessingSummaries } from '@/data';
@@ -189,16 +190,16 @@ export default function Compliance() {
       {/* Section Header */}
       <SectionHeader as="h1" title="Verification Trail" description="A clean record of verification requests, proof generation, and receipt delivery for buyer diligence and pilot readiness conversations." icon={<ShieldCheck size={16} />} />
 
-      {/* Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" data-walkthrough="compliance-metrics">
+      {/* Metrics — four KPIs that matter for a diligence conversation */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" data-walkthrough="compliance-metrics">
         <MetricCard
           label="Verification Events"
           value={formatNumber(stats.totalRecords)}
           icon={<FileText size={14} />}
         />
         <MetricCard
-          label="Receipts Generated"
-          value={formatNumber(stats.totalProofs)}
+          label="Proof Success Rate"
+          value={`${(stats.successRate * 100).toFixed(0)}%`}
           icon={<ShieldCheck size={14} />}
         />
         <MetricCard
@@ -215,17 +216,6 @@ export default function Compliance() {
             icon={<ShieldCheck size={14} />}
           />
         </div>
-        <MetricCard
-          label="Proof Success Rate"
-          value={`${(stats.successRate * 100).toFixed(0)}%`}
-          icon={<Clock size={14} />}
-        />
-        <MetricCard
-          label="Pending Requests"
-          value={formatNumber(stats.pending)}
-          subValue="Awaiting proof"
-          icon={<Clock size={14} />}
-        />
       </div>
 
       <div id="zero-pii" className="card-elevated flex items-center gap-3 border-accent/10" data-walkthrough="compliance-receipts">
@@ -247,13 +237,19 @@ export default function Compliance() {
       <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
         <ProofReceiptAnimation />
         <div className="card flex flex-col justify-center">
-          <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent">Receipt scheme</div>
+          <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">
+            Receipt scheme
+            <InfoTooltip content="ZK proof: confirms the result is true without revealing the underlying member data." />
+          </div>
           <p className="mt-2 text-sm leading-relaxed text-primary">
             zk-SNARK proof receipt over a partner-specific cohort rule. The partner receives event status, proof hash, circuit reference, and retention metadata, not raw biometric values.
           </p>
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <div className="rounded border border-border bg-base/60 px-3 py-2">
-              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Circuit</div>
+              <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">
+                Circuit
+                <InfoTooltip content="The cryptographic circuit version used to generate the proof." />
+              </div>
               <div className="mt-1 font-mono text-xs text-primary">plonk_health_v2</div>
             </div>
             <div className="rounded border border-border bg-base/60 px-3 py-2">
@@ -261,7 +257,10 @@ export default function Compliance() {
               <div className="mt-1 font-mono text-xs text-primary">Moca testnet</div>
             </div>
             <div className="rounded border border-border bg-base/60 px-3 py-2">
-              <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">Retention</div>
+              <div className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.12em] text-tertiary">
+                Retention
+                <InfoTooltip content="How long proof metadata is retained before deletion." />
+              </div>
               <div className="mt-1 font-mono text-xs text-primary">14-day default</div>
             </div>
           </div>
