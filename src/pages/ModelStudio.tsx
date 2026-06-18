@@ -16,6 +16,32 @@ import {
 } from '@/lib/modelStudio';
 
 const TABS: StudioOwner[] = ['clinical', 'actuarial', 'program'];
+type StudioFilter = 'all' | StudioOwner;
+
+// Plain-language one-liner per assumption key. Falls back to the source text
+// (cleaned of the leading citation noise) when a key isn't mapped. Presentation
+// only — no engine wiring.
+const PLAIN_LANGUAGE: Record<string, string> = {
+  valuationHorizonYears: 'How many years of savings we let a verified behaviour count toward book value.',
+  persistedSavingsYears: 'How long savings persist for members who keep up the behaviour.',
+  claimsBridgeAttributionFactor:
+    'Share of the steps-to-savings link we treat as genuinely caused by the programme.',
+  claimsBridgeApplicablePrevalence: 'Slice of the book the claims-savings pathway actually applies to.',
+  claimsBridgeAnnualDelta: 'Annual claims swing per affected member when the behaviour holds.',
+  mortalityRelativeReduction: 'How much verified activity lowers mortality risk, per 1k extra steps.',
+  mortalityAttributionFactor: 'Share of the mortality improvement we credit to the programme.',
+  mortalityHighRiskRelativity: 'How much harder the mortality benefit lands in higher-risk members.',
+  baselineAnnualMortalityRate: 'The book-level mortality rate we price the margin against.',
+  discountRatePct: 'Rate we discount future savings back to present-day value.',
+  rewardCostRatio: 'Breakage vs co-funding — net cost of rewards actually paid out.',
+  faderPartCreditPct: 'Partial credit kept for members whose engagement fades over time.',
+  sumAssured: 'Average cover in force per life — the exposure the margin protects.',
+  annualPremium: 'Average annual premium per policy in the book.',
+};
+
+function plainLanguageFor(row: AssumptionItem): string {
+  return PLAIN_LANGUAGE[row.key] ?? `What "${row.label}" assumes in this model.`;
+}
 
 // Model Studio — view + edit the active model's assumptions, organised by the
 // three owner tabs, with provenance flags, the forward-fork diff vs the floor,
@@ -25,7 +51,7 @@ export default function ModelStudio() {
   const modelId = current.id;
   const [detail, setDetail] = useState<ModelDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<StudioOwner>('clinical');
+  const [tab, setTab] = useState<StudioFilter>('all');
   const [editing, setEditing] = useState<AssumptionItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -41,7 +67,7 @@ export default function ModelStudio() {
   }, [modelId]);
 
   const rows = useMemo(
-    () => (detail?.assumptions ?? []).filter((a) => ownerForKey(a.key) === tab),
+    () => (detail?.assumptions ?? []).filter((a) => tab === 'all' || ownerForKey(a.key) === tab),
     [detail, tab],
   );
 
@@ -103,22 +129,26 @@ export default function ModelStudio() {
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
           {/* Assumptions by owner */}
           <div className="rounded border border-border bg-surface">
-            <div className="flex border-b border-border">
-              {TABS.map((t) => (
+            <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5">
+              {(['all', ...TABS] as StudioFilter[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`px-3 py-2 text-xs font-medium transition-colors ${
-                    tab === t ? 'border-b-2 border-accent text-primary' : 'text-tertiary hover:text-secondary'
+                  className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                    tab === t
+                      ? 'border-accent/40 bg-accent/10 text-accent'
+                      : 'border-border bg-base text-tertiary hover:text-secondary'
                   }`}
                 >
-                  {OWNER_LABEL[t]}
+                  {t === 'all' ? 'All assumptions' : OWNER_LABEL[t]}
                 </button>
               ))}
             </div>
             <div className="divide-y divide-border">
               {rows.length === 0 && (
-                <div className="px-4 py-6 text-center text-xs text-tertiary">No {OWNER_LABEL[tab]} assumptions.</div>
+                <div className="px-4 py-6 text-center text-xs text-tertiary">
+                  No {tab === 'all' ? '' : `${OWNER_LABEL[tab]} `}assumptions.
+                </div>
               )}
               {rows.map((row) => (
                 <AssumptionRow
@@ -331,33 +361,53 @@ function AssumptionRow({
 }) {
   const prov = inferProvenance(row.source);
   const flag = PROVENANCE_FLAG[prov];
+  const owner = ownerForKey(row.key);
   return (
-    <div className="px-4 py-2.5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span title={flag.label}>{flag.glyph}</span>
-            <span className="truncate text-xs font-medium text-secondary">{row.label}</span>
-            {diff && <span className="rounded bg-amber-400/10 px-1 text-2xs text-amber-500">forked</span>}
-          </div>
-          <p className="mt-0.5 line-clamp-2 text-2xs leading-snug text-tertiary">{row.source}</p>
+    <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 px-4 py-3">
+      {/* LEFT (main): small label heading + owner tag, plain-language line, quiet source link */}
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5">
+          <span title={flag.label}>{flag.glyph}</span>
+          <span className="truncate text-2xs font-semibold uppercase tracking-wider text-tertiary">{row.label}</span>
+          <span className="whitespace-nowrap rounded-full border border-border bg-base px-1.5 py-px text-[10px] text-tertiary">
+            {OWNER_LABEL[owner]}
+          </span>
+          {diff && <span className="rounded bg-amber-400/10 px-1 text-2xs text-amber-500">forked</span>}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <div className="text-right">
-            <div className="font-mono text-xs text-primary">{String(row.value)}</div>
-            <div className="text-[10px] text-tertiary">{row.unit}</div>
-          </div>
-          {editable ? (
-            <button
-              onClick={onEdit}
-              className="rounded border border-border px-2 py-1 text-2xs text-tertiary hover:border-accent/40 hover:text-secondary"
-            >
-              Edit
-            </button>
-          ) : (
-            <span className="w-[34px]" />
-          )}
-        </div>
+        <p className="mt-1 text-xs leading-snug text-secondary">{plainLanguageFor(row)}</p>
+        <a
+          title={row.source}
+          className="mt-1 line-clamp-1 inline-block text-2xs leading-snug text-info/80"
+        >
+          Source: {row.source} ↗
+        </a>
+      </div>
+
+      {/* MIDDLE: value + unit (mono, prominent) */}
+      <div className="text-right">
+        <div className="font-mono text-sm font-semibold text-primary">{String(row.value)}</div>
+        <div className="text-[10px] text-tertiary">{row.unit}</div>
+      </div>
+
+      {/* RIGHT: draft→floor diff pill + Edit */}
+      <div className="flex items-center justify-end gap-2">
+        {diff ? (
+          <span className="whitespace-nowrap rounded bg-amber-400/10 px-2 py-0.5 font-mono text-2xs text-amber-500">
+            {String(diff.fromValue)} → {String(diff.toValue)}
+          </span>
+        ) : (
+          <span className="w-[52px]" />
+        )}
+        {editable ? (
+          <button
+            onClick={onEdit}
+            className="rounded border border-border px-2 py-1 text-2xs text-tertiary hover:border-accent/40 hover:text-secondary"
+          >
+            Edit
+          </button>
+        ) : (
+          <span className="w-[34px]" />
+        )}
       </div>
     </div>
   );

@@ -97,7 +97,9 @@ export interface VerifyResult {
 export default function SimulatorPage() {
   const location = useLocation();
   const [state, dispatch] = useReducer(reducer, initialSimState);
-  const [showExplainer, setShowExplainer] = useState(true);
+  // Redesign: the "how to read this" manual is off by default — guidance lives in
+  // the numbered workflow steps and the live agent stream, not an instruction panel.
+  const [showExplainer, setShowExplainer] = useState(false);
   const [activeTab, setActiveTab] = useState<SimTab>("command");
 
   // Prefill insight from Actuary page navigation

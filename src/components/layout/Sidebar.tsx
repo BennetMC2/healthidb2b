@@ -47,15 +47,31 @@ function HealthIDLogomark({ size = 24 }: { size?: number }) {
   );
 }
 
-const navItems = [
-  { path: '/app/actuary', label: 'AI Actuary', icon: BrainCircuit, tourId: 'actuary-nav' },
-  { path: '/app/simulator', label: 'Simulator', icon: Activity, tourId: 'simulator-nav' },
-  { path: '/app/campaigns', label: 'Campaign Studio', icon: Target, tourId: 'campaigns-nav' },
-  { path: '/app/cohorts', label: 'Cohorts', icon: Globe, tourId: 'explorer-nav' },
-  { path: '/app/treasury', label: 'Treasury', icon: Wallet, tourId: 'treasury-nav' },
-  { path: '/app/models', label: 'Model Studio', icon: Layers, tourId: 'models-nav' },
-  { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
-  { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
+// Grouped by the job-to-be-done so the nav reads as a workflow, not a flat list.
+const navGroups = [
+  {
+    label: 'Decide',
+    items: [
+      { path: '/app/actuary', label: 'AI Actuary', icon: BrainCircuit, tourId: 'actuary-nav' },
+      { path: '/app/simulator', label: 'Simulator', icon: Activity, tourId: 'simulator-nav' },
+    ],
+  },
+  {
+    label: 'Run',
+    items: [
+      { path: '/app/campaigns', label: 'Campaign Studio', icon: Target, tourId: 'campaigns-nav' },
+      { path: '/app/cohorts', label: 'Cohorts', icon: Globe, tourId: 'explorer-nav' },
+      { path: '/app/treasury', label: 'Treasury', icon: Wallet, tourId: 'treasury-nav' },
+    ],
+  },
+  {
+    label: 'Trust & setup',
+    items: [
+      { path: '/app/models', label: 'Model Studio', icon: Layers, tourId: 'models-nav' },
+      { path: '/app/compliance', label: 'Verification Trail', icon: ShieldCheck, tourId: 'compliance-nav' },
+      { path: '/app/settings', label: 'Settings', icon: Settings, tourId: 'settings-nav' },
+    ],
+  },
 ];
 
 interface SidebarProps {
@@ -108,7 +124,16 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 py-2 space-y-0.5">
-        {navItems.map(({ path, label, icon: Icon, tourId }) => {
+        {navGroups.map((grp, gi) => (
+          <div key={grp.label} className={gi > 0 ? 'mt-3' : ''}>
+            {(isMobile || expanded) ? (
+              <div className="px-3 pb-1 pt-1 text-2xs font-mono uppercase tracking-[0.14em] text-tertiary/60">
+                {grp.label}
+              </div>
+            ) : gi > 0 ? (
+              <div className="mx-2 mb-1 border-t border-border/60" />
+            ) : null}
+            {grp.items.map(({ path, label, icon: Icon, tourId }) => {
           const isActive =
             location.pathname === path ||
             (path !== '/' && location.pathname.startsWith(path));
@@ -140,7 +165,9 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               )}
             </NavLink>
           );
-        })}
+            })}
+          </div>
+        ))}
       </nav>
 
       {/* ZK Mode Badge */}
