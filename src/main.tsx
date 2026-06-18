@@ -6,6 +6,7 @@ import { queryClient } from '@/simulator-agentic/lib/queryClient';
 import App from './App';
 import { initTheme } from './stores/useThemeStore';
 import './index.css';
+import './styles/redesign.css';
 
 initTheme();
 

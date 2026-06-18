@@ -339,129 +339,63 @@ function OpportunityCard({ insight, onEvidence, seededResult }: { insight: Actua
   const payback = econ ? econ.payback : insight.outputs.paybackMonths;
   const isSimulated = !!seededResult;
 
+  const confTag = insight.confidence === 'high' ? 'high' : 'med';
+  const behaviourPct = isSimulated ? Math.round(seededResult.behavior.behaviorChangeRate * 100) : null;
+  const downsidePct = isSimulated ? Math.round(seededResult.finance.downsideProbability * 100) : null;
+
   return (
-    <article className="group relative overflow-hidden rounded-lg border border-border bg-surface p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/30">
-      <div className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.12em] ${confidenceClass(insight.confidence)}`}>
-          <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-          {confidenceLabel(insight.confidence)}
-        </div>
-        <div className="font-mono text-xs text-tertiary">
-          {formatHktTime(insight.generatedAt)}
-        </div>
+    <div className="play">
+      <div className="play-top">
+        <span className={`tag ${confTag}`}>{confidenceLabel(insight.confidence)}</span>
+        <span className="tag sig">{insight.signal}</span>
+        <span className="members">{insight.cohortSize.toLocaleString('en-US')} addressable members</span>
+        <span className="time">{formatHktTime(insight.generatedAt)}</span>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        <span className="rounded-full border border-border bg-elevated px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-secondary">
-          {insight.signal}
-        </span>
-        <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-tertiary">
-          {insight.cohortSize.toLocaleString('en-US')} addressable members
-        </span>
-      </div>
-
-      {/* Body row: headline + description on the left, ONE hero metric (ROI) on the right. */}
-      <div className="mt-3 flex items-start justify-between gap-5">
-        <div className="min-w-0">
-          <h2 className="text-[1.35rem] font-semibold text-primary">{insight.campaignName}</h2>
-          <p className="mt-1 text-sm font-medium leading-relaxed text-primary">{insight.title}</p>
-          <p className="mt-2 max-w-[560px] text-sm leading-relaxed text-secondary">{insight.subtitle}</p>
+      <div className="play-body">
+        <div>
+          <h4>{insight.campaignName}</h4>
+          <p className="desc">{insight.subtitle}</p>
         </div>
-        <div className="shrink-0 border-l border-border pl-5 text-right">
-          <div className="font-mono text-[2.1rem] font-bold leading-none tracking-tight text-accent">{roi.toFixed(1)}×</div>
-          <div className="mt-1.5 text-2xs uppercase tracking-[0.1em] text-tertiary">Modelled ROI</div>
+        <div className="hero-metric">
+          <div className="big">{roi.toFixed(1)}×</div>
+          <div className="cap">Modelled ROI</div>
         </div>
       </div>
 
-      <div className="mt-4 rounded border border-border bg-base/60 p-3">
-        <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-accent">Campaign action</div>
-        <p className="mt-1 text-sm leading-relaxed text-secondary">{insight.behaviourToReward}</p>
+      <div className="disclose" onClick={() => setShowDetail((v) => !v)}>
+        {showDetail ? '▾ Hide pricing detail' : '▸ Show pricing detail'}
       </div>
-
-      <div className="mt-3 flex items-center gap-2">
-        {isSimulated ? (
+      <div className={`detail-grid ${showDetail ? 'open' : ''}`}>
+        <div className="dstat"><div className="label">HP Price</div><div className="v">{insight.healthPointsPricing.suggestedHpPerMember} HP</div></div>
+        <div className="dstat"><div className="label">Reward budget</div><div className="v">{formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)}</div></div>
+        <div className="dstat"><div className="label">Book-value opp.</div><div className="v">{formatCurrencyCompact(bookValue)}</div></div>
+        <div className="dstat"><div className="label">Payback</div><div className="v">{payback != null ? `${payback} mo` : '—'}</div></div>
+        {econ && (
           <>
-            <span className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-1 text-2xs font-medium text-accent">
-              <Zap size={10} />
-              Simulated
-            </span>
-            <span className="text-2xs text-tertiary">
-              {seededResult.behavior.behaviorChangeRate > 0
-                ? `${(seededResult.behavior.behaviorChangeRate * 100).toFixed(0)}% behaviour change · ${(seededResult.finance.downsideProbability * 100).toFixed(0)}% downside`
-                : 'Agent-driven Monte Carlo'}
-            </span>
-          </>
-        ) : (
-          <>
-            <span className="inline-flex items-center gap-1 rounded-full border border-warning/20 bg-warning/10 px-2.5 py-1 text-2xs font-medium text-warning">
-              <FlaskConical size={10} />
-              Estimated
-            </span>
-            <span className="text-2xs text-tertiary">Engine estimate — run simulation for agent-tested numbers</span>
+            <div className="dstat"><div className="label">Net value</div><div className="v">{formatCurrencyCompact(econ.netValue)}</div></div>
+            <div className="dstat"><div className="label">ROI band</div><div className="v">{econ.roiLow.toFixed(1)}–{econ.roiHigh.toFixed(1)}×</div></div>
+            <div className="dstat"><div className="label">Enrollment</div><div className="v">{Math.round(econ.enrollmentRate * 100)}%</div></div>
+            <div className="dstat"><div className="label">Persistence</div><div className="v">{Math.round(econ.persistenceRate * 100)}%</div></div>
           </>
         )}
       </div>
 
-      {/* Progressive disclosure: the full pricing breakdown is tucked away, not a wall of stats. */}
-      <button
-        onClick={() => setShowDetail((v) => !v)}
-        aria-expanded={showDetail}
-        className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent/80"
-      >
-        {showDetail ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        {showDetail ? 'Hide pricing detail' : 'Show pricing detail'}
-      </button>
-
-      {showDetail && (
-        <div className="mt-3 border-t border-border/60 pt-3">
-          <p className="mb-3 text-sm leading-relaxed text-tertiary">{insight.body}</p>
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-5">
-            <OutputTile label="HP price" value={`${insight.healthPointsPricing.suggestedHpPerMember} HP`} />
-            <OutputTile label="Reward budget" value={formatCurrencyCompact(insight.healthPointsPricing.maxBudgetUsd)} />
-            <OutputTile label="Est. book-value opportunity" value={formatCurrencyCompact(bookValue)} />
-            <OutputTile label="Modelled ROI" value={`${roi.toFixed(1)}x`} />
-            <OutputTile label="Payback" value={payback != null ? `${payback} mo` : '—'} />
-          </div>
-          {econ && (
-            <div className="mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
-              <OutputTile label="Net value" value={formatCurrencyCompact(econ.netValue)} />
-              <OutputTile label="ROI band" value={`${econ.roiLow.toFixed(1)}x – ${econ.roiHigh.toFixed(1)}x`} />
-              <OutputTile label="Enrollment" value={`${(econ.enrollmentRate * 100).toFixed(0)}%`} />
-              <OutputTile label="Persistence" value={`${(econ.persistenceRate * 100).toFixed(0)}%`} />
-            </div>
+      <div className="play-foot">
+        <span className="mini">
+          {isSimulated ? (
+            <>Simulated · <b>{behaviourPct}%</b> behaviour change · <b>{downsidePct}%</b> downside</>
+          ) : (
+            <>Engine estimate — run a simulation for agent-tested numbers</>
           )}
-          {!isSimulated && (
-            <div className="mt-2 grid gap-2 md:grid-cols-3">
-              <OutputTile label="Modelled claims impact" value={formatPercent(insight.outputs.claimsReductionPct / 100)} />
-              <OutputTile label="Potential morbidity movement" value={`${insight.outputs.morbidityShiftBps} bps`} />
-              <OutputTile label="Confidence" value={confidenceShortLabel(insight.confidence)} />
-            </div>
-          )}
+        </span>
+        <div className="spacer">
+          <button className="btn btn-sm btn-ghost" onClick={() => onEvidence(insight)}>Evidence</button>
+          <button className="btn btn-sm btn-ghost" onClick={() => navigate('/app/simulator', { state: { prefillGoal: simulatorGoalForInsight(insight), prefillInsight: insight } })}>{isSimulated ? 'Re-simulate' : 'Simulate this'}</button>
+          <button className="btn btn-sm btn-primary" onClick={() => navigate('/app/campaigns/new', { state: { template: templateForInsight(insight) } })}>Create campaign →</button>
         </div>
-      )}
-
-      {/* One primary action; the rest stay quiet. */}
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <button
-          onClick={() => navigate('/app/campaigns/new', { state: { template: templateForInsight(insight) } })}
-          className="btn-primary text-xs"
-        >
-          <Target size={13} />
-          Create campaign
-        </button>
-        <button
-          onClick={() => navigate('/app/simulator', { state: { prefillGoal: simulatorGoalForInsight(insight), prefillInsight: insight } })}
-          className="btn-ghost text-xs"
-        >
-          <Activity size={13} />
-          {isSimulated ? 'Re-simulate' : 'Simulate this'}
-        </button>
-        <button onClick={() => onEvidence(insight)} className="ml-auto text-xs text-tertiary hover:text-secondary">
-          See evidence & methodology
-        </button>
       </div>
-    </article>
+    </div>
   );
 }
 
@@ -477,6 +411,7 @@ function KpiCard({ label, value, sub, accent }: { label: string; value: string; 
 
 export default function Actuary() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPartner = usePartnerStore((s) => s.currentPartner);
   const eco = useEconomics();
   // Re-priced when the active Model changes (brief §3).
@@ -509,170 +444,60 @@ export default function Actuary() {
   }, [partnerPortfolio]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">
-        <span className="h-2 w-2 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
-        Live · Engine {engineAssumptionSetMeta.version} · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}
+    <>
+    <div className="rd">
+      <div className="live-line"><span className="dot" />Live · Engine {engineAssumptionSetMeta.version} · Last scan {scanClock.lastScanLabel} · Next scan in {scanClock.nextScanLabel}</div>
+
+      <div className="page-head">
+        <div className="actions"><button className="btn btn-primary" onClick={() => navigate('/app/campaigns/new')}>+ Create campaign</button></div>
+        <div className="label">Signals · AI Actuary</div>
+        <h2>{actuaryInsights.length} plays worth your attention today</h2>
+        <p>Ranked by modelled return. Each play is a verified wearable signal you can turn into a campaign. Open one to see the full pricing breakdown.</p>
       </div>
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="font-mono text-2xs uppercase tracking-[0.18em] text-tertiary/70">AI Actuary</div>
-          <h1 className="mt-1.5 text-[1.9rem] font-semibold leading-tight tracking-tight text-primary">
-            {actuaryInsights.length} plays worth your attention today
-          </h1>
-          <p className="mt-1.5 max-w-[640px] text-sm leading-relaxed text-secondary">
-            Ranked by modelled return across {formatNumber(partnerPortfolio.lives)} verified lives. Lead signal: {partnerPortfolio.leadSignal}. Open a play to see the full pricing breakdown.
-          </p>
-        </div>
-        <button
-          onClick={() => playsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-          className="btn-primary text-xs"
-        >
-          <Sparkles size={14} />
-          Show campaign plays
-        </button>
+      <div className="kpis">
+        <div className="kpi"><div className="label">Lives monitored</div><div className="num">{Math.round(partnerPortfolio.lives / 1000)}K</div><div className="sub">{(partnerPortfolio.lives * 3.01 / 1000).toFixed(1)}K connected devices</div></div>
+        <div className="kpi"><div className="label">Verified receipts</div><div className="num">{formatNumber(portfolio.verifiedOutcomes)}</div><div className="sub">scan {scanClock.lastScanLabel}</div></div>
+        <div className="kpi"><div className="label">Liability opportunity</div><div className="num accent">{formatCurrencyCompact(portfolio.liabilityAvoided)}</div><div className="sub">modelled, across plays</div></div>
+        <div className="kpi"><div className="label">Lead signal</div><div className="num" style={{ fontSize: '20px' }}>{partnerPortfolio.leadSignal}</div><div className="sub">tightened overnight</div></div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Lives monitored" value={formatNumber(partnerPortfolio.lives)} sub="verified wearables" />
-        <KpiCard label="Verified receipts" value={formatNumber(portfolio.verifiedOutcomes)} />
-        <KpiCard label="Liability opportunity" value={formatCurrencyCompact(portfolio.liabilityAvoided)} accent sub="modelled, across plays" />
-        <KpiCard label="Lead signal" value={partnerPortfolio.leadSignal} sub="tightened overnight" />
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <main className="space-y-4">
-          <div ref={playsRef} className="flex items-baseline justify-between scroll-mt-4" data-walkthrough="actuary-opportunities">
-            <h2 className="text-base font-semibold text-primary">Signal plays</h2>
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.13em] text-tertiary">Ranked by modelled ROI</span>
-          </div>
+      <div className="split">
+        <div ref={playsRef}>
+          <div className="section-title"><h3>Signal plays</h3><span className="label">Ranked by modelled ROI</span></div>
           {actuaryInsights.map((insight) => (
             <OpportunityCard key={insight.id} insight={insight} onEvidence={setEvidenceInsight} seededResult={seededResults.find((r) => r.campaignId === insight.id)} />
           ))}
-          <p className="font-mono text-[0.6rem] text-tertiary/70">
+          <p className="mono" style={{ fontSize: '10px', color: 'var(--faint)', marginTop: '8px', lineHeight: 1.6 }}>
             Planning estimates, not actuarial certification or proven claims reduction. Human review required.
           </p>
-        </main>
+        </div>
 
-        <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
-          <ProofReceiptAnimation compact />
-          <section className="card" data-walkthrough="actuary-portfolio">
-            <h2 className="text-sm font-semibold text-primary">Portfolio health</h2>
-            <div className="mt-3 grid gap-2">
-              <OutputTile label="Verified outcomes" value={formatNumber(portfolio.verifiedOutcomes)} />
-              <OutputTile label="Modelled liability opportunity" value={formatCurrencyCompact(portfolio.liabilityAvoided)} />
-              <OutputTile label="Avg trust" value={portfolio.avgTrust} />
-            </div>
-          </section>
-
-          <ResearchFeed portfolio={partnerPortfolio} />
-
-          <section className="card overflow-hidden p-0" data-walkthrough="actuary-ask">
-            <div className="border-b border-border px-4 py-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <BrainCircuit size={16} className="text-accent" />
-                  <h2 className="text-sm font-semibold text-primary">Actuary Copilot</h2>
-                </div>
-                <div className="rounded-full border border-accent/20 bg-accent/10 px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-accent">
-                  Live
-                </div>
-              </div>
-              <p className="mt-2 text-xs leading-relaxed text-tertiary">
-                Portfolio analysis, campaign advice, and underwriting implications in one thread.
-              </p>
-            </div>
-
-            <div className="bg-base/70 px-4 py-4">
-              <div className="flex min-h-[280px] flex-col rounded-2xl border border-border bg-surface/70">
-                <div className="flex-1 space-y-3 overflow-y-auto px-3 py-3">
-                  {chatPreview.length > 0 ? (
-                    <>
-                      {chatPreview.map((message) => (
-                        <CopilotMessage key={message.id} message={message} />
-                      ))}
-                      {isStreaming && chatPreview[chatPreview.length - 1]?.content === '' && (
-                        <div className="flex justify-start">
-                          <div className="flex gap-1 rounded-lg border border-border bg-elevated px-3 py-2">
-                            <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" />
-                            <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '200ms' }} />
-                            <span className="h-1.5 w-1.5 animate-flow-pulse rounded-full bg-tertiary" style={{ animationDelay: '400ms' }} />
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <div className="rounded-xl border border-border bg-elevated px-3 py-3 text-xs leading-relaxed text-secondary">
-                        Start a conversation with Actuary Copilot. It uses the current partner context from this platform rather than a generic chatbot prompt.
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          'Which wearable campaign should we launch next?',
-                          'Where is the biggest modifiable risk?',
-                          'What is my verification success rate?',
-                        ].map((suggestion) => (
-                          <button
-                            key={suggestion}
-                            onClick={() => {
-                              setQuery('');
-                              void sendMessage(suggestion);
-                            }}
-                            disabled={isStreaming}
-                            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-secondary transition-colors hover:border-accent/30 hover:text-primary disabled:opacity-40"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                <div className="border-t border-border bg-surface px-3 py-3">
-                  <textarea
-                    ref={copilotInputRef}
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        const text = query.trim();
-                        if (!text || isStreaming) return;
-                        setQuery('');
-                        void sendMessage(text);
-                      }
-                    }}
-                    placeholder="Ask about your portfolio..."
-                    className="h-20 w-full resize-none bg-transparent text-sm text-primary outline-none placeholder:text-tertiary"
-                  />
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="text-2xs text-tertiary">
-                      Enter sends. Shift+Enter adds a new line.
-                    </div>
-                    <button
-                      onClick={() => {
-                        const text = query.trim();
-                        if (!text || isStreaming) return;
-                        setQuery('');
-                        void sendMessage(text);
-                      }}
-                      disabled={isStreaming || query.trim().length === 0}
-                      className="btn-primary text-xs disabled:opacity-40"
-                    >
-                      {isStreaming ? 'Thinking...' : 'Send'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+        <aside className="rail">
+          <div className="rail-card">
+            <div className="label">Proof verified</div>
+            <div className="mono" style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>rcp_cbaa8a52 · 0xba…ab</div>
+            <div className="checkrow"><span className="c">✓</span> Cohort rule matched</div>
+            <div className="checkrow"><span className="c">✓</span> ZK proof valid</div>
+            <div className="checkrow"><span className="c">✓</span> Raw data stayed local</div>
+          </div>
+          <div className="rail-card">
+            <div className="label">Portfolio health</div>
+            <div className="ph-row"><span className="k">Verified outcomes</span><span className="v">{formatNumber(portfolio.verifiedOutcomes)}</span></div>
+            <div className="ph-row"><span className="k">Liability opportunity</span><span className="v">{formatCurrencyCompact(portfolio.liabilityAvoided)}</span></div>
+            <div className="ph-row"><span className="k">Avg trust</span><span className="v">{portfolio.avgTrust}</span></div>
+          </div>
+          <div className="rail-card">
+            <div className="label">Research feed</div>
+            <div className="feed-item"><div className="t">09:18</div><h5>Nature Medicine wearable update indexed</h5><p>Strengthens VO₂ Max &amp; Zone 2 pricing assumptions.</p></div>
+            <div className="feed-item"><div className="t">08:44</div><h5>Lancet sleep-risk review reweighted</h5><p>Raises sleep confidence; keeps causal score below cardio.</p></div>
+          </div>
         </aside>
       </div>
-      {evidenceInsight && (
-        <EvidenceModal insight={evidenceInsight} onClose={() => setEvidenceInsight(null)} />
-      )}
     </div>
+    {evidenceInsight && (
+      <EvidenceModal insight={evidenceInsight} onClose={() => setEvidenceInsight(null)} />
+    )}
+    </>
   );
 }
