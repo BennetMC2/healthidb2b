@@ -97,25 +97,25 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
 
   const sidebarContent = (isMobile: boolean) => (
     <aside
-      className={`flex flex-col h-full bg-surface border-r border-border transition-all duration-150 ${
-        isMobile ? 'w-[200px]' : expanded ? 'w-[200px]' : 'w-[48px]'
+      className={`flex flex-col h-full bg-[#101716] text-white border-r border-[#26312f] transition-all duration-150 ${
+        isMobile ? 'w-[208px]' : expanded ? 'w-[208px]' : 'w-[52px]'
       }`}
     >
       {/* Logo */}
-      <div className="flex items-center h-[44px] px-3 border-b border-border">
-        <div className="text-accent flex-shrink-0">
+      <div className="flex items-center h-[54px] px-3 border-b border-white/10">
+        <div className="text-white flex-shrink-0">
           <HealthIDLogomark size={24} />
         </div>
         {(isMobile || expanded) && (
           <div className="ml-2 flex flex-col leading-tight">
-            <span className="text-sm font-semibold font-display text-primary">HealthID</span>
-            <span className="text-2xs font-mono text-accent/70">Insurer Cockpit</span>
+            <span className="text-sm font-medium font-display text-white">HealthID</span>
+            <span className="text-2xs font-mono text-white/62">Actuarial OS</span>
           </div>
         )}
         {isMobile && (
           <button
             onClick={onMobileClose}
-            className="ml-auto w-[24px] h-[24px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors"
+            className="ml-auto w-[24px] h-[24px] flex items-center justify-center rounded-sm text-white/55 hover:text-white hover:bg-white/10 transition-colors"
           >
             <X size={14} />
           </button>
@@ -127,11 +127,11 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         {navGroups.map((grp, gi) => (
           <div key={grp.label} className={gi > 0 ? 'mt-3' : ''}>
             {(isMobile || expanded) ? (
-              <div className="px-3 pb-1 pt-1 text-2xs font-mono uppercase tracking-[0.14em] text-tertiary/60">
+              <div className="px-3 pb-1 pt-1 text-2xs font-mono uppercase tracking-[0.14em] text-white/36">
                 {grp.label}
               </div>
             ) : gi > 0 ? (
-              <div className="mx-2 mb-1 border-t border-border/60" />
+              <div className="mx-2 mb-1 border-t border-white/10" />
             ) : null}
             {grp.items.map(({ path, label, icon: Icon, tourId }) => {
           const isActive =
@@ -143,10 +143,10 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
               key={path}
               to={path}
               data-tour={tourId}
-              className={`flex items-center h-[32px] mx-1 px-2.5 rounded transition-colors duration-100 group ${
+              className={`flex items-center h-[34px] mx-1 px-2.5 rounded-sm transition-colors duration-100 group ${
                 isActive
-                  ? 'bg-accent-muted text-accent border-l-2 border-accent'
-                  : 'text-tertiary hover:text-secondary hover:bg-hover'
+                  ? 'bg-[#9ef0c8] text-[#101716]'
+                  : 'text-white/62 hover:text-white hover:bg-white/8'
               }`}
             >
               <Icon
@@ -155,13 +155,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
                 className="flex-shrink-0"
               />
               {path === '/app/actuary' && (
-                <span className="ml-2 h-1.5 w-1.5 rounded-full bg-accent animate-[pulseDot_2s_ease-in-out_infinite]" />
+                <span className={`ml-2 h-1.5 w-1.5 rounded-full animate-[pulseDot_2s_ease-in-out_infinite] ${isActive ? 'bg-[#101716]' : 'bg-[#9ef0c8]'}`} />
               )}
               {(isMobile || expanded) && (
                 <span className="ml-2.5 text-sm truncate">{label}</span>
               )}
               {!isMobile && !expanded && isActive && (
-                <div className="absolute left-0 w-[2px] h-4 bg-accent rounded-r" />
+                <div className="absolute left-0 w-[2px] h-4 bg-[#9ef0c8] rounded-r" />
               )}
             </NavLink>
           );
@@ -173,13 +173,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {/* ZK Mode Badge */}
       <div className="px-2 pb-2" data-tour="zk-badge">
         <div
-          className={`flex items-center gap-1.5 px-2 py-1.5 rounded bg-accent-dim border border-accent/10 ${
+          className={`flex items-center gap-1.5 px-2 py-1.5 rounded-sm bg-white/5 border border-white/10 ${
             (isMobile || expanded) ? '' : 'justify-center'
           }`}
         >
-          <Lock size={12} className="text-accent flex-shrink-0" />
+          <Lock size={12} className="text-white flex-shrink-0" />
           {(isMobile || expanded) && (
-            <span className="text-2xs text-accent font-medium">
+            <span className="text-2xs text-white/82 font-medium">
               Verified Outcomes Mode
             </span>
           )}
@@ -190,7 +190,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
       {!isMobile && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center justify-center h-[32px] border-t border-border text-tertiary hover:text-secondary transition-colors"
+          className="flex items-center justify-center h-[36px] border-t border-white/10 text-white/45 hover:text-white transition-colors"
         >
           {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
         </button>

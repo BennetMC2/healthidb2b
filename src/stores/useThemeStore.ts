@@ -15,13 +15,13 @@ function applyTheme(theme: Theme) {
 
 export function initTheme() {
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-  const theme = stored === 'light' ? 'light' : 'dark';
+  const theme = stored === 'dark' ? 'dark' : 'light';
   applyTheme(theme);
   useThemeStore.setState({ theme });
 }
 
 export const useThemeStore = create<ThemeStore>((set, get) => ({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {
     const next = get().theme === 'light' ? 'dark' : 'light';
     localStorage.setItem(STORAGE_KEY, next);

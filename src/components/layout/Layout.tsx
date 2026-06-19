@@ -26,10 +26,6 @@ export default function Layout({ onTourStart }: LayoutProps) {
 
   return (
     <div className="relative flex h-screen w-screen bg-base overflow-hidden" data-executive-mode={executiveMode}>
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-[-10%] top-[-15%] h-[340px] w-[340px] rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute right-[-8%] top-[12%] h-[280px] w-[280px] rounded-full bg-accent-secondary/10 blur-3xl" />
-      </div>
       <Sidebar
         mobileOpen={mobileMenuOpen}
         onMobileClose={() => setMobileMenuOpen(false)}
@@ -46,7 +42,7 @@ export default function Layout({ onTourStart }: LayoutProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className={`flex-1 overflow-auto scrollbar-thin px-3 py-4 sm:p-4 ${demoActive ? 'pb-[148px]' : ''}`}
+            className={`flex-1 overflow-auto scrollbar-thin px-4 py-5 sm:px-7 sm:py-6 ${demoActive ? 'pb-[148px]' : ''}`}
           >
             <Outlet />
           </motion.main>
@@ -67,13 +63,13 @@ export default function Layout({ onTourStart }: LayoutProps) {
       )}
 
       {/* Synthetic demo disclosure — persistent */}
-      <div className="fixed bottom-3 left-16 z-30 hidden sm:flex items-center gap-2 rounded-full border border-border bg-elevated/90 backdrop-blur-sm px-3 py-1.5 font-mono text-[0.6rem] text-tertiary shadow-sm">
+      <div className="fixed bottom-3 left-16 z-30 hidden sm:flex items-center gap-2 rounded-sm border border-border bg-surface px-3 py-1.5 font-mono text-[0.6rem] text-tertiary shadow-sm">
         <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
         Synthetic demo — modelled examples
       </div>
 
       {!copilotOpen && !widgetDismissed && !hideActuaryWidget && (
-        <div className="group fixed bottom-4 right-3 z-30 w-[min(420px,calc(100vw-24px))] rounded-xl border border-border bg-elevated px-3 py-2 shadow-none sm:bottom-5 sm:right-4 sm:w-[min(420px,calc(100vw-32px))] sm:px-4 sm:py-3">
+        <div className="group fixed bottom-4 right-3 z-30 w-[min(420px,calc(100vw-24px))] rounded-sm border border-border bg-surface px-3 py-2 shadow-none sm:bottom-5 sm:right-4 sm:w-[min(420px,calc(100vw-32px))] sm:px-4 sm:py-3">
           <button
             onClick={() => setWidgetDismissed(true)}
             className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded text-tertiary hover:bg-hover hover:text-primary"

@@ -9,11 +9,11 @@ import type { ModelMeta } from '@shared/models';
 function toneClasses(meta: ModelMeta): string {
   switch (modelTrustTone(meta)) {
     case 'projected':
-      return 'border-amber-400/30 bg-amber-400/10 text-amber-500';
+      return 'border-amber-400/35 bg-amber-400/10 text-primary';
     case 'exploratory':
-      return 'border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-500';
+      return 'border-fuchsia-400/30 bg-fuchsia-400/10 text-primary';
     default:
-      return 'border-accent/20 bg-accent/10 text-accent';
+      return 'border-accent/40 bg-accent/15 text-primary';
   }
 }
 

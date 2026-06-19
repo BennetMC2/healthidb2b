@@ -49,12 +49,12 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
 
   return (
     <>
-      <header className="flex items-center h-[44px] px-4 bg-surface border-b border-border">
+      <header className="flex items-center h-[54px] px-4 bg-surface border-b border-border">
         {/* Mobile hamburger */}
         {onMobileMenuOpen && (
           <button
             onClick={onMobileMenuOpen}
-            className="flex md:hidden w-[30px] h-[30px] items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors mr-2"
+            className="flex md:hidden w-[30px] h-[30px] items-center justify-center rounded-sm text-tertiary hover:text-secondary hover:bg-hover transition-colors mr-2"
           >
             <Menu size={16} />
           </button>
@@ -88,11 +88,11 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
               className="absolute left-2 top-1/2 -translate-y-1/2 text-tertiary"
             />
             <div
-              className="w-full h-[30px] pl-7 pr-3 bg-base border border-border rounded text-xs text-tertiary flex items-center cursor-pointer hover:border-accent/30 transition-colors"
+              className="w-full h-[32px] pl-7 pr-3 bg-base border border-border rounded-sm text-xs text-tertiary flex items-center cursor-pointer hover:border-accent/60 transition-colors"
             >
               Search campaigns, cohorts, receipts...
             </div>
-            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-tertiary bg-elevated px-1 rounded-sm border border-border">
+            <kbd className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-tertiary bg-surface px-1 rounded-sm border border-border">
               Cmd K
             </kbd>
           </button>
@@ -103,14 +103,14 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           {/* Mobile search icon */}
           <button
             onClick={() => setPaletteOpen(true)}
-            className="sm:hidden w-[30px] h-[30px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors"
+            className="sm:hidden w-[30px] h-[30px] flex items-center justify-center rounded-sm text-tertiary hover:text-secondary hover:bg-hover transition-colors"
             title="Search"
           >
             <Search size={14} />
           </button>
           {/* Partner Selector */}
           <button
-            className="flex h-[30px] w-[30px] items-center justify-center rounded border border-border bg-base text-tertiary hover:bg-hover sm:hidden"
+            className="flex h-[30px] w-[30px] items-center justify-center rounded-sm border border-border bg-base text-tertiary hover:bg-hover sm:hidden"
             title={currentPartner.label}
           >
             <Building2 size={14} />
@@ -118,7 +118,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           <select
             value={currentPartner.id}
             onChange={(e) => setCurrentPartner(e.target.value)}
-            className="hidden h-[30px] max-w-[180px] cursor-pointer rounded border border-border bg-base px-2 text-xs text-secondary focus:border-accent/30 focus:outline-none sm:block"
+            className="hidden h-[32px] max-w-[180px] cursor-pointer rounded-sm border border-border bg-base px-2 text-xs text-secondary focus:border-accent/60 focus:outline-none sm:block"
           >
             {allPartners.map((p) => (
               <option key={p.id} value={p.id}>
@@ -126,7 +126,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
               </option>
             ))}
           </select>
-          <span className="hidden h-[30px] items-center rounded border border-accent/20 bg-accent/10 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-accent lg:flex">
+          <span className="hidden h-[32px] items-center rounded-sm border border-accent/60 bg-accent/20 px-2 font-mono text-[10px] uppercase tracking-[0.1em] text-secondary lg:flex">
             Demo partner
           </span>
 
@@ -136,7 +136,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           {/* Dark mode toggle */}
           <button
             onClick={toggleTheme}
-            className="w-[30px] h-[30px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors"
+            className="w-[30px] h-[30px] flex items-center justify-center rounded-sm text-tertiary hover:text-secondary hover:bg-hover transition-colors"
             title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
           >
             {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -146,7 +146,7 @@ export default function Header({ onTourStart, onMobileMenuOpen }: HeaderProps) {
           {onTourStart && (
             <button
               onClick={onTourStart}
-              className="w-[30px] h-[30px] flex items-center justify-center rounded text-tertiary hover:text-secondary hover:bg-hover transition-colors opacity-80"
+              className="w-[30px] h-[30px] flex items-center justify-center rounded-sm text-tertiary hover:text-secondary hover:bg-hover transition-colors opacity-80"
               title="Start guided tour"
             >
               <HelpCircle size={14} />
